@@ -5,6 +5,7 @@ import {createAudio} from './audio';
 import './style.css';
 
 const NODES = {npc:16,terminal:34,dossier:56,door:91};
+const HERO_NAME = 'Raka';
 
 function Sprite({id='r',walking=false,direction='right',className=''}){
   const [frame,setFrame]=useState(0);
@@ -51,6 +52,10 @@ function App(){
   const solved=puzzleIndex>=current.puzzles.length;
   const nearby=(node)=>Math.abs(x-NODES[node])<(node==='npc'?6:7);
   const talking=conversationStep!==null;
+  const heroSpeaking=talking&&current.dialogue[conversationStep].who==='r';
+  const npcSpeaking=talking&&!heroSpeaking;
+  const heroFacing=talking?(x<NODES.npc?'right':'left'):direction;
+  const npcFacing=x<NODES.npc?'left':'right';
   const sound=kind=>{if(audioOn)audioRef.current?.effect(kind)};
   function toggleAudio(){
     if(audioOn){audioRef.current?.stop();setAudioOn(false)}
@@ -155,27 +160,27 @@ function App(){
   const marker=nearby('npc')&&!conversationSeen?'npc':nearby('terminal')&&!solved?'terminal':nearby('npc')?'npc':nearby('dossier')&&solved&&!collected?'dossier':nearby('door')&&collected?'door':null;
   const actionLabel=talking?'Lanjutkan percakapan':{npc:conversationSeen?'Bicara lagi':'Bicara dengan tokoh',terminal:'Buka terminal',dossier:'Ambil berkas',door:'Buka pintu'}[marker];
   const endingInfo={
-    true:{eyebrow:'TRUE ENDING',title:'Kebenaran terungkap.',description:'Empat berkas lengkap. Agen R lolos, bukti terkirim, dan lokasi Agen V akhirnya terungkap.'},
-    neutral:{eyebrow:'NEUTRAL ENDING',title:'Agen R berhasil lolos.',description:'Bukti terkirim, tetapi terlalu banyak kesalahan membuat beberapa data rusak. Kasus masih terbuka.'},
+    true:{eyebrow:'TRUE ENDING',title:'Kebenaran terungkap.',description:'Empat berkas lengkap. Raka lolos, bukti terkirim, dan lokasi Vira akhirnya terungkap.'},
+    neutral:{eyebrow:'NEUTRAL ENDING',title:'Raka berhasil lolos.',description:'Bukti terkirim, tetapi terlalu banyak kesalahan membuat beberapa data rusak. Kasus masih terbuka.'},
     bad:{eyebrow:'BAD ENDING',title:'Transmisi terputus.',description:'Sistem mengunci akses sebelum misi selesai. Ulangi operasi, gunakan petunjuk, dan amati pemindai.'}
   };
   return <div className="app" style={{'--level-color':current.color}}>
     <header className="site-header"><div className="brand"><span className="brand-icon">E</span><span>PROJECT <b>ECHO</b></span></div><div className="header-actions"><button className="audio-button" onClick={toggleAudio} aria-pressed={audioOn}>{audioOn?'♫ Suara nyala':'♫ Suara mati'}</button><button className="quiet-button" onClick={()=>setHelp(v=>!v)}>Cara main <span>?</span></button></div></header>
     <main className="shell">
-      {!started ? <section className="landing"><div className="landing-copy"><p className="kicker">OPERASI 047 · MISI INTERAKTIF</p><h1>Jejak terakhir<br/><em>Agen V.</em></h1><p>Agen R harus menjelajahi empat lokasi, memecahkan kode matematika, dan membawa bukti keluar sebelum sistem menghapusnya.</p><div className="landing-actions"><button className="main-button" onClick={reset}>Mulai bermain <span>→</span></button><span>Berjalan · pecahkan kode · cari jalan keluar</span></div><div className="landing-chips"><span>4 level</span><span>12 teka-teki</span><span>3 akhir cerita</span></div></div><div className="landing-visual"><div className="visual-glow"/><div className="visual-floor"/><Sprite id="r" walking className="landing-actor"/><div className="visual-caption"><small>FILE 047</small><strong>AGEN R</strong><span>Investigasi dimulai di sini</span></div></div></section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking={ending!=='bad'}/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mistakes}</span></div><button className="main-button" onClick={reset}>Main lagi →</button></div></section> : <>
+      {!started ? <section className="landing"><div className="landing-copy"><p className="kicker">OPERASI 047 · MISI INTERAKTIF</p><h1>Jejak terakhir<br/><em>Agen Vira.</em></h1><p>Raka harus menjelajahi empat lokasi, memecahkan kode matematika, dan membawa bukti keluar sebelum sistem menghapusnya.</p><div className="landing-actions"><button className="main-button" onClick={reset}>Mulai bermain <span>→</span></button><span>Berjalan · pecahkan kode · cari jalan keluar</span></div><div className="landing-chips"><span>4 level</span><span>12 teka-teki</span><span>3 akhir cerita</span></div></div><div className="landing-visual"><div className="visual-glow"/><div className="visual-floor"/><Sprite id="r" walking className="landing-actor"/><div className="visual-caption"><small>FILE 047</small><strong>RAKA · AGEN R</strong><span>Investigasi dimulai di sini</span></div></div></section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking={ending!=='bad'}/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mistakes}</span></div><button className="main-button" onClick={reset}>Main lagi →</button></div></section> : <>
         <div className="game-top"><div><p className="kicker">LEVEL {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</p><h1>{current.name}</h1><p>{current.goal}</p></div><div className="game-stats"><span>♥ {health}/3</span><span>▣ {dossiers}/4 berkas</span>{level===3&&<strong className={seconds<35?'urgent':''}>⏱ {seconds}s</strong>}</div></div>
         <div className="level-track" aria-label="Kemajuan level">{levels.map((item,i)=><div key={item.name} className={i===level?'selected':i<level?'done':''}><span>{i<level?'✓':i+1}</span><small>{item.name}</small></div>)}</div>
         <section className={`scene scene-${level} ${hurt?'hurt':''}`} aria-label={`Area permainan ${current.location}`}>
           <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
           <div className="atmosphere"><i/><i/><i/><i/><i/></div>
           <div className="scene-ground"/>
-          <div className={`scene-npc ${level===1?'hologram':''}`} style={{left:`${NODES.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
+          <div className={`scene-npc ${level===1?'hologram':''} ${npcSpeaking?'speaking':''}`} style={{left:`${NODES.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} walking={npcSpeaking} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
           <div className="object terminal-object" style={{left:`${NODES.terminal}%`}}><span className="object-icon">⌘</span><span>TERMINAL</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
           <div className={`object dossier-object ${solved?'ready':''} ${collected?'taken':''}`} style={{left:`${NODES.dossier}%`}}><span className="object-icon">▣</span><span>{collected?'DIAMBIL':'BUKTI'}</span>{solved&&!collected&&nearby('dossier')&&<i>TEKAN E</i>}</div>
           <div className={`object door-object ${collected?'ready':''}`} style={{left:`${NODES.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{collected&&nearby('door')&&<i>TEKAN E</i>}</div>
           {(level>1?[44,73]:level===1?[72]:[]).map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}}><span>PEMINDAI</span></div>)}
-          <div className="player" style={{left:`${x}%`}}><span>AGEN R</span><Sprite id="r" walking={walking} direction={direction}/><i className="foot-shadow"/></div>
-          {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?'Agen R':current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
+          <div className={`player ${heroSpeaking?'speaking':''}`} style={{left:`${x}%`}}><span>{HERO_NAME.toUpperCase()}</span><Sprite id="r" walking={walking||heroSpeaking} direction={heroFacing}/><i className="foot-shadow"/></div>
+          {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>
         <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><span>Gunakan ← → atau A D untuk berjalan</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
