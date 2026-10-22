@@ -2,6 +2,10 @@
 
 Game React dengan animasi berjalan, empat latar lokasi, musik dan efek suara, empat level, serta 12 teka-teki matematika berdasarkan dokumen **Alur Game** dan lima gambar karakter dari folder tugas.
 
+## Ringkasan cerita
+
+Raka, Agen R, mencari rekannya Vira yang menghilang setelah menemukan kebocoran data. Di empat lokasi, ia membaca pesan Vira, memecahkan kode matematika, dan mencari berkas bukti yang disembunyikan. Nara membantu menguji pesan itu, sementara jejak fungsi invers mengungkap bahwa Arman, kepala divisi sendiri, adalah pembocornya. Pada akhir misi, Raka harus membawa bukti keluar dari markas sebelum sistem menghapusnya. Hasil cerita bergantung pada jumlah berkas, kesalahan, dan apakah Raka berhasil lolos.
+
 ## Cara menjalankan di laptop ini
 
 Node.js dan Visual Studio Code sudah terpasang. React sudah terpasang di folder proyek ini.
@@ -18,7 +22,8 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
 - Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
-- Ambil berkas di tengah ruangan, kemudian berjalan ke pintu keluar.
+- Setiap area lebih panjang dan kamera mengikuti Raka. Jelajahi area untuk menemukan terminal; pintu keluar berada dekat awal sehingga kamu perlu kembali ke sana.
+- Setelah menyelesaikan tiga soal terminal, baca petunjuk di atas map. Berkas tersembunyi di salah satu dari tiga tempat pemeriksaan. Dekati tempat itu dan tekan **E** untuk memeriksanya.
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
 - Level terakhir dibatasi 150 detik. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
@@ -29,6 +34,7 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 
 - `src/game.js`: judul level, dialog, rumus, tiga soal per level, jawaban, dan petunjuk. Untuk menerima lebih dari satu bentuk jawaban, tambah nilainya ke array `answers`.
 - `src/main.jsx`: gerakan pemain, interaksi terminal/berkas/pintu, pemindai, timer, dan perpindahan level. React `useState` menyimpan kondisi permainan; `useEffect` menjalankan gerak dan waktu.
+- Setiap level di `src/game.js` juga memiliki `map` yang menentukan lokasi tokoh, terminal, pintu, pemindai, tiga tempat pencarian, dan petunjuk berkas.
 - `src/style.css`: warna, tata letak, bayangan pijakan, dan efek ruangan.
 - `src/audio.js`: melodi latar dan efek suara. Ubah nada dan volume di sini.
 - `public/scenes/`: empat latar lokasi yang digambar sebagai SVG.

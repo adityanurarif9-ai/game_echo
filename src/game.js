@@ -10,7 +10,8 @@ export const levels = [
       {who:'npc',text:'Mulai dari terminal itu. Angka-angkanya mengikuti urutan huruf dalam alfabet.'}
     ],
     story:'Vira hilang setelah menemukan kebocoran data. Di ruang kerjanya ada alfabet angka dan transmisi yang terputus. Dekripsi catatan itu sebelum seseorang datang.',
-    goal:'Temukan catatan Vira, pecahkan tiga kode, ambil berkas, lalu menuju pintu.',
+    goal:'Jelajahi kantor Vira, pecahkan kode terminal, lalu cari berkas di tempat tersembunyi.',
+    map:{npc:14,terminal:73,door:3,scanners:[],caches:[{x:31,name:'Loker arsip'},{x:51,name:'Meja bukti'},{x:89,name:'Rak buku'}],hidden:2,clue:'Vira menulis: "Yang dicari bersembunyi di antara buku-buku, jauh dari meja kerjaku."'},
     puzzles:[
       {prompt:'Dalam kode A = 1, B = 2, ..., Z = 26, berapa nilai huruf V?', formula:'A = 1 · B = 2 · … · Z = 26', rule:'Nilai huruf = nomor urutnya dalam alfabet.', example:'Contoh: C adalah huruf ke-3, jadi C = 3.', answers:['22'], hint:'U = 21. V tepat setelah U.', explain:'V = 22. Angka ini menjadi kunci awal transmisi.'},
       {prompt:'Ubah sinyal 18–21–14 menjadi sebuah kata.', formula:'A = 1 · B = 2 · … · Z = 26', rule:'Cari huruf pada posisi tiap angka, lalu baca dari kiri ke kanan.', example:'Contoh: 3–1–20 menjadi C–A–T.', answers:['RUN'], hint:'18 = R, 21 = U, 14 = N.', explain:'RUN. Vira menyuruhmu bergerak cepat.'},
@@ -26,7 +27,8 @@ export const levels = [
       {who:'npc',text:'Kerjakan fungsi yang paling dalam lebih dahulu. Lihat baik-baik arah pemindainya.'}
     ],
     story:'Dua fungsi ditemukan. Alarm pengawas mulai menyapu koridor. Perhatikan urutan komposisi: fungsi dalam kurung dikerjakan lebih dahulu.',
-    goal:'Hindari sinar pengawas dan bongkar tiga operasi komposisi.',
+    goal:'Jelajahi koridor panjang, hindari pemindai, dan ikuti petunjuk berkas.',
+    map:{npc:18,terminal:82,door:3,scanners:[45,68],caches:[{x:29,name:'Kotak peralatan'},{x:55,name:'Panel listrik'},{x:92,name:'Lemari keamanan'}],hidden:1,clue:'Sinyal Vira menunjuk sumber daya di tengah koridor, bukan lemari di ujung.'},
     puzzles:[
       {prompt:'Hitung g(f(7)).', formula:'f(x) = 2x + 3  ·  g(x) = x − 4', rule:'g(f(a)) berarti hitung f(a) dulu, lalu masukkan hasilnya ke g.', example:'Contoh: f(2) = 7, kemudian g(7) = 3.', answers:['13'], hint:'f(7) = 17, kemudian g(17) = 13.', explain:'Benar. g(f(7)) = 13.'},
       {prompt:'Hitung f(g(22)). Urutannya berbeda dari soal pertama.', formula:'f(x) = 2x + 3  ·  g(x) = x − 4', rule:'f(g(a)) berarti hitung g(a) dulu, lalu masukkan hasilnya ke f.', example:'Contoh: g(8) = 4, kemudian f(4) = 11.', answers:['39'], hint:'g(22) = 18, kemudian f(18) = 39.', explain:'Benar. f(g(22)) = 39. Komposisi tidak selalu bisa dibalik urutannya.'},
@@ -42,7 +44,8 @@ export const levels = [
       {who:'npc',text:'Bagus. Balikkan operasi hitungnya, lalu ubah hasilnya menjadi huruf.'}
     ],
     story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, balikkan enkripsi dan baca nama tersembunyi. Dua pemindai melindungi server.',
-    goal:'Verifikasi pesan, bongkar fungsi invers, dan temukan identitas pelaku.',
+    goal:'Periksa ruang server, bongkar fungsi invers, dan temukan identitas pelaku.',
+    map:{npc:32,terminal:77,door:3,scanners:[42,71],caches:[{x:15,name:'Rak server A'},{x:49,name:'Inti data'},{x:91,name:'Rak server D'}],hidden:0,clue:'Jejak akses tertua berasal dari rak pertama, dekat pintu masuk.'},
     puzzles:[
       {prompt:'Jika h(x) = 2x − 1, berapa nilai h⁻¹(43)?', formula:'h(x) = 2x − 1', rule:'Rumus invers: h⁻¹(y) = (y + 1) ÷ 2.', example:'Contoh: h⁻¹(9) = (9 + 1) ÷ 2 = 5.', answers:['22'], hint:'Untuk membalikkan h, tambah 1 lalu bagi 2.', explain:'22 = V. Pesan cocok dengan kode Vira, tetapi pengirimnya belum tentu V.'},
       {prompt:'Enkripsi lain memakai f(g(x)). Jika hasilnya 31, berapa x semula?', formula:'f(g(x)) = 2x − 5', rule:'Jika hasilnya y, balikkan: x = (y + 5) ÷ 2.', example:'Contoh: hasil 15 memberi x = (15 + 5) ÷ 2 = 10.', answers:['18'], hint:'31 = 2x − 5. Tambah 5, lalu bagi 2.', explain:'x = 18. Jejak berikutnya mengarah ke akses internal.'},
@@ -58,7 +61,8 @@ export const levels = [
       {who:'npc',text:'Coba saja. Aku sudah mengunci setiap lapisan dengan urutan yang berbeda.'}
     ],
     story:'Arman memanipulasi sistem. Pintu terkunci dan bukti akan dihapus. Pecahkan tiga kode berlapis dalam 150 detik, ambil bukti, lalu keluar.',
-    goal:'Selesaikan tiga kode sebelum waktu habis. Pemindai aktif di dua titik.',
+    goal:'Cari bukti terakhir dan kembali ke pintu sebelum sistem menghapus semuanya.',
+    map:{npc:22,terminal:79,door:3,scanners:[40,65],caches:[{x:34,name:'Panel rusak'},{x:56,name:'Kontainer darurat'},{x:91,name:'Brankas cadangan'}],hidden:2,clue:'Catatan Arman: salinan terakhir disimpan paling jauh dari pintu darurat.'},
     puzzles:[
       {prompt:'Kode terenkripsi 42 berasal dari p(x) = 3x + 6. Berapa x?', formula:'p(x) = 3x + 6', rule:'Jika kode hasilnya y, angka awal x = (y − 6) ÷ 3.', example:'Contoh: kode 21 memberi x = (21 − 6) ÷ 3 = 5.', answers:['12'], hint:'Kurangi 6 dari 42, lalu bagi 3.', explain:'Kode lapisan pertama: 12.'},
       {prompt:'Kode 31 berasal dari q(x) = 2x − 5. Berapa x?', formula:'q(x) = 2x − 5', rule:'Jika kode hasilnya y, angka awal x = (y + 5) ÷ 2.', example:'Contoh: kode 15 memberi x = (15 + 5) ÷ 2 = 10.', answers:['18'], hint:'Tambah 5 pada 31, lalu bagi 2.', explain:'Kode lapisan kedua: 18.'},

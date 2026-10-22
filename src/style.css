@@ -12,6 +12,25 @@
 @media(max-width:600px){.site-header{gap:8px}.header-actions{gap:6px}.audio-button{padding:8px 9px;font-size:10px}.quiet-button{font-size:11px}.scene-ground,.scene-1 .scene-ground,.scene-2 .scene-ground,.scene-3 .scene-ground{height:78px}.player{bottom:73px}.player .sprite{width:62px;height:97px}.player>span{top:-11px}.landing-actor{bottom:74px}.result-actor .sprite{margin-bottom:38px}}
 @media(prefers-reduced-motion:reduce){.atmosphere i,.game-stats .urgent{animation:none}}
 
+/* Arena lebar: kamera mengikuti Raka, sementara setiap lokasi punya beberapa tempat pencarian. */
+.mission-note{display:flex;align-items:center;gap:14px;margin:-4px 0 14px;padding:12px 16px;background:#e5f2e9;border:1px solid #c9e3d3;border-radius:12px;color:#386e5e;font-size:12px;font-weight:800}
+.mission-note>span{flex:1;line-height:1.4}.mission-note small{color:#6a8a7c;white-space:nowrap;font-size:10px}
+.journey-meter{width:110px;height:8px;overflow:hidden;border-radius:20px;background:#c5dacd}.journey-meter i{display:block;height:100%;background:#4c9b79;border-radius:20px;transition:width .15s}
+.scene.scene-0,.scene.scene-1,.scene.scene-2,.scene.scene-3{background-image:none!important;background-color:#102632!important}
+.scene-world{position:absolute;top:0;bottom:0;width:220%;background-size:50% 100%;background-repeat:repeat-x;transition:left .1s linear}
+.scene-0 .scene-world{background-image:url('/scenes/room-0.svg')}.scene-1 .scene-world{background-image:url('/scenes/room-1.svg')}.scene-2 .scene-world{background-image:url('/scenes/room-2.svg')}.scene-3 .scene-world{background-image:url('/scenes/room-3.svg')}
+.scene-world .scene-backdrop{pointer-events:none}.scene-world .scene-ground{right:0}
+.world-sign{position:absolute;top:54px;transform:translateX(-50%);z-index:1;padding:7px 10px;display:flex;gap:7px;align-items:center;color:#a7dacd;border:1px solid #8ab9ae66;background:#0b2636c9;border-radius:5px;box-shadow:0 5px 12px #06192577;white-space:nowrap}
+.world-sign span{font:800 15px Outfit,Arial,sans-serif;color:#efc689}.world-sign small{font-size:8px;letter-spacing:1.7px;font-weight:800}
+.cache-object .object-icon{width:50px;height:43px;background:linear-gradient(145deg,#516467,#253b46);border:4px solid #94b9af;color:#cce7db;box-shadow:0 8px 0 #112c37,0 0 17px #75d7d034;font-size:23px}
+.cache-object.cache-1 .object-icon{background:linear-gradient(145deg,#6c6458,#363f44);border-color:#c0aa83}.cache-object.cache-2 .object-icon{background:linear-gradient(145deg,#4d6070,#1e3545);border-color:#9aaec2}
+.cache-object.taken{opacity:.48}.terminal-solved{opacity:.62}.scene-world .door-object{z-index:2}
+.scene-world .scene-npc,.scene-world .player{z-index:4}
+.game-toast{max-width:min(550px,90%);white-space:normal;text-align:center;line-height:1.4}
+@media(max-width:850px){.world-sign{top:43px}.mission-note{flex-wrap:wrap}.mission-note>span{flex-basis:100%}}
+@media(max-width:600px){.world-sign{top:35px;padding:5px}.world-sign small{display:none}.mission-note{padding:9px 11px;font-size:10px}.journey-meter{width:75px}.mission-note small{font-size:9px}.cache-object .object-icon{width:37px;height:32px;font-size:17px;border-width:3px}.cache-object>span:last-of-type{max-width:65px;text-align:center;line-height:1.1}}
+@media(prefers-reduced-motion:reduce){.scene-world{transition:none}}
+
 
 /* Pertemuan tokoh berlangsung di arena, dekat Agen R. */
 .scene-npc{position:absolute;bottom:105px;transform:translateX(-50%);z-index:4;display:grid;justify-items:center;min-width:100px;pointer-events:none;animation:npc-breathe 2.4s ease-in-out infinite}
