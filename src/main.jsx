@@ -5,6 +5,14 @@ import {createAudio} from './audio';
 import './style.css';
 
 const HERO_NAME = 'Raka';
+const PROGRESS_KEY = 'project-echo-progress-v1';
+function readProgress(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(PROGRESS_KEY)||'{}');
+    const completed=Array.isArray(saved.completed)?saved.completed.filter(value=>Number.isInteger(value)&&value>=0&&value<levels.length):[];
+    return {unlocked:Math.max(0,Math.min(levels.length-1,Number(saved.unlocked)||0)),completed:[...new Set(completed)]};
+  }catch{return {unlocked:0,completed:[]}}
+}
 
 function Sprite({id='r',walking=false,direction='right',className=''}){
   const [frame,setFrame]=useState(0);
@@ -23,7 +31,9 @@ function Sprite({id='r',walking=false,direction='right',className=''}){
 }
 
 function App(){
+  const [screen,setScreen]=useState('poster');
   const [started,setStarted]=useState(false);
+  const [progress,setProgress]=useState(readProgress);
   const [level,setLevel]=useState(0);
   const [x,setX]=useState(9);
   const [walking,setWalking]=useState(false);
@@ -38,7 +48,6 @@ function App(){
   const [showAnswer,setShowAnswer]=useState(false);
   const [health,setHealth]=useState(3);
   const [mistakes,setMistakes]=useState(0);
-  const [dossiers,setDossiers]=useState(0);
   const [collected,setCollected]=useState(false);
   const [levelClear,setLevelClear]=useState(false);
   const [ending,setEnding]=useState(null);
@@ -55,6 +64,7 @@ function App(){
   const interactRef=useRef(null);
   const audioRef=useRef(null);
   const lastStep=useRef(0);
+  const dossiers=progress.completed.length+(collected&&!progress.completed.includes(level)?1:0);
   const current=levels[level];
   const map=current.map;
   const solved=puzzleIndex>=current.puzzles.length;
@@ -62,6 +72,8 @@ function App(){
   const nearbyCache=map.caches.findIndex(cache=>Math.abs(x-cache.x)<3.2);
   const camera=Math.max(-120,Math.min(0,50-x*2.2));
   const talking=conversationStep!==null;
+  const speakerPosition=talking?(current.dialogue[conversationStep].who==='r'?x:map.npc):x;
+  const speakerOnScreen=Math.max(18,Math.min(82,camera+speakerPosition*2.2));
   const heroFacing=talking?(x<map.npc?'right':'left'):direction;
   const npcFacing=x<map.npc?'left':'right';
   const sound=kind=>{if(audioOn)audioRef.current?.effect(kind)};
@@ -81,15 +93,21 @@ function App(){
     }catch{setToast('Layar penuh tidak tersedia di browser ini. Tampilan game tetap mengikuti ukuran jendela.')}
   }
   useEffect(()=>()=>audioRef.current?.dispose(),[]);
+  useEffect(()=>{try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress))}catch{}},[progress]);
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),2200);return()=>clearTimeout(timer)},[toast]);
 
-  function reset(){
+  function startLevel(index){
+    if(index>progress.unlocked)return;
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
-    setStarted(true);setLevel(0);xRef.current=9;setX(9);setWalking(false);
+    setStarted(true);setScreen('game');setLevel(index);xRef.current=9;setX(9);setWalking(false);
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
-    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);setMistakes(0);
-    setDossiers(0);setCollected(false);setLevelClear(false);setEnding(null);
+    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
+    setCollected(false);setLevelClear(false);setEnding(null);
     setSeconds(150);setToast('');setHurt(false);keys.current={left:false,right:false};
+  }
+  function showLevelSelect(){
+    keys.current={left:false,right:false};setWalking(false);setStarted(false);setScreen('select');
+    setDialog(false);setConversationStep(null);setLevelClear(false);setEnding(null);setToast('');
   }
   function advanceConversation(){
     if(conversationStep===null)return;
@@ -98,12 +116,12 @@ function App(){
   }
   function interact(){
     if(talking){advanceConversation();return}
-    if(!started||dialog||levelClear||ending)return;
+    if(screen!=='game'||dialog||levelClear||ending)return;
     if(nearby('npc')&&(!conversationSeen||!nearby('terminal'))){sound('open');keys.current={left:false,right:false};setWalking(false);setConversationStep(0);return}
     if(nearby('terminal')&&!solved){sound('open');setDialog(true);setFeedback(null);setAnswer('');setShowAnswer(false);return}
     if(nearbyCache!==-1&&!collected){
       if(!solved){setToast('Tempat terkunci · pecahkan kode terminal dahulu');return}
-      if(nearbyCache===map.hidden){sound('pickup');setToast('Berkas tersembunyi berhasil ditemukan!');setCollected(true);setDossiers(n=>n+1)}
+      if(nearbyCache===map.hidden){sound('pickup');setToast('Berkas tersembunyi berhasil ditemukan!');setCollected(true)}
       else{sound('wrong');setToast('Tidak ada berkas di sini. Ikuti petunjuk misi di atas map.')}
       return;
     }
@@ -112,10 +130,10 @@ function App(){
   }
   interactRef.current=interact;
   useEffect(()=>{
-    if(started&&!conversationSeen&&!talking&&!dialog&&!levelClear&&!ending&&nearby('npc')){
+    if(screen==='game'&&!conversationSeen&&!talking&&!dialog&&!levelClear&&!ending&&nearby('npc')){
       keys.current={left:false,right:false};setWalking(false);setConversationStep(0);
     }
-  },[started,x,level,conversationSeen,talking,dialog,levelClear,ending]);
+  },[screen,x,level,conversationSeen,talking,dialog,levelClear,ending]);
   useEffect(()=>{
     function down(e){
       if(['ArrowLeft','ArrowRight','a','A','d','D','e','E'].includes(e.key) && e.target.tagName!=='INPUT')e.preventDefault();
@@ -130,7 +148,7 @@ function App(){
     return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur)};
   },[]);
   useEffect(()=>{
-    if(!started||dialog||talking||levelClear||ending)return;
+    if(screen!=='game'||dialog||talking||levelClear||ending)return;
     const loop=setInterval(()=>{
       const active=level>0 && Math.floor(Date.now()/1450)%2===0;
       setScannerOn(active);
@@ -151,14 +169,14 @@ function App(){
       xRef.current=next;setX(next);
     },40);
     return()=>clearInterval(loop);
-  },[started,level,dialog,talking,levelClear,ending,audioOn]);
-  useEffect(()=>{if(started&&health===0&&!ending)setEnding('bad')},[started,health,ending]);
+  },[screen,level,dialog,talking,levelClear,ending,audioOn]);
+  useEffect(()=>{if(screen==='game'&&health===0&&!ending){setEnding('bad');setScreen('ending')}},[screen,health,ending]);
   useEffect(()=>{
-    if(!started||level!==3||talking||levelClear||ending)return;
+    if(screen!=='game'||level!==3||talking||levelClear||ending)return;
     const timer=setInterval(()=>setSeconds(v=>Math.max(0,v-1)),1000);
     return()=>clearInterval(timer);
-  },[started,level,talking,levelClear,ending]);
-  useEffect(()=>{if(started&&level===3&&seconds===0&&!ending)setEnding('bad')},[started,level,seconds,ending]);
+  },[screen,level,talking,levelClear,ending]);
+  useEffect(()=>{if(screen==='game'&&level===3&&seconds===0&&!ending){setEnding('bad');setScreen('ending')}},[screen,level,seconds,ending]);
 
   function submit(e){
     e.preventDefault();
@@ -177,10 +195,12 @@ function App(){
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
   }
   function nextLevel(){
-    if(level===3){setEnding(getEnding({dossiers,mistakes,escaped:true}));return}
-    setLevel(v=>v+1);xRef.current=9;setX(9);setWalking(false);
-    setPuzzleIndex(0);setCollected(false);setLevelClear(false);setDialog(false);setConversationStep(null);setConversationSeen(false);
-    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);setSeconds(150);setToast('Jelajahi area · terminal dan berkas berada di tempat berbeda');
+    setProgress(p=>({
+      unlocked:level===3?p.unlocked:Math.max(p.unlocked,level+1),
+      completed:p.completed.includes(level)?p.completed:[...p.completed,level]
+    }));
+    if(level===3){setEnding(getEnding({dossiers,mistakes,escaped:true}));setScreen('ending');return}
+    showLevelSelect();
   }
   const marker=nearby('npc')&&!conversationSeen?'npc':nearby('terminal')&&!solved?'terminal':nearbyCache!==-1&&!collected?'cache':nearby('npc')?'npc':nearby('door')?'door':null;
   const actionLabel=talking?'Lanjutkan percakapan':{npc:conversationSeen?'Bicara lagi':'Bicara dengan tokoh',terminal:'Buka terminal',cache:`Periksa ${map.caches[nearbyCache]?.name||'tempat'}`,door:collected?'Buka pintu':'Periksa pintu'}[marker];
@@ -189,13 +209,13 @@ function App(){
     neutral:{eyebrow:'NEUTRAL ENDING',title:'Raka berhasil lolos.',description:'Bukti terkirim, tetapi terlalu banyak kesalahan membuat beberapa data rusak. Kasus masih terbuka.'},
     bad:{eyebrow:'BAD ENDING',title:'Transmisi terputus.',description:'Sistem mengunci akses sebelum misi selesai. Ulangi operasi, gunakan petunjuk, dan amati pemindai.'}
   };
-  return <div className={`app ${started&&!ending?'playing':''}`} style={{'--level-color':current.color}}>
+  return <div className={`app screen-${screen} ${screen==='game'?'playing':''}`} style={{'--level-color':current.color}}>
     <header className="site-header"><div className="brand"><span className="brand-icon">E</span><span>PROJECT <b>ECHO</b></span></div><div className="header-actions"><button className="audio-button" onClick={toggleAudio} aria-pressed={audioOn}>{audioOn?'♫ Suara nyala':'♫ Suara mati'}</button><button className="audio-button fullscreen-button" onClick={toggleFullScreen} aria-pressed={fullScreen}>{fullScreen?'⤢ Keluar layar penuh':'⛶ Layar penuh'}</button><button className="quiet-button" onClick={()=>setHelp(v=>!v)}>Cara main <span>?</span></button></div></header>
     <main className="shell">
-      {!started ? <section className="landing"><div className="landing-copy"><p className="kicker">OPERASI 047 · MISI INTERAKTIF</p><h1>Jejak terakhir<br/><em>Agen Vira.</em></h1><p>Raka harus menjelajahi empat lokasi, memecahkan kode matematika, dan membawa bukti keluar sebelum sistem menghapusnya.</p><div className="landing-actions"><button className="main-button" onClick={reset}>Mulai bermain <span>→</span></button><span>Berjalan · pecahkan kode · cari jalan keluar</span></div><div className="landing-chips"><span>4 level</span><span>12 teka-teki</span><span>3 akhir cerita</span></div></div><div className="landing-visual"><div className="visual-glow"/><div className="visual-floor"/><Sprite id="r" walking className="landing-actor"/><div className="visual-caption"><small>FILE 047</small><strong>RAKA · AGEN R</strong><span>Investigasi dimulai di sini</span></div></div></section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking={ending!=='bad'}/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mistakes}</span></div><button className="main-button" onClick={reset}>Main lagi →</button></div></section> : <>
-        <div className="game-top"><div><p className="kicker">LEVEL {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</p><h1>{current.name}</h1><p>{current.goal}</p></div><div className="game-stats"><span>♥ {health}/3</span><span>▣ {dossiers}/4 berkas</span>{level===3&&<strong className={seconds<35?'urgent':''}>⏱ {seconds}s</strong>}</div></div>
+      {screen==='poster' ? <section className="poster-screen" aria-label="Poster Project Echo"><div className="poster-art"><img className="poster-vira" src="/sprites/v-idle.png" alt="Vira"/><img className="poster-raka" src="/sprites/r-idle.png" alt="Raka"/><span className="poster-art-label">OPERASI 047 · BERKAS RAHASIA</span></div><div className="poster-copy"><p className="poster-kicker">PETUALANGAN MISTERI MATEMATIKA</p><h1>PROJECT<br/><em>ECHO</em></h1><p className="poster-line">Vira menemukan kebocoran data. Lalu ia menghilang dan meninggalkan jejak berkode untuk Raka.</p><div className="poster-divider"/><p className="poster-small">Empat lokasi. Dua belas kode. Satu kebenaran.</p><button className="poster-start" onClick={()=>setScreen('select')}>MULAI MISI <span>→</span></button><small>Gunakan tombol panah untuk bergerak · E untuk berinteraksi</small></div></section> : screen==='select' ? <section className="level-select" aria-label="Pilih level"><div className="level-select-heading"><button className="menu-back" onClick={()=>setScreen('poster')}>← Poster</button><p>ARSIP OPERASI 047</p><h1>Pilih level</h1><span>Lokasi berikutnya terbuka setelah berkas di lokasi sebelumnya diamankan.</span></div><div className="level-cards">{levels.map((item,index)=>{const locked=index>progress.unlocked;const done=progress.completed.includes(index);return <button key={item.name} className={`level-card ${locked?'locked':''} ${done?'complete':''}`} onClick={()=>startLevel(index)} disabled={locked}><div className="level-card-art" style={{backgroundImage:`url('/scenes/room-${index}.svg')`}}/><div className="level-card-content"><span className="level-number">{String(index+1).padStart(2,'0')}</span><div><small>{item.chapter}</small><strong>{item.name}</strong><em>{item.location}</em></div><b>{locked?'🔒 TERKUNCI':done?'✓ SELESAI':'▶ MAIN'}</b></div></button>})}</div><p className="level-select-foot">BERKAS TERKUMPUL {dossiers}/4 · LEVEL TERBUKA {progress.unlocked+1}/4</p></section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking={ending!=='bad'}/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mistakes}</span></div><button className="main-button" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih level →</button></div></section> : <>
+        <section className="game-frame" aria-label="Bingkai permainan Project Echo">
+        <div className="game-top"><div className="hud-title"><p className="kicker">PROJECT ECHO · LEVEL {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</p><h1>{current.name}</h1><p>{current.goal}</p></div><div className="hud-right"><div className="game-stats"><div className="life-frame" aria-label={`Nyawa ${health} dari 3`}><small>NYAWA</small><strong>{[0,1,2].map(i=><i key={i} className={i<health?'alive':'lost'}>♥</i>)}</strong></div><div className="file-frame"><small>BERKAS</small><strong>▣ {dossiers}/4</strong></div>{level===3&&<div className={`timer-frame ${seconds<35?'urgent':''}`}><small>WAKTU</small><strong>⏱ {seconds}s</strong></div>}</div><div className="game-menu"><button onClick={showLevelSelect}>▦ Pilih level</button><button onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'♫':'♪'}</button><button onClick={toggleFullScreen} aria-label={fullScreen?'Keluar layar penuh':'Layar penuh'}>{fullScreen?'⤢':'⛶'}</button><button onClick={()=>setHelp(v=>!v)} aria-label="Cara main">?</button></div></div></div>
         <div className="mission-note"><span>{!solved?'MISI · Cari terminal di area ini dan pecahkan tiga kode.':collected?'MISI · Berkas aman. Kembali ke pintu keluar di awal area.':`PETUNJUK BERKAS · ${map.clue}`}</span><div className="journey-meter"><i style={{width:`${x}%`}}/></div><small>{Math.round(x)}% area dijelajahi</small></div>
-        <div className="level-track" aria-label="Kemajuan level">{levels.map((item,i)=><div key={item.name} className={i===level?'selected':i<level?'done':''}><span>{i<level?'✓':i+1}</span><small>{item.name}</small></div>)}</div>
         <section className={`scene scene-${level} ${hurt?'hurt':''}`} aria-label={`Area permainan ${current.location}`}>
           <div className="scene-world" style={{left:`${camera}%`}}>
             <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
@@ -209,14 +229,15 @@ function App(){
             {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}}><span>PEMINDAI</span></div>)}
             <div className="player" style={{left:`${x}%`}}><span>{HERO_NAME.toUpperCase()}</span><Sprite id="r" walking={walking} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
-          {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
+          {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>
         <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><span>Gunakan ← → atau A D untuk berjalan</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
-        {levelClear&&<div className="modal-backdrop"><section className="clear-card" role="dialog" aria-modal="true" aria-label="Level selesai"><p className="kicker">LEVEL {level+1} SELESAI</p><h2>Berkas diamankan.</h2><p>Kode terpecahkan dan jalur keluar terbuka. {level===3?'Saatnya mengirim bukti.':'Lanjutkan penyelidikan ke lokasi berikutnya.'}</p><button className="main-button" onClick={nextLevel}>{level===3?'Lihat akhir cerita':'Level berikutnya'} →</button></section></div>}
+        </section>
+        {levelClear&&<div className="modal-backdrop"><section className="clear-card" role="dialog" aria-modal="true" aria-label="Level selesai"><p className="kicker">LEVEL {level+1} SELESAI</p><h2>Berkas diamankan.</h2><p>Kode terpecahkan dan jalur keluar terbuka. {level===3?'Saatnya mengirim bukti.':'Level berikutnya kini terbuka di layar pilih level.'}</p><button className="main-button" onClick={nextLevel}>{level===3?'Lihat akhir cerita':'Pilih level berikutnya'} →</button></section></div>}
         {dialog&&puzzleIndex<3&&<div className="modal-backdrop"><section className="puzzle-card" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span>TERMINAL / {puzzleIndex+1} DARI 3</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('');setShowAnswer(false)}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">{current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}{showAnswer&&<p className="answer-reveal" role="status"><strong>Jawaban: {current.puzzles[puzzleIndex].answers[0]}</strong><span>Ketik jawaban ini di kotak atas untuk lanjut.</span></p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button><button className="text-button" onClick={()=>setShowAnswer(v=>!v)}>{showAnswer?'Sembunyikan':'Lihat'} jawaban</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Cari berkas dari petunjuk':'Soal berikutnya'} →</button>}</div></div></section></div>}
       </>}
-      {help&&<div className="help-overlay"><section className="help-card"><button className="close-help" onClick={()=>setHelp(false)} aria-label="Tutup panduan">×</button><p className="kicker">PANDUAN AGEN</p><h2>Cara bermain</h2><ol><li>Berjalan dengan tombol <b>← →</b> atau <b>A D</b>. Di ponsel, tahan tombol panah di bawah arena. Kamera akan mengikuti Raka.</li><li>Jelajahi area untuk menemukan tokoh dan <b>terminal</b>. Dekati objek, lalu tekan <b>E</b> atau tombol interaksi.</li><li>Gunakan <b>rumus dan contoh</b> untuk mengerjakan tiga teka-teki. Tombol <b>Lihat jawaban</b> tersedia jika perlu.</li><li>Sesudah kode terpecahkan, baca petunjuk di atas map. Periksa salah satu dari <b>tiga tempat penyimpanan</b> untuk menemukan berkas tersembunyi.</li><li>Kembali ke <b>pintu keluar</b> di dekat awal area. Pemindai merah harus dilewati saat padam.</li></ol><p>Jawaban salah atau terkena pemindai mengurangi nyawa. Level terakhir memiliki batas 150 detik.</p><button className="main-button" onClick={()=>setHelp(false)}>Mengerti →</button></section></div>}
+      {help&&<div className="help-overlay"><section className="help-card"><button className="close-help" onClick={()=>setHelp(false)} aria-label="Tutup panduan">×</button><p className="kicker">PANDUAN AGEN</p><h2>Cara bermain</h2><ol><li>Dari poster, pilih <b>Mulai Misi</b>, lalu pilih level yang sudah terbuka.</li><li>Berjalan dengan tombol <b>← →</b> atau <b>A D</b>. Di ponsel, tahan tombol panah di bawah arena. Kamera akan mengikuti Raka.</li><li>Jelajahi area untuk menemukan tokoh dan <b>terminal</b>. Dekati objek, lalu tekan <b>E</b> atau tombol interaksi.</li><li>Gunakan <b>rumus dan contoh</b> untuk mengerjakan tiga teka-teki. Tombol <b>Lihat jawaban</b> tersedia jika perlu.</li><li>Sesudah kode terpecahkan, baca petunjuk di dalam bingkai game. Periksa salah satu dari <b>tiga tempat penyimpanan</b> untuk menemukan berkas tersembunyi.</li><li>Kembali ke <b>pintu keluar</b> di dekat awal area. Pemindai merah harus dilewati saat padam.</li></ol><p>Jawaban salah atau terkena pemindai mengurangi nyawa. Level terakhir memiliki batas 150 detik.</p><button className="main-button" onClick={()=>setHelp(false)}>Mengerti →</button></section></div>}
     </main><footer>PROJECT ECHO <span>MATEMATIKA · MISTERI · PETUALANGAN</span></footer>
   </div>
 }

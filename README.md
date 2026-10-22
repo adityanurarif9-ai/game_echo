@@ -1,6 +1,6 @@
 # Project Echo — The Last Transmission
 
-Game React dengan animasi berjalan, empat latar lokasi, musik dan efek suara, empat level, serta 12 teka-teki matematika berdasarkan dokumen **Alur Game** dan lima gambar karakter dari folder tugas.
+Game React dengan layar poster, pemilihan level, animasi berjalan, empat latar lokasi, musik dan efek suara, serta 12 teka-teki matematika berdasarkan dokumen **Alur Game** dan lima gambar karakter dari folder tugas.
 
 ## Ringkasan cerita
 
@@ -20,6 +20,8 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 
 ## Cara bermain
 
+- Pada poster, tekan **Mulai Misi** untuk membuka layar pemilihan level. Level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama.
+- Pilih kartu level untuk masuk ke arena. Nyawa, berkas, waktu, dan tombol pengaturan berada di bingkai game.
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
 - Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
 - Setiap area lebih panjang dan kamera mengikuti Raka. Jelajahi area untuk menemukan terminal; pintu keluar berada dekat awal sehingga kamu perlu kembali ke sana.
