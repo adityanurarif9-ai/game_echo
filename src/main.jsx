@@ -46,6 +46,7 @@ function App(){
   const [scannerOn,setScannerOn]=useState(false);
   const [help,setHelp]=useState(false);
   const [audioOn,setAudioOn]=useState(true);
+  const [fullScreen,setFullScreen]=useState(false);
   const [toast,setToast]=useState('');
   const [hurt,setHurt]=useState(false);
   const keys=useRef({left:false,right:false});
@@ -67,6 +68,17 @@ function App(){
   function toggleAudio(){
     if(audioOn){audioRef.current?.stop();setAudioOn(false)}
     else{if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start();setAudioOn(true)}
+  }
+  useEffect(()=>{
+    const sync=()=>setFullScreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange',sync);
+    return()=>document.removeEventListener('fullscreenchange',sync);
+  },[]);
+  async function toggleFullScreen(){
+    try{
+      if(document.fullscreenElement)await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    }catch{setToast('Layar penuh tidak tersedia di browser ini. Tampilan game tetap mengikuti ukuran jendela.')}
   }
   useEffect(()=>()=>audioRef.current?.dispose(),[]);
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),2200);return()=>clearTimeout(timer)},[toast]);
@@ -177,8 +189,8 @@ function App(){
     neutral:{eyebrow:'NEUTRAL ENDING',title:'Raka berhasil lolos.',description:'Bukti terkirim, tetapi terlalu banyak kesalahan membuat beberapa data rusak. Kasus masih terbuka.'},
     bad:{eyebrow:'BAD ENDING',title:'Transmisi terputus.',description:'Sistem mengunci akses sebelum misi selesai. Ulangi operasi, gunakan petunjuk, dan amati pemindai.'}
   };
-  return <div className="app" style={{'--level-color':current.color}}>
-    <header className="site-header"><div className="brand"><span className="brand-icon">E</span><span>PROJECT <b>ECHO</b></span></div><div className="header-actions"><button className="audio-button" onClick={toggleAudio} aria-pressed={audioOn}>{audioOn?'♫ Suara nyala':'♫ Suara mati'}</button><button className="quiet-button" onClick={()=>setHelp(v=>!v)}>Cara main <span>?</span></button></div></header>
+  return <div className={`app ${started&&!ending?'playing':''}`} style={{'--level-color':current.color}}>
+    <header className="site-header"><div className="brand"><span className="brand-icon">E</span><span>PROJECT <b>ECHO</b></span></div><div className="header-actions"><button className="audio-button" onClick={toggleAudio} aria-pressed={audioOn}>{audioOn?'♫ Suara nyala':'♫ Suara mati'}</button><button className="audio-button fullscreen-button" onClick={toggleFullScreen} aria-pressed={fullScreen}>{fullScreen?'⤢ Keluar layar penuh':'⛶ Layar penuh'}</button><button className="quiet-button" onClick={()=>setHelp(v=>!v)}>Cara main <span>?</span></button></div></header>
     <main className="shell">
       {!started ? <section className="landing"><div className="landing-copy"><p className="kicker">OPERASI 047 · MISI INTERAKTIF</p><h1>Jejak terakhir<br/><em>Agen Vira.</em></h1><p>Raka harus menjelajahi empat lokasi, memecahkan kode matematika, dan membawa bukti keluar sebelum sistem menghapusnya.</p><div className="landing-actions"><button className="main-button" onClick={reset}>Mulai bermain <span>→</span></button><span>Berjalan · pecahkan kode · cari jalan keluar</span></div><div className="landing-chips"><span>4 level</span><span>12 teka-teki</span><span>3 akhir cerita</span></div></div><div className="landing-visual"><div className="visual-glow"/><div className="visual-floor"/><Sprite id="r" walking className="landing-actor"/><div className="visual-caption"><small>FILE 047</small><strong>RAKA · AGEN R</strong><span>Investigasi dimulai di sini</span></div></div></section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking={ending!=='bad'}/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mistakes}</span></div><button className="main-button" onClick={reset}>Main lagi →</button></div></section> : <>
         <div className="game-top"><div><p className="kicker">LEVEL {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</p><h1>{current.name}</h1><p>{current.goal}</p></div><div className="game-stats"><span>♥ {health}/3</span><span>▣ {dossiers}/4 berkas</span>{level===3&&<strong className={seconds<35?'urgent':''}>⏱ {seconds}s</strong>}</div></div>

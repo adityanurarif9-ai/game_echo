@@ -28,6 +28,7 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
 - Level terakhir dibatasi 150 detik. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
 - Musik dan efek suara dimulai setelah menekan **Mulai bermain**. Tombol **Suara nyala/mati** di bagian atas mematikan atau menghidupkan semuanya. Tidak perlu mengunduh file musik; suaranya dibuat langsung di browser.
+- Saat bermain di desktop, arena otomatis mengisi lebar dan tinggi jendela. Tombol **Layar penuh** di bagian atas menyembunyikan bilah browser; tekan lagi atau **Esc** untuk keluar. Browser hanya mengizinkan layar penuh setelah tombol ditekan.
 - Tombol **Cara main** berisi panduan singkat dalam game.
 
 ## Belajar mengubah game sendiri
