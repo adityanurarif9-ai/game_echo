@@ -61,3 +61,7 @@
 @media(max-width:850px){.scene-npc{bottom:85px}.scene-npc .sprite{width:80px;height:125px}.encounter-bubble{width:60%;left:13%}}
 @media(max-width:600px){.scene-npc{bottom:73px;min-width:64px}.scene-npc .sprite{width:62px;height:97px}.scene-npc>span{font-size:8px;top:-11px}.scene-npc>b{font-size:8px}.encounter-bubble,.encounter-bubble.from-r{top:17px;left:5%;right:5%;width:90%;padding:11px 13px}.encounter-bubble p{font-size:12px;margin:6px 0 8px}.encounter-heading{font-size:8px}.encounter-heading strong{font-size:10px}.encounter-bubble button{font-size:10px;padding:6px 10px}.formula-guide{padding:11px}.formula-guide strong{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.scene-npc{animation:none}.sprite{transition:none}}
+
+/* Hindari interpolasi posisi kamera dan bayangan lembut pada gambar karakter. */
+.scene-world{transition:none}
+.player .sprite{filter:drop-shadow(0 3px 0 #06182188)}

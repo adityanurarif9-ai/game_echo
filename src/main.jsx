@@ -9,6 +9,12 @@ const HERO_NAME = 'Raka';
 function Sprite({id='r',walking=false,direction='right',className=''}){
   const [frame,setFrame]=useState(0);
   useEffect(()=>{
+    for(let index=0;index<5;index++){
+      const preload=new Image();
+      preload.src=`/sprites/${id}-walk-${index}.png`;
+    }
+  },[id]);
+  useEffect(()=>{
     if(!walking){setFrame(0);return}
     const clock=setInterval(()=>setFrame(v=>(v+1)%5),125);
     return()=>clearInterval(clock);

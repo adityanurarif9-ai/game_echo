@@ -42,6 +42,7 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 - `public/sprites/`: bingkai transparan yang dibuat dari lembar pose untuk animasi. File bernama `r-walk-0.png` sampai `r-walk-4.png` dipakai bergantian ketika pemain bergerak.
 - `scripts/make_backgrounds.py`: membuat ulang empat latar SVG.
 - `scripts/make_sprites.py`: membuat ulang bingkai animasi dari lima gambar asli dan menyamakan posisi kaki semua pose. Membutuhkan Python dan Pillow bila dijalankan sendiri; gambar hasilnya sudah disertakan, jadi tidak perlu menjalankan skrip ini untuk bermain.
+- `scripts/sharpen_sprites.ps1`: memperjelas tepi semua bingkai hasil ekstraksi di Windows. Jika membuat ulang sprite dengan `make_sprites.py`, jalankan `powershell -File scripts/sharpen_sprites.ps1` sekali sesudahnya.
 
 Latihan pertama yang mudah: ganti dialog level pertama di `src/game.js`, simpan dengan **Ctrl+S**, lalu lihat perubahan di browser. Jika ingin mengubah jawaban, ubah juga `answers` pada soal yang sama.
 
