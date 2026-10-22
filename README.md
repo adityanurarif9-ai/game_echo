@@ -6,7 +6,7 @@ Game React dengan animasi berjalan, empat latar lokasi, musik dan efek suara, em
 
 Node.js dan Visual Studio Code sudah terpasang. React sudah terpasang di folder proyek ini.
 
-1. Buka folder `project-echo` di Visual Studio Code.
+1. Buka folder `D:\Project-Echo` di Visual Studio Code.
 2. Pilih **Terminal → New Terminal**.
 3. Ketik `npm.cmd run dev` lalu Enter.
 4. Buka alamat **Local** yang muncul di terminal, biasanya `http://127.0.0.1:5173/`.
