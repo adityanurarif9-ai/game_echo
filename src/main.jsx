@@ -30,6 +30,7 @@ function App(){
   const [answer,setAnswer]=useState('');
   const [feedback,setFeedback]=useState(null);
   const [hint,setHint]=useState(false);
+  const [showAnswer,setShowAnswer]=useState(false);
   const [health,setHealth]=useState(3);
   const [mistakes,setMistakes]=useState(0);
   const [dossiers,setDossiers]=useState(0);
@@ -52,8 +53,6 @@ function App(){
   const solved=puzzleIndex>=current.puzzles.length;
   const nearby=(node)=>Math.abs(x-NODES[node])<(node==='npc'?6:7);
   const talking=conversationStep!==null;
-  const heroSpeaking=talking&&current.dialogue[conversationStep].who==='r';
-  const npcSpeaking=talking&&!heroSpeaking;
   const heroFacing=talking?(x<NODES.npc?'right':'left'):direction;
   const npcFacing=x<NODES.npc?'left':'right';
   const sound=kind=>{if(audioOn)audioRef.current?.effect(kind)};
@@ -68,7 +67,7 @@ function App(){
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
     setStarted(true);setLevel(0);xRef.current=9;setX(9);setWalking(false);
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
-    setFeedback(null);setHint(false);setHealth(3);setMistakes(0);
+    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);setMistakes(0);
     setDossiers(0);setCollected(false);setLevelClear(false);setEnding(null);
     setSeconds(150);setToast('');setHurt(false);keys.current={left:false,right:false};
   }
@@ -81,7 +80,7 @@ function App(){
     if(talking){advanceConversation();return}
     if(!started||dialog||levelClear||ending)return;
     if(nearby('npc')&&(!conversationSeen||!nearby('terminal'))){sound('open');keys.current={left:false,right:false};setWalking(false);setConversationStep(0);return}
-    if(nearby('terminal')&&!solved){sound('open');setDialog(true);setFeedback(null);setAnswer('');return}
+    if(nearby('terminal')&&!solved){sound('open');setDialog(true);setFeedback(null);setAnswer('');setShowAnswer(false);return}
     if(nearby('dossier')&&solved&&!collected){sound('pickup');setToast('Berkas berhasil diamankan');setCollected(true);setDossiers(n=>n+1);return}
     if(nearby('door')&&collected){sound('clear');keys.current={left:false,right:false};setWalking(false);setLevelClear(true)}
   }
@@ -149,13 +148,13 @@ function App(){
   function nextPuzzle(){
     if(puzzleIndex===2){setPuzzleIndex(3);setDialog(false)}
     else setPuzzleIndex(v=>v+1);
-    setAnswer('');setFeedback(null);setHint(false);
+    setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
   }
   function nextLevel(){
     if(level===3){setEnding(getEnding({dossiers,mistakes,escaped:true}));return}
     setLevel(v=>v+1);xRef.current=9;setX(9);setWalking(false);
     setPuzzleIndex(0);setCollected(false);setLevelClear(false);setDialog(false);setConversationStep(null);setConversationSeen(false);
-    setFeedback(null);setHint(false);setHealth(3);setSeconds(150);setToast('Level baru · cari terminal');
+    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);setSeconds(150);setToast('Level baru · cari terminal');
   }
   const marker=nearby('npc')&&!conversationSeen?'npc':nearby('terminal')&&!solved?'terminal':nearby('npc')?'npc':nearby('dossier')&&solved&&!collected?'dossier':nearby('door')&&collected?'door':null;
   const actionLabel=talking?'Lanjutkan percakapan':{npc:conversationSeen?'Bicara lagi':'Bicara dengan tokoh',terminal:'Buka terminal',dossier:'Ambil berkas',door:'Buka pintu'}[marker];
@@ -174,20 +173,20 @@ function App(){
           <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
           <div className="atmosphere"><i/><i/><i/><i/><i/></div>
           <div className="scene-ground"/>
-          <div className={`scene-npc ${level===1?'hologram':''} ${npcSpeaking?'speaking':''}`} style={{left:`${NODES.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} walking={npcSpeaking} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
+          <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${NODES.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
           <div className="object terminal-object" style={{left:`${NODES.terminal}%`}}><span className="object-icon">⌘</span><span>TERMINAL</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
           <div className={`object dossier-object ${solved?'ready':''} ${collected?'taken':''}`} style={{left:`${NODES.dossier}%`}}><span className="object-icon">▣</span><span>{collected?'DIAMBIL':'BUKTI'}</span>{solved&&!collected&&nearby('dossier')&&<i>TEKAN E</i>}</div>
           <div className={`object door-object ${collected?'ready':''}`} style={{left:`${NODES.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{collected&&nearby('door')&&<i>TEKAN E</i>}</div>
           {(level>1?[44,73]:level===1?[72]:[]).map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}}><span>PEMINDAI</span></div>)}
-          <div className={`player ${heroSpeaking?'speaking':''}`} style={{left:`${x}%`}}><span>{HERO_NAME.toUpperCase()}</span><Sprite id="r" walking={walking||heroSpeaking} direction={heroFacing}/><i className="foot-shadow"/></div>
+          <div className="player" style={{left:`${x}%`}}><span>{HERO_NAME.toUpperCase()}</span><Sprite id="r" walking={walking} direction={heroFacing}/><i className="foot-shadow"/></div>
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>
         <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><span>Gunakan ← → atau A D untuk berjalan</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
         {levelClear&&<div className="modal-backdrop"><section className="clear-card" role="dialog" aria-modal="true" aria-label="Level selesai"><p className="kicker">LEVEL {level+1} SELESAI</p><h2>Berkas diamankan.</h2><p>Kode terpecahkan dan jalur keluar terbuka. {level===3?'Saatnya mengirim bukti.':'Lanjutkan penyelidikan ke lokasi berikutnya.'}</p><button className="main-button" onClick={nextLevel}>{level===3?'Lihat akhir cerita':'Level berikutnya'} →</button></section></div>}
-        {dialog&&puzzleIndex<3&&<div className="modal-backdrop"><section className="puzzle-card" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span>TERMINAL / {puzzleIndex+1} DARI 3</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('')}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">{current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}<div className="puzzle-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Ambil berkas di ruangan':'Soal berikutnya'} →</button>}</div></div></section></div>}
+        {dialog&&puzzleIndex<3&&<div className="modal-backdrop"><section className="puzzle-card" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span>TERMINAL / {puzzleIndex+1} DARI 3</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('');setShowAnswer(false)}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">{current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}{showAnswer&&<p className="answer-reveal" role="status"><strong>Jawaban: {current.puzzles[puzzleIndex].answers[0]}</strong><span>Ketik jawaban ini di kotak atas untuk lanjut.</span></p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button><button className="text-button" onClick={()=>setShowAnswer(v=>!v)}>{showAnswer?'Sembunyikan':'Lihat'} jawaban</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Ambil berkas di ruangan':'Soal berikutnya'} →</button>}</div></div></section></div>}
       </>}
-      {help&&<div className="help-overlay"><section className="help-card"><button className="close-help" onClick={()=>setHelp(false)} aria-label="Tutup panduan">×</button><p className="kicker">PANDUAN AGEN</p><h2>Cara bermain</h2><ol><li>Berjalan dengan tombol <b>← →</b> atau <b>A D</b>. Di ponsel, tahan tombol panah di bawah arena.</li><li>Temui tokoh di ruangan dan baca percakapannya. Setelah itu, dekati <b>terminal</b>, lalu tekan <b>E</b> atau tombol interaksi.</li><li>Gunakan kotak <b>rumus dan contoh</b> untuk mengerjakan tiga teka-teki. Jawabannya tetap kamu ketik sendiri.</li><li>Ambil <b>berkas</b>, kemudian berjalan ke <b>pintu keluar</b>.</li><li>Pemindai merah menyala bergantian. Tunggu saat padam untuk lewat. Salah menjawab atau terkena pemindai mengurangi nyawa.</li></ol><p>Setiap level memulihkan nyawa. Level terakhir memiliki batas 150 detik. Petunjuk boleh dibuka kapan saja.</p><button className="main-button" onClick={()=>setHelp(false)}>Mengerti →</button></section></div>}
+      {help&&<div className="help-overlay"><section className="help-card"><button className="close-help" onClick={()=>setHelp(false)} aria-label="Tutup panduan">×</button><p className="kicker">PANDUAN AGEN</p><h2>Cara bermain</h2><ol><li>Berjalan dengan tombol <b>← →</b> atau <b>A D</b>. Di ponsel, tahan tombol panah di bawah arena.</li><li>Temui tokoh di ruangan dan baca percakapannya. Setelah itu, dekati <b>terminal</b>, lalu tekan <b>E</b> atau tombol interaksi.</li><li>Gunakan kotak <b>rumus dan contoh</b> untuk mengerjakan tiga teka-teki. Kalau bingung, tekan <b>Lihat jawaban</b> di bawah soal.</li><li>Ambil <b>berkas</b>, kemudian berjalan ke <b>pintu keluar</b>.</li><li>Pemindai merah menyala bergantian. Tunggu saat padam untuk lewat. Salah menjawab atau terkena pemindai mengurangi nyawa.</li></ol><p>Setiap level memulihkan nyawa. Level terakhir memiliki batas 150 detik. Petunjuk boleh dibuka kapan saja.</p><button className="main-button" onClick={()=>setHelp(false)}>Mengerti →</button></section></div>}
     </main><footer>PROJECT ECHO <span>MATEMATIKA · MISTERI · PETUALANGAN</span></footer>
   </div>
 }
