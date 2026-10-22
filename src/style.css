@@ -11,3 +11,30 @@
 @media(max-width:850px){.scene-ground,.scene-1 .scene-ground,.scene-2 .scene-ground,.scene-3 .scene-ground{height:90px}.player{bottom:85px}.player .sprite{width:80px;height:125px}.landing-actor{bottom:75px}.result-actor .sprite{margin-bottom:42px}}
 @media(max-width:600px){.site-header{gap:8px}.header-actions{gap:6px}.audio-button{padding:8px 9px;font-size:10px}.quiet-button{font-size:11px}.scene-ground,.scene-1 .scene-ground,.scene-2 .scene-ground,.scene-3 .scene-ground{height:78px}.player{bottom:73px}.player .sprite{width:62px;height:97px}.player>span{top:-11px}.landing-actor{bottom:74px}.result-actor .sprite{margin-bottom:38px}}
 @media(prefers-reduced-motion:reduce){.atmosphere i,.game-stats .urgent{animation:none}}
+
+
+/* Pertemuan tokoh berlangsung di arena, dekat Agen R. */
+.scene-npc{position:absolute;bottom:105px;transform:translateX(-50%);z-index:4;display:grid;justify-items:center;min-width:100px;pointer-events:none}
+.scene-npc .sprite{width:98px;height:153px;filter:drop-shadow(0 6px 5px #061821aa);animation:npc-breathe 2.4s ease-in-out infinite}
+.scene-npc>span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:2;background:#173d4bcc;border:1px solid #a4ded077;color:#f2fff4;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800;white-space:nowrap}
+.scene-npc.hologram .sprite{opacity:.8;filter:drop-shadow(0 0 12px #83e5e1)}
+.scene-npc>b{position:absolute;bottom:100%;margin-bottom:30px;z-index:3;background:#eef9e8;color:#255d4c;border-radius:6px;padding:5px 7px;font-size:9px;white-space:nowrap}
+.scene-npc .foot-shadow{bottom:-6px}
+@keyframes npc-breathe{50%{transform:translateY(-3px)}}
+.encounter-bubble{position:absolute;z-index:10;top:14px;left:13%;width:min(560px,55%);background:#f7fff2f2;border:2px solid #9fd1b2;border-radius:18px;padding:10px 14px;box-shadow:0 13px 35px #071925bb;color:#294b45;animation:bubble-appear .18s ease-out}
+.encounter-bubble.from-r{left:5%;right:auto;background:#e7f5f9f2;border-color:#8fc8d4}
+.encounter-bubble:after{content:'';position:absolute;bottom:-14px;left:6%;border-width:14px 12px 0;border-style:solid;border-color:#f7fff2f2 transparent transparent}
+.encounter-bubble.from-r:after{left:4%;right:auto;border-top-color:#e7f5f9f2}
+.encounter-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;font-size:10px;color:#5c8a7e;letter-spacing:.7px;font-weight:800}
+.encounter-heading strong{font-size:12px;color:#275c4e}
+.encounter-bubble p{font-size:14px;line-height:1.4;font-weight:650;margin:6px 0 8px}
+.encounter-bubble button{border:0;border-radius:8px;background:#327462;color:#fff;padding:5px 10px;font-size:12px;font-weight:800}
+@keyframes bubble-appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.formula-guide{background:#edf5ec;color:#315c4e;border-left:4px solid #64aa80;border-radius:9px;padding:14px 16px;margin-bottom:20px;display:grid;gap:6px;line-height:1.5}
+.formula-guide>span{font-size:10px;letter-spacing:1px;font-weight:800;color:#60997d}
+.formula-guide strong{font-size:17px;color:#245b48}
+.formula-guide p{font-size:13px;margin:0}
+.formula-guide small{display:block;background:#fffdf8;border:1px solid #d9e7d8;border-radius:7px;padding:7px 9px;font-size:12px;color:#607668}
+@media(max-width:850px){.scene-npc{bottom:85px}.scene-npc .sprite{width:80px;height:125px}.encounter-bubble{width:60%;left:13%}}
+@media(max-width:600px){.scene-npc{bottom:73px;min-width:64px}.scene-npc .sprite{width:62px;height:97px}.scene-npc>span{font-size:8px;top:-11px}.scene-npc>b{font-size:8px}.encounter-bubble,.encounter-bubble.from-r{top:17px;left:5%;right:5%;width:90%;padding:11px 13px}.encounter-bubble p{font-size:12px;margin:6px 0 8px}.encounter-heading{font-size:8px}.encounter-heading strong{font-size:10px}.encounter-bubble button{font-size:10px;padding:6px 10px}.formula-guide{padding:11px}.formula-guide strong{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.scene-npc .sprite,.encounter-bubble{animation:none}}

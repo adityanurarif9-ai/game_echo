@@ -17,7 +17,7 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 ## Cara bermain
 
 - Gerakkan Agen R dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
-- Dekati terminal dan tekan **E** atau tombol interaksi, lalu **ketik** jawaban tiga soal.
+- Temui tokoh di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya.
 - Ambil berkas di tengah ruangan, kemudian berjalan ke pintu keluar.
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
