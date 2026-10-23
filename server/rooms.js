@@ -1,0 +1,121 @@
+import {randomBytes} from 'node:crypto';
+import {networkInterfaces} from 'node:os';
+import {WebSocket,WebSocketServer} from 'ws';
+import {levels,isCorrect} from '../src/game.js';
+
+const rooms=new Map();
+const letters='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const clamp=value=>Math.max(3,Math.min(97,Number(value)||9));
+const send=(socket,data)=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data))};
+
+function code(){
+  let value;
+  do{value=[...randomBytes(6)].map(byte=>letters[byte%letters.length]).join('')}while(rooms.has(value));
+  return value;
+}
+
+function localAddress(){
+  const addresses=Object.entries(networkInterfaces()).flatMap(([name,entries])=>(entries||[])
+    .filter(entry=>entry.family==='IPv4'&&!entry.internal)
+    .map(entry=>({name,address:entry.address})));
+  const physical=addresses.filter(entry=>!/virtual|vbox|vmware|vEthernet|docker|wsl|hyper-v/i.test(entry.name));
+  return (physical.find(entry=>/wi-?fi|wireless|wlan/i.test(entry.name))||physical[0]||addresses[0])?.address||null;
+}
+
+function snapshot(room){
+  return {type:'state',code:room.code,phase:room.phase,level:room.level,unlocked:room.unlocked,
+    completed:room.completed,puzzleIndex:room.puzzleIndex,correct:room.correct,collected:room.collected,
+    mistakes:room.mistakes,ending:room.ending,
+    players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions};
+}
+function broadcast(room){
+  const state=snapshot(room);
+  send(room.host,state);send(room.guest,state);
+}
+
+export function attachRooms(httpServer){
+  const wss=new WebSocketServer({noServer:true});
+  httpServer.on('upgrade',(request,socket,head)=>{
+    if(new URL(request.url,'http://localhost').pathname!=='/echo-room')return;
+    wss.handleUpgrade(request,socket,head,ws=>wss.emit('connection',ws,request));
+  });
+  wss.on('connection',(socket,request)=>{
+    let room=null;
+    let role=null;
+    socket.on('message',raw=>{
+      let message;
+      try{message=JSON.parse(raw.toString())}catch{return}
+      if(!message||typeof message.type!=='string')return;
+      if(message.type==='create'&&!room){
+        room={code:code(),host:socket,guest:null,phase:'select',level:0,unlocked:0,completed:[],mistakes:0,ending:null,
+          puzzleIndex:0,correct:false,collected:false,
+          positions:{host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}}};
+        rooms.set(room.code,room);role='host';
+        const port=Number(request.headers.host?.split(':').at(-1))||5175;
+        const lan=localAddress();
+        send(socket,{type:'welcome',role,code:room.code,lanUrl:lan?`http://${lan}:${port}/?room=${room.code}`:null});
+        broadcast(room);return;
+      }
+      if(message.type==='join'&&!room){
+        const target=rooms.get(String(message.code||'').toUpperCase().trim());
+        if(!target){send(socket,{type:'error',message:'Kode ruang tidak ditemukan.'});return}
+        if(target.guest){send(socket,{type:'error',message:'Ruang ini sudah penuh.'});return}
+        room=target;role='guest';room.guest=socket;
+        send(socket,{type:'welcome',role,code:room.code});broadcast(room);return;
+      }
+      if(!room)return;
+      if(message.type==='start'&&role==='host'){
+        const index=Number(message.level);
+        if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
+        if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
+        room.phase='game';room.level=index;room.puzzleIndex=0;room.correct=false;room.collected=false;room.ending=null;
+        room.positions={host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}};
+        broadcast(room);return;
+      }
+      if(message.type==='menu'&&role==='host'){
+        room.phase='select';broadcast(room);return;
+      }
+      if(room.phase!=='game')return;
+      if(message.type==='fail'){
+        room.phase='ending';room.ending='bad';broadcast(room);return;
+      }
+      if(message.type==='mistake'){
+        room.mistakes++;broadcast(room);return;
+      }
+      if(message.type==='move'){
+        room.positions[role]={x:clamp(message.x),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking)};
+        broadcast(room);return;
+      }
+      if(message.type==='solve'&&!room.correct){
+        const puzzle=levels[room.level].puzzles[room.puzzleIndex];
+        if(puzzle&&isCorrect(puzzle,String(message.answer||'').slice(0,80))){room.correct=true;broadcast(room)}
+        else send(socket,{type:'wrong',message:'Kode belum cocok. Periksa rumusnya lagi.'});
+        return;
+      }
+      if(message.type==='advance'&&room.correct){
+        room.puzzleIndex=Math.min(3,room.puzzleIndex+1);room.correct=false;broadcast(room);return;
+      }
+      if(message.type==='collect'&&!room.collected&&room.puzzleIndex===3){
+        const hidden=levels[room.level].map.caches[levels[room.level].map.hidden].x;
+        if(Math.abs(room.positions[role].x-hidden)<3.2){room.collected=true;broadcast(room)}
+        return;
+      }
+      if(message.type==='clear'&&room.collected){
+        if(Math.abs(room.positions[role].x-levels[room.level].map.door)>=3.2)return;
+        if(!room.completed.includes(room.level))room.completed.push(room.level);
+        room.unlocked=Math.min(levels.length-1,Math.max(room.unlocked,room.level+1));
+        if(room.level===levels.length-1){room.phase='ending';room.ending=room.completed.length===levels.length&&room.mistakes<=3?'true':'neutral'}
+        else room.phase='select';
+        broadcast(room);
+      }
+    });
+    socket.on('close',()=>{
+      if(!room)return;
+      if(role==='host'){
+        send(room.guest,{type:'roomClosed',message:'Pembuat ruang keluar. Buat ruang baru untuk melanjutkan.'});
+        room.guest?.close();rooms.delete(room.code);
+      }else if(room.guest===socket){room.guest=null;room.positions.guest={x:7,direction:'right',walking:false};broadcast(room)}
+    });
+  });
+  return wss;
+}

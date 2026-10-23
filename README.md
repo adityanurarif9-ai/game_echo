@@ -1,6 +1,6 @@
-# Project Echo — The Last Transmission
+# Jejak yang Hilang
 
-Game React dengan layar poster, pemilihan level, animasi berjalan, empat latar lokasi, musik dan efek suara, serta 12 teka-teki matematika berdasarkan dokumen **Alur Game** dan lima gambar karakter dari folder tugas.
+Game React dengan layar judul, pilihan Single Player dan Multiplayer, lima karakter, empat latar lokasi, musik dan efek suara, serta 12 teka-teki matematika berdasarkan dokumen **Alur Game** dan lima gambar karakter dari folder tugas.
 
 ## Ringkasan cerita
 
@@ -12,15 +12,18 @@ Node.js dan Visual Studio Code sudah terpasang. React sudah terpasang di folder 
 
 1. Buka folder `D:\Project-Echo` di Visual Studio Code.
 2. Pilih **Terminal → New Terminal**.
-3. Ketik `npm.cmd run dev` lalu Enter.
+3. Ketik `npm.cmd install` bila baru mengunduh proyek, lalu `npm.cmd run dev` dan Enter.
 4. Buka alamat **Local** yang muncul di terminal, biasanya `http://127.0.0.1:5173/`.
 5. Biarkan terminal terbuka selama bermain. Untuk berhenti, tekan **Ctrl+C**.
 
-Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio Code dari https://code.visualstudio.com. Setelah membuka folder proyek, jalankan `npm.cmd install`, lalu `npm.cmd run dev`. Pada macOS/Linux gunakan `npm` tanpa `.cmd`.
+Untuk **multiplayer dua laptop dalam Wi-Fi yang sama**, cukup jalankan game di laptop pertama. Tekan **Play → Multiplayer → Buat Ruang Baru**. Alamat untuk laptop teman akan muncul di layar bersama kode ruang enam karakter. Buka alamat itu di browser laptop kedua, tekan **Play → Multiplayer**, lalu masukkan kode jika belum terisi. Setelah kedua pemain siap, Raka memilih level. Posisi pemain, soal yang terpecahkan, dan berkas tersinkron langsung. Laptop pertama dan terminalnya harus tetap menyala. Bila Windows Firewall meminta izin akses Node.js untuk jaringan privat, izinkan agar laptop lain bisa terhubung. Kalau alamat otomatis tidak cocok dengan Wi-Fi yang dipakai, cari alamat IPv4 laptop pertama dengan `ipconfig`, lalu buka `http://ALAMAT-IPv4:PORT/` di laptop kedua (PORT adalah angka pada alamat Local, misalnya 5173). Mode ini untuk jaringan yang sama; bermain lewat internet berbeda jaringan memerlukan server publik.
+
+Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https://nodejs.org dan Visual Studio Code dari https://code.visualstudio.com. Setelah membuka folder proyek, jalankan `npm.cmd install`, lalu `npm.cmd run dev`. Pada macOS/Linux gunakan `npm` tanpa `.cmd`.
 
 ## Cara bermain
 
-- Pada poster, tekan **Mulai Misi** untuk membuka layar pemilihan level. Level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama.
+- Pada layar judul **Jejak yang Hilang**, tekan **Play**, lalu pilih **Single Player** atau **Multiplayer**. Tombol **Cara Bermain** membuka panduan.
+- Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan pemain kedua menjadi Vira.
 - Pilih kartu level untuk masuk ke arena. Nyawa, berkas, waktu, dan tombol pengaturan berada di bingkai game.
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
 - Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
@@ -29,14 +32,15 @@ Di komputer lain, pasang Node.js LTS dari https://nodejs.org dan Visual Studio C
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
 - Level terakhir dibatasi 150 detik. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
-- Musik dan efek suara dimulai setelah menekan **Mulai bermain**. Tombol **Suara nyala/mati** di bagian atas mematikan atau menghidupkan semuanya. Tidak perlu mengunduh file musik; suaranya dibuat langsung di browser.
+- Musik dan efek suara dimulai setelah level dimulai. Tombol suara pada layar judul dan di bingkai permainan mematikan atau menghidupkan semuanya. Tidak perlu mengunduh file musik; suaranya dibuat langsung di browser.
 - Saat bermain di desktop, arena otomatis mengisi lebar dan tinggi jendela. Tombol **Layar penuh** di bagian atas menyembunyikan bilah browser; tekan lagi atau **Esc** untuk keluar. Browser hanya mengizinkan layar penuh setelah tombol ditekan.
 - Tombol **Cara main** berisi panduan singkat dalam game.
 
 ## Belajar mengubah game sendiri
 
 - `src/game.js`: judul level, dialog, rumus, tiga soal per level, jawaban, dan petunjuk. Untuk menerima lebih dari satu bentuk jawaban, tambah nilainya ke array `answers`.
-- `src/main.jsx`: gerakan pemain, interaksi terminal/berkas/pintu, pemindai, timer, dan perpindahan level. React `useState` menyimpan kondisi permainan; `useEffect` menjalankan gerak dan waktu.
+- `src/main.jsx`: layar judul, mode, ruang multiplayer, gerakan pemain, interaksi terminal/berkas/pintu, pemindai, timer, dan perpindahan level.
+- `server/rooms.js` dan `vite.config.js`: ruang multiplayer WebSocket untuk dua laptop pada jaringan yang sama.
 - Setiap level di `src/game.js` juga memiliki `map` yang menentukan lokasi tokoh, terminal, pintu, pemindai, tiga tempat pencarian, dan petunjuk berkas.
 - `src/style.css`: warna, tata letak, bayangan pijakan, dan efek ruangan.
 - `src/audio.js`: melodi latar dan efek suara. Ubah nada dan volume di sini.
@@ -58,8 +62,8 @@ Ekspor teks dokumen tidak memuat rumus lengkap. Karena itu rumus, ciphertext lat
 
 ## Memeriksa hasil
 
-- `npm.cmd test` memeriksa format jawaban, urutan tingkat kesulitan, dan ending.
-- `npm.cmd run build` membuat folder `dist` untuk dipasang di hosting statis.
+- `npm.cmd test` memeriksa format jawaban, urutan tingkat kesulitan, ending, dan sinkronisasi ruang multiplayer.
+- `npm.cmd run build` membuat folder `dist` untuk Single Player di hosting statis. Multiplayer membutuhkan server Node.js yang berjalan; mengunggah `dist` saja ke GitHub Pages tidak akan menyalakan ruang live.
 
 Jangan membuka `index.html` lewat klik ganda. Jalankan game melalui Vite dengan `npm.cmd run dev`.
 
