@@ -174,3 +174,29 @@
 @media(max-width:720px){.title-screen{display:flex;flex-direction:column}.title-scene{min-height:42dvh}.title-content{flex:1;border-left:0;border-top:1px solid #77978850;padding:28px 25px 46px}.title-content h1{font-size:clamp(48px,11vw,72px)}.title-story{margin:20px 0 23px;font-size:14px}.title-kicker{font-size:9px;margin-bottom:13px}.title-sound{top:12px;right:12px}.cast-member{bottom:12%}.cast-member.back-left,.cast-member.back-mid,.cast-member.back-right{height:40%}.cast-member.front-left,.cast-member.front-right{height:66%}.mode-options{grid-template-columns:1fr}.mode-options button{min-height:180px}.app.screen-select .level-select{width:calc(100% - 28px)}.game-stats .life-frame{min-width:81px}.life-frame i{font-size:22px}.game-stats .life-frame strong{gap:2px}}
 @media(max-width:450px){.title-content h1{font-size:48px}.title-actions{width:100%}.title-actions button{flex:1;padding:13px 12px;font-size:11px}.title-subline{font-size:8px}.join-form{flex-direction:column}.room-code strong{letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.mode-options button{transition:none}}
+
+/* Transisi layar dan menu jeda di dalam permainan. */
+.loading-screen{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 42%,#2a4b4b,#102832 50%,#091923 100%);color:#eff2df;text-align:center;animation:loading-arrive .22s ease-out}
+.loading-screen:before{content:'';position:absolute;inset:0;opacity:.24;background:repeating-linear-gradient(0deg,transparent 0 44px,#90b7a71b 45px 46px),repeating-linear-gradient(90deg,transparent 0 44px,#90b7a71b 45px 46px);pointer-events:none}
+.loading-emblem{position:relative;width:98px;height:98px;display:grid;place-items:center;margin-bottom:27px;border:2px solid #adbea8;border-radius:22px;background:#24494a;box-shadow:0 0 0 9px #89b6a318,0 17px 34px #06182088;transform:rotate(-8deg)}
+.loading-emblem span{font:900 56px Outfit,Arial,sans-serif;color:#e9ddbb;transform:rotate(8deg)}
+.loading-emblem i{position:absolute;inset:-13px;border:2px solid transparent;border-top-color:#d7c296;border-right-color:#d7c296;border-radius:27px;animation:loading-spin 1s linear infinite}
+.loading-kicker{margin:0 0 8px;color:#b9cfb3;font-size:10px;font-weight:900;letter-spacing:3px}
+.loading-screen>strong{font:800 clamp(20px,3vw,32px) Outfit,Arial,sans-serif;letter-spacing:-.5px}
+.loading-track{width:min(250px,65vw);height:6px;overflow:hidden;margin:28px 0 10px;border-radius:9px;background:#45635e}
+.loading-track i{display:block;width:42%;height:100%;border-radius:9px;background:#d9c498;box-shadow:0 0 17px #e1cf9c;animation:loading-slide .7s ease-in-out infinite alternate}
+.loading-screen>small{color:#9bb9af;font-size:9px;font-weight:800;letter-spacing:2.5px}
+@keyframes loading-arrive{from{opacity:0}to{opacity:1}}
+@keyframes loading-spin{to{transform:rotate(360deg)}}
+@keyframes loading-slide{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+.pause-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:#071820cb;backdrop-filter:blur(7px)}
+.pause-card{width:min(430px,100%);display:flex;flex-direction:column;align-items:center;padding:30px clamp(22px,4vw,38px) 23px;border:1px solid #97b4a3;border-radius:19px;background:linear-gradient(155deg,#24464b,#142c36 80%);box-shadow:0 26px 70px #061318d9,inset 0 1px #e3f1de28;color:#f0f1e5;text-align:center;animation:pause-arrive .2s ease-out}
+.pause-symbol{display:grid;place-items:center;width:52px;height:52px;border-radius:13px;border:1px solid #a5c1aa;background:#325858;color:#e9dab4;font-size:24px;font-weight:900}
+.pause-kicker{margin:19px 0 5px;color:#c4d5b5;font-size:9px;font-weight:900;letter-spacing:1.8px}
+.pause-card h2{margin:0;font:800 clamp(28px,4vw,37px) Outfit,Arial,sans-serif;letter-spacing:-1px}
+.pause-caption{margin:9px 0 24px;color:#b8ccc1;font-size:13px;line-height:1.4}
+.pause-actions{width:100%;display:grid;gap:9px}.pause-actions button{display:flex;align-items:center;gap:13px;width:100%;padding:13px 16px;border:1px solid #6f968d;border-radius:9px;background:#28484c;color:#eaf0e3;text-align:left;font-size:16px;font-weight:800;cursor:pointer;transition:transform .15s,background .15s}.pause-actions button:hover{transform:translateY(-2px);background:#35605d}.pause-actions button.pause-resume{background:#d7bf91;border-color:#eed6a7;color:#18383b}.pause-actions button.pause-resume:hover{background:#ecd6a9}.pause-actions button span{font-size:14px}
+.pause-card>small{margin-top:20px;color:#95b3a7;font-size:10px;letter-spacing:.5px}
+@keyframes pause-arrive{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:650px){.game-menu button:first-child::before{content:'☰'}.pause-card{padding-top:24px}.pause-caption{margin-bottom:17px}}
+@media(prefers-reduced-motion:reduce){.loading-screen,.loading-emblem i,.loading-track i,.pause-card{animation:none}.pause-actions button{transition:none}}

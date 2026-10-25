@@ -23,7 +23,7 @@ function localAddress(){
 }
 
 function snapshot(room){
-  return {type:'state',code:room.code,phase:room.phase,level:room.level,unlocked:room.unlocked,
+  return {type:'state',code:room.code,phase:room.phase,paused:room.paused,level:room.level,unlocked:room.unlocked,
     completed:room.completed,puzzleIndex:room.puzzleIndex,correct:room.correct,collected:room.collected,
     mistakes:room.mistakes,ending:room.ending,
     players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions};
@@ -47,7 +47,7 @@ export function attachRooms(httpServer){
       try{message=JSON.parse(raw.toString())}catch{return}
       if(!message||typeof message.type!=='string')return;
       if(message.type==='create'&&!room){
-        room={code:code(),host:socket,guest:null,phase:'select',level:0,unlocked:0,completed:[],mistakes:0,ending:null,
+        room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],mistakes:0,ending:null,
           puzzleIndex:0,correct:false,collected:false,
           positions:{host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}}};
         rooms.set(room.code,room);role='host';
@@ -68,14 +68,20 @@ export function attachRooms(httpServer){
         const index=Number(message.level);
         if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
         if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
-        room.phase='game';room.level=index;room.puzzleIndex=0;room.correct=false;room.collected=false;room.ending=null;
+        room.phase='game';room.paused=false;room.level=index;room.puzzleIndex=0;room.correct=false;room.collected=false;room.ending=null;
         room.positions={host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}};
         broadcast(room);return;
       }
-      if(message.type==='menu'&&role==='host'){
-        room.phase='select';broadcast(room);return;
+      if(message.type==='menu'&&room.phase!=='select'){
+        room.phase='select';room.paused=false;broadcast(room);return;
       }
       if(room.phase!=='game')return;
+      if(message.type==='pause'||message.type==='resume'){
+        room.paused=message.type==='pause';
+        for(const position of Object.values(room.positions))position.walking=false;
+        broadcast(room);return;
+      }
+      if(room.paused)return;
       if(message.type==='fail'){
         room.phase='ending';room.ending='bad';broadcast(room);return;
       }
@@ -114,7 +120,7 @@ export function attachRooms(httpServer){
       if(role==='host'){
         send(room.guest,{type:'roomClosed',message:'Pembuat ruang keluar. Buat ruang baru untuk melanjutkan.'});
         room.guest?.close();rooms.delete(room.code);
-      }else if(room.guest===socket){room.guest=null;room.positions.guest={x:7,direction:'right',walking:false};broadcast(room)}
+      }else if(room.guest===socket){room.guest=null;room.paused=false;room.positions.guest={x:7,direction:'right',walking:false};broadcast(room)}
     });
   });
   return wss;

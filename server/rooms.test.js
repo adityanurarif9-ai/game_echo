@@ -41,6 +41,11 @@ test('two laptops share movement, puzzle progress, evidence and unlocked level',
   await hostNext(message=>message.type==='state'&&message.players.guest);
   host.send(JSON.stringify({type:'start',level:0}));
   assert.equal((await guestNext(message=>message.type==='state'&&message.phase==='game')).level,0);
+  guest.send(JSON.stringify({type:'pause'}));
+  assert.equal((await hostNext(message=>message.type==='state'&&message.paused)).paused,true);
+  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
+  host.send(JSON.stringify({type:'resume'}));
+  assert.equal((await hostNext(message=>message.type==='state'&&message.paused===false)).positions.host.x,9);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
   assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.walking,true);
   for(const [index,answer] of ['22','RUN','5-3-8-15'].entries()){
@@ -58,4 +63,8 @@ test('two laptops share movement, puzzle progress, evidence and unlocked level',
   host.send(JSON.stringify({type:'clear'}));
   const cleared=await guestNext(message=>message.type==='state'&&message.phase==='select'&&message.unlocked===1);
   assert.deepEqual(cleared.completed,[0]);
+  host.send(JSON.stringify({type:'start',level:1}));
+  await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);
+  guest.send(JSON.stringify({type:'menu'}));
+  assert.equal((await hostNext(message=>message.type==='state'&&message.phase==='select'&&message.level===1)).paused,false);
 });
