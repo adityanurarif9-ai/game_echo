@@ -1,0 +1,14 @@
+.cache-object{min-width:112px;gap:0;isolation:isolate}
+.cache-prop{display:block;width:clamp(150px,12vw,190px);height:clamp(190px,26vh,235px);overflow:visible;filter:drop-shadow(0 9px 7px #041721ac)}
+.cache-object .cache-name{position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);max-width:145px;padding:4px 7px;border-radius:5px;background:#102d39e8;border:1px solid #8aaca077;color:#e9eee1;text-align:center;font-size:10px;font-weight:900;line-height:1.1;letter-spacing:.3px;white-space:normal;text-shadow:0 1px 2px #03131d}
+.cache-object>i{bottom:calc(100% + 30px)}
+.cache-object.searchable .cache-prop{animation:prop-inspect 2s ease-in-out infinite}
+.cache-object.taken{opacity:1}
+.cache-object.taken .cache-prop{filter:grayscale(.35) brightness(.8) drop-shadow(0 7px 5px #041721aa)}
+.cache-object.taken .cache-name{color:#a8c3b5}
+.prop-panel,.prop-broken-panel,.prop-core{filter:drop-shadow(0 0 11px #77d7c04f) drop-shadow(0 9px 7px #041721ac)}
+.prop-safe,.prop-cabinet{filter:drop-shadow(0 8px 7px #041721bc)}
+@keyframes prop-inspect{50%{filter:brightness(1.14) drop-shadow(0 0 12px #d6c69580) drop-shadow(0 9px 7px #041721ac)}}
+@media(max-width:850px){.cache-prop{width:135px;height:170px}.cache-object{min-width:90px}.cache-object .cache-name{font-size:9px;max-width:110px}}
+@media(max-width:600px){.cache-prop{width:105px;height:135px}.cache-object{min-width:70px}.cache-object .cache-name{font-size:8px;max-width:85px;padding:3px 4px}.cache-object>i{font-size:8px;bottom:calc(100% + 25px)}}
+@media(prefers-reduced-motion:reduce){.cache-object.searchable .cache-prop{animation:none}}

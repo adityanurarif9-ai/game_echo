@@ -2,7 +2,9 @@ import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {levels,isCorrect,getEnding} from './game';
 import {createAudio} from './audio';
+import CacheProp from './CacheProp';
 import './style.css';
+import './cache-props.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -384,7 +386,7 @@ function App(){
             {[25,48,66,88].map((point,index)=><div key={point} className="world-sign" style={{left:`${point}%`}}><span>{String(index+1).padStart(2,'0')}</span><small>{['ARSIP','AKSES','JARINGAN','SIMPANAN'][index]}</small></div>)}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
-            {map.caches.map((cache,index)=><div key={cache.name} className={`object cache-object cache-${index} ${solved&&!collected?'searchable':''} ${collected&&index===map.hidden?'taken':''}`} style={{left:`${cache.x}%`}}><span className="object-icon">{['▤','▣','▥'][index]}</span><span>{cache.name}</span>{nearbyCache===index&&!collected&&<i>TEKAN E</i>}</div>)}
+            {map.caches.map((cache,index)=><div key={cache.name} className={`object cache-object cache-${index} ${solved&&!collected?'searchable':''} ${collected&&index===map.hidden?'taken':''}`} style={{left:`${cache.x}%`}}><CacheProp kind={cache.kind}/><span className="cache-name">{cache.name}</span>{nearbyCache===index&&!collected&&<i>TEKAN E</i>}</div>)}
             <div className={`object door-object ${collected?'ready':''}`} style={{left:`${map.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{nearby('door')&&<i>TEKAN E</i>}</div>
             {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}}><span>PEMINDAI</span></div>)}
             {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player" style={{left:`${peer.x}%`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} direction={peer.direction}/><i className="foot-shadow"/></div>}
