@@ -119,7 +119,7 @@ function App(){
   useEffect(()=>{
     if(firstScreen.current){firstScreen.current=false;return}
     setLoading(true);
-    const timer=setTimeout(()=>setLoading(false),720);
+    const timer=setTimeout(()=>setLoading(false),1600);
     return()=>clearTimeout(timer);
   },[screen]);
   useEffect(()=>{

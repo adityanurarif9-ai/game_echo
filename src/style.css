@@ -184,11 +184,11 @@
 .loading-kicker{margin:0 0 8px;color:#b9cfb3;font-size:10px;font-weight:900;letter-spacing:3px}
 .loading-screen>strong{font:800 clamp(20px,3vw,32px) Outfit,Arial,sans-serif;letter-spacing:-.5px}
 .loading-track{width:min(250px,65vw);height:6px;overflow:hidden;margin:28px 0 10px;border-radius:9px;background:#45635e}
-.loading-track i{display:block;width:42%;height:100%;border-radius:9px;background:#d9c498;box-shadow:0 0 17px #e1cf9c;animation:loading-slide .7s ease-in-out infinite alternate}
+.loading-track i{display:block;width:0;height:100%;border-radius:9px;background:#d9c498;box-shadow:0 0 17px #e1cf9c;animation:loading-fill 1.6s linear forwards}
 .loading-screen>small{color:#9bb9af;font-size:9px;font-weight:800;letter-spacing:2.5px}
 @keyframes loading-arrive{from{opacity:0}to{opacity:1}}
 @keyframes loading-spin{to{transform:rotate(360deg)}}
-@keyframes loading-slide{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+@keyframes loading-fill{from{width:0}to{width:100%}}
 .pause-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:#071820cb;backdrop-filter:blur(7px)}
 .pause-card{width:min(430px,100%);display:flex;flex-direction:column;align-items:center;padding:30px clamp(22px,4vw,38px) 23px;border:1px solid #97b4a3;border-radius:19px;background:linear-gradient(155deg,#24464b,#142c36 80%);box-shadow:0 26px 70px #061318d9,inset 0 1px #e3f1de28;color:#f0f1e5;text-align:center;animation:pause-arrive .2s ease-out}
 .pause-symbol{display:grid;place-items:center;width:52px;height:52px;border-radius:13px;border:1px solid #a5c1aa;background:#325858;color:#e9dab4;font-size:24px;font-weight:900}
@@ -200,3 +200,4 @@
 @keyframes pause-arrive{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:650px){.game-menu button:first-child::before{content:'☰'}.pause-card{padding-top:24px}.pause-caption{margin-bottom:17px}}
 @media(prefers-reduced-motion:reduce){.loading-screen,.loading-emblem i,.loading-track i,.pause-card{animation:none}.pause-actions button{transition:none}}
+.formula-guide strong{overflow-wrap:anywhere}

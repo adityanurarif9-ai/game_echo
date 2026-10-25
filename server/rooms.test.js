@@ -48,7 +48,7 @@ test('two laptops share movement, puzzle progress, evidence and unlocked level',
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused===false)).positions.host.x,9);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
   assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.walking,true);
-  for(const [index,answer] of ['22','RUN','5-3-8-15'].entries()){
+  for(const [index,answer] of ['1','ORANG','HILANG'].entries()){
     host.send(JSON.stringify({type:'solve',answer}));
     assert.equal((await guestNext(message=>message.type==='state'&&message.puzzleIndex===index&&message.correct)).correct,true);
     host.send(JSON.stringify({type:'advance'}));
