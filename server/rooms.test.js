@@ -65,6 +65,18 @@ test('two laptops share movement, puzzle progress, evidence and unlocked level',
   assert.deepEqual(cleared.completed,[0]);
   host.send(JSON.stringify({type:'start',level:1}));
   await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);
+  host.send(JSON.stringify({type:'move',x:50,direction:'right',walking:true}));
+  await guestNext(message=>message.type==='state'&&message.positions.host.x===50);
+  host.send(JSON.stringify({type:'solve',answer:'TEMUKAN'}));
+  await guestNext(message=>message.type==='state'&&message.correct);
+  host.send(JSON.stringify({type:'advance'}));
+  await guestNext(message=>message.type==='state'&&message.puzzleIndex===1);
+  guest.send(JSON.stringify({type:'restart'}));
+  const restarted=await hostNext(message=>message.type==='state'&&message.restartCount===1);
+  assert.equal(restarted.positions.host.x,9);
+  assert.equal(restarted.positions.guest.x,7);
+  assert.equal(restarted.puzzleIndex,0);
+  assert.equal(restarted.collected,false);
   guest.send(JSON.stringify({type:'menu'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.phase==='select'&&message.level===1)).paused,false);
 });

@@ -5,6 +5,7 @@ import {createAudio} from './audio';
 import CacheProp from './CacheProp';
 import './style.css';
 import './cache-props.css';
+import './scanner-effects.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -71,6 +72,7 @@ function App(){
   const [fullScreen,setFullScreen]=useState(false);
   const [toast,setToast]=useState('');
   const [hurt,setHurt]=useState(false);
+  const [recovering,setRecovering]=useState(false);
   const keys=useRef({left:false,right:false});
   const xRef=useRef(9);
   const invincibleUntil=useRef(0);
@@ -81,6 +83,7 @@ function App(){
   const wsRef=useRef(null);
   const pickupSeen=useRef(false);
   const firstScreen=useRef(true);
+  const restartSeen=useRef(0);
   const paused=mode==='multi'?Boolean(room?.paused):pauseOpen;
   const dossiers=mode==='multi'&&room?room.completed.length+(room.collected&&!room.completed.includes(level)?1:0):progress.completed.length+(collected&&!progress.completed.includes(level)?1:0);
   const unlocked=mode==='multi'?(room?.unlocked??0):progress.unlocked;
@@ -168,8 +171,22 @@ function App(){
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
     setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
     pickupSeen.current=false;setPickupOpen(false);setCollected(false);setLevelClear(false);setEnding(null);
-    setSeconds(150);setToast('');setHurt(false);keys.current={left:false,right:false};
+    setSeconds(150);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false};
   }
+  function restartAttempt(){
+    const start=roomRole==='guest'&&mode==='multi'?7:9;
+    keys.current={left:false,right:false};xRef.current=start;setX(start);setWalking(false);setDirection('right');
+    setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
+    setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
+    setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);
+    setSeconds(150);setScannerOn(false);setHurt(false);setRecovering(false);
+    invincibleUntil.current=Date.now()+1200;
+    setToast('Pemindai mendeteksi gerakan. Level dimulai lagi dari awal.');
+  }
+  useEffect(()=>{
+    if(mode!=='multi'||!room||room.phase!=='game')return;
+    if(room.restartCount!==restartSeen.current){restartSeen.current=room.restartCount;restartAttempt()}
+  },[mode,room?.restartCount,room?.phase]);
   useEffect(()=>{
     if(mode!=='multi'||!room)return;
     if(room.phase==='game'&&(screen!=='game'||level!==room.level)){beginLevel(room.level);return}
@@ -243,7 +260,7 @@ function App(){
     function down(e){
       if(['ArrowLeft','ArrowRight','a','A','d','D','e','E'].includes(e.key) && e.target.tagName!=='INPUT')e.preventDefault();
       if(e.target.tagName==='INPUT')return;
-      if(screen==='game'&&!paused&&!pickupOpen&&!loading){
+      if(screen==='game'&&!paused&&!pickupOpen&&!loading&&!recovering){
         if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')keys.current.left=true;
         if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')keys.current.right=true;
       }
@@ -256,9 +273,9 @@ function App(){
     function blur(){keys.current.left=false;keys.current.right=false}
     window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);
     return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur)};
-  },[screen,paused,pickupOpen,loading,dialog,levelClear,mode]);
+  },[screen,paused,pickupOpen,loading,dialog,levelClear,mode,recovering]);
   useEffect(()=>{
-    if(screen!=='game'||dialog||talking||levelClear||pickupOpen||ending||paused||loading)return;
+    if(screen!=='game'||dialog||talking||levelClear||pickupOpen||ending||paused||loading||recovering)return;
     const loop=setInterval(()=>{
       const active=level>0 && Math.floor(Date.now()/1450)%2===0;
       setScannerOn(active);
@@ -271,18 +288,23 @@ function App(){
       const beams=map.scanners;
       const hit=active&&beams.some(point=>Math.abs(next-point)<1.4)&&Date.now()>invincibleUntil.current;
       if(hit){
-        sound('hit');setHurt(true);setTimeout(()=>setHurt(false),380);
-        invincibleUntil.current=Date.now()+1300;
-        next=Math.max(3,xRef.current-delta*3.5);
+        sound('hit');setHurt(true);setRecovering(true);keys.current={left:false,right:false};setWalking(false);
+        invincibleUntil.current=Date.now()+2000;
         setHealth(h=>Math.max(0,h-1));
+        setTimeout(()=>{
+          if(health<=1){setHurt(false);setRecovering(false);return}
+          if(mode==='multi')sendRoom({type:'restart'});
+          else restartAttempt();
+        },1050);
+        return;
       }
       xRef.current=next;setX(next);
       if(mode==='multi'){lastSentMove.current=true;sendRoom({type:'move',x:next,direction:delta<0?'left':'right',walking:true})}
     },40);
     return()=>clearInterval(loop);
-  },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading]);
+  },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading,recovering,health]);
   useEffect(()=>{if(mode==='multi'&&!walking&&lastSentMove.current){sendRoom({type:'move',x:xRef.current,direction,walking:false});lastSentMove.current=false}},[mode,walking]);
-  useEffect(()=>{if(screen==='game'&&health===0&&!ending){if(mode==='multi')sendRoom({type:'fail'});else{setEnding('bad');setScreen('ending')}}},[screen,health,ending,mode]);
+  useEffect(()=>{if(screen==='game'&&health===0&&!ending&&!recovering){if(mode==='multi')sendRoom({type:'fail'});else{setEnding('bad');setScreen('ending')}}},[screen,health,ending,mode,recovering]);
   useEffect(()=>{
     if(screen!=='game'||level!==3||talking||levelClear||pickupOpen||ending||paused||loading)return;
     const timer=setInterval(()=>setSeconds(v=>Math.max(0,v-1)),1000);
@@ -383,15 +405,15 @@ function App(){
             <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
             <div className="atmosphere"><i/><i/><i/><i/><i/></div>
             <div className="scene-ground"/>
-            {[25,48,66,88].map((point,index)=><div key={point} className="world-sign" style={{left:`${point}%`}}><span>{String(index+1).padStart(2,'0')}</span><small>{['ARSIP','AKSES','JARINGAN','SIMPANAN'][index]}</small></div>)}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
             {map.caches.map((cache,index)=><div key={cache.name} className={`object cache-object cache-${index} ${solved&&!collected?'searchable':''} ${collected&&index===map.hidden?'taken':''}`} style={{left:`${cache.x}%`}}><CacheProp kind={cache.kind}/><span className="cache-name">{cache.name}</span>{nearbyCache===index&&!collected&&<i>TEKAN E</i>}</div>)}
             <div className={`object door-object ${collected?'ready':''}`} style={{left:`${map.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{nearby('door')&&<i>TEKAN E</i>}</div>
-            {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}}><span>PEMINDAI</span></div>)}
+            {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}} aria-label={`Pemindai ${scannerOn?'aktif':'siaga'}`}><div className="scanner-head"><i/><b/><i/></div><div className="scanner-beam"/><div className="scanner-base"/><span>PEMINDAI</span></div>)}
             {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player" style={{left:`${peer.x}%`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} direction={peer.direction}/><i className="foot-shadow"/></div>}
-            <div className="player" style={{left:`${x}%`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} direction={heroFacing}/><i className="foot-shadow"/></div>
+            <div className={`player ${hurt?'player-hit':''}`} style={{left:`${x}%`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
+          {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?'Mengulang level dari awal...':'Nyawa habis...'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>

@@ -24,7 +24,7 @@ function localAddress(){
 
 function snapshot(room){
   return {type:'state',code:room.code,phase:room.phase,paused:room.paused,level:room.level,unlocked:room.unlocked,
-    completed:room.completed,puzzleIndex:room.puzzleIndex,correct:room.correct,collected:room.collected,
+    completed:room.completed,puzzleIndex:room.puzzleIndex,correct:room.correct,collected:room.collected,restartCount:room.restartCount,
     mistakes:room.mistakes,ending:room.ending,
     players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions};
 }
@@ -48,7 +48,7 @@ export function attachRooms(httpServer){
       if(!message||typeof message.type!=='string')return;
       if(message.type==='create'&&!room){
         room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],mistakes:0,ending:null,
-          puzzleIndex:0,correct:false,collected:false,
+          puzzleIndex:0,correct:false,collected:false,restartCount:0,
           positions:{host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}}};
         rooms.set(room.code,room);role='host';
         const port=Number(request.headers.host?.split(':').at(-1))||5175;
@@ -84,6 +84,11 @@ export function attachRooms(httpServer){
       if(room.paused)return;
       if(message.type==='fail'){
         room.phase='ending';room.ending='bad';broadcast(room);return;
+      }
+      if(message.type==='restart'){
+        room.puzzleIndex=0;room.correct=false;room.collected=false;room.restartCount++;
+        room.positions={host:{x:9,direction:'right',walking:false},guest:{x:7,direction:'right',walking:false}};
+        broadcast(room);return;
       }
       if(message.type==='mistake'){
         room.mistakes++;broadcast(room);return;

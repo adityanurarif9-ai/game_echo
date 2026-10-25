@@ -54,7 +54,6 @@
       <circle cx="258" cy="84" r="12" fill="#213f49" stroke="#79c4c7" stroke-width="4"/>
       <circle cx="942" cy="84" r="12" fill="#213f49" stroke="#79c4c7" stroke-width="4"/>
       <text x="79" y="71" fill="#a7e6db" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2">SECURITY CORRIDOR</text>
-      <text x="901" y="71" fill="#a7e6db" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2">SECTOR 02</text>
     </g>
       <rect width="1200" height="400" fill="url(#shade)" pointer-events="none"/>
     </svg>
