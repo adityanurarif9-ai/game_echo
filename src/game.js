@@ -3,6 +3,7 @@
 export const levels = [
   {
     name:'Jejak yang Hilang', location:'Ruang kerja Vira', chapter:'PROLOG',
+    dossier:{title:'Catatan terakhir Vira',code:'ECHO-01',detail:'Jejak pertama menunjukkan bahwa Vira pergi setelah mengetahui kebocoran data.'},
     color:'#86c8a4', npc:'chief', speaker:'Arman · Kepala Divisi',
     dialogue:[
       {who:'npc',text:'Raka! Aku menunggumu di sini. Vira menghilang setelah mengirim kode terakhirnya.'},
@@ -20,6 +21,7 @@ export const levels = [
   },
   {
     name:'Terminal Pengodean', location:'Koridor terminal Vira', chapter:'CHAPTER 01',
+    dossier:{title:'Log akses rahasia',code:'ECHO-02',detail:'Seseorang memakai terminal internal untuk membaca berkas yang disembunyikan Vira.'},
     color:'#84bdc5', npc:'v', speaker:'Vira · Hologram',
     dialogue:[
       {who:'npc',text:'Raka, kalau kau melihat hologram ini, berarti seseorang sudah mengawasiku.'},
@@ -37,6 +39,7 @@ export const levels = [
   },
   {
     name:'Pengkhianat Dalam Selubung', location:'Fasilitas data terpencil', chapter:'CHAPTER 02–03',
+    dossier:{title:'Rekaman ruang server',code:'ECHO-03',detail:'Nama Arman muncul dalam rekaman akses sesaat sebelum Vira menghilang.'},
     color:'#c4aa76', npc:'anonim', speaker:'Nara · Sumber Anonim',
     dialogue:[
       {who:'npc',text:'Aku membawa pesan dari Vira. Tapi kau tak boleh langsung percaya padaku.'},
@@ -54,6 +57,7 @@ export const levels = [
   },
   {
     name:'Transmisi Terakhir', location:'Markas yang terkunci', chapter:'CHAPTER 04 · KLIMAKS',
+    dossier:{title:'Kunci transmisi Vira',code:'ECHO-04',detail:'Salinan terakhir berisi bukti lengkap untuk membuka kembali kasus Vira.'},
     color:'#db907c', npc:'pelaku', speaker:'Damar · Penjaga Sistem',
     dialogue:[
       {who:'npc',text:'Perintah Arman: semua bukti dihapus dalam 150 detik. Kau tak akan sempat, Raka.'},
