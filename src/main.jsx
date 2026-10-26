@@ -3,12 +3,15 @@ import {createRoot} from 'react-dom/client';
 import {levels,isCorrect,getEnding} from './game';
 import {createAudio} from './audio';
 import CacheProp from './CacheProp';
+import GameGuide from './GameGuide';
 import './style.css';
 import './cache-props.css';
 import './scanner-effects.css';
 import './game-over.css';
 import './game-hud.css';
 import './title-logo.css';
+import './guide.css';
+import './loading-brand.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -431,9 +434,9 @@ function App(){
         {paused&&<div className="pause-backdrop"><section className="pause-card" role="dialog" aria-modal="true" aria-label="Menu jeda"><span className="pause-symbol">Ⅱ</span><p className="pause-kicker">JEJAK YANG HILANG · LEVEL {String(level+1).padStart(2,'0')}</p><h2>Permainan dijeda</h2><p className="pause-caption">{mode==='multi'?'Kedua pemain sedang berhenti sejenak.':'Lanjutkan petualangan kapan saja.'}</p><div className="pause-actions"><button className="pause-resume" onClick={resumeGame}>▶ <span>Resume</span></button><button onClick={showLevelSelect}>▦ <span>Pilih Level</span></button><button onClick={exitGame}>↩ <span>Keluar Game</span></button></div><small>Tekan Esc untuk lanjut bermain</small></section></div>}
         {dialog&&puzzleIndex<3&&<div className="modal-backdrop terminal-backdrop"><section className="puzzle-card terminal-panel" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span className="terminal-live"><i/> TERMINAL VIRA <small>· TERHUBUNG</small></span><span className="terminal-steps">{[0,1,2].map(index=><b key={index} className={index<=puzzleIndex?'active':''}>{index+1}</b>)}</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('');setShowAnswer(false)}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">KODE {puzzleIndex+1} / 3 · {current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}{showAnswer&&<p className="answer-reveal" role="status"><strong>Jawaban: {current.puzzles[puzzleIndex].answers[0]}</strong><span>Ketik jawaban ini di kotak atas untuk lanjut.</span></p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button><button className="text-button" onClick={()=>setShowAnswer(v=>!v)}>{showAnswer?'Sembunyikan':'Lihat'} jawaban</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Cari berkas dari petunjuk':'Soal berikutnya'} →</button>}</div></div></section></div>}
       </>}
-      {help&&<div className="help-overlay"><section className="help-card"><button className="close-help" onClick={()=>setHelp(false)} aria-label="Tutup panduan">×</button><p className="kicker">PANDUAN AGEN</p><h2>Cara bermain</h2><ol><li>Tekan <b>Play</b>, lalu pilih <b>Single Player</b> atau <b>Multiplayer</b>. Dalam multiplayer, Raka membuat ruang dan Vira masuk dari laptop lain memakai kode yang tampil.</li><li>Pilih level yang sudah terbuka. Dalam multiplayer, Raka memilih level dan Vira ikut otomatis.</li><li>Berjalan dengan tombol <b>← →</b> atau <b>A D</b>. Di layar sentuh, tahan tombol panah di bawah arena.</li><li>Dekati tokoh atau <b>terminal</b>, lalu tekan <b>E</b> atau tombol interaksi.</li><li>Gunakan <b>rumus dan contoh</b> untuk menjawab tiga teka-teki. Dalam multiplayer, soal dan berkas menjadi progres bersama.</li><li>Ikuti petunjuk berkas, periksa tempat tersembunyi, lalu kembali ke pintu keluar. Hindari pemindai merah.</li></ol><p>Jawaban salah atau terkena pemindai mengurangi nyawa. Level terakhir memiliki batas 150 detik.</p><button className="main-button" onClick={()=>setHelp(false)}>Mengerti →</button></section></div>}
+      {help&&<GameGuide onClose={()=>setHelp(false)}/>}
     </main>
-    {loading&&<div className="loading-screen" role="status" aria-live="polite"><div className="loading-emblem"><span>E</span><i/></div><p className="loading-kicker">JEJAK YANG HILANG</p><strong>Menyiapkan petualangan...</strong><div className="loading-track"><i/></div><small>MEMUAT</small></div>}
+    {loading&&<div className="loading-screen" role="status" aria-live="polite"><div className="loading-art"><img src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang"/><i aria-hidden="true"/></div><p className="loading-kicker">MISI SEDANG DISIAPKAN</p><strong>Menyiapkan petualangan...</strong><div className="loading-track"><i/></div><small>MEMUAT</small></div>}
   </div>
 }
 createRoot(document.getElementById('root')).render(<App/>);
