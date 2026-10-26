@@ -1,0 +1,29 @@
+/* HUD permainan: informasi penting ringkas, arena tetap menjadi fokus. */
+.app.playing .game-top{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:18px;min-height:72px;padding:9px 18px;background:linear-gradient(180deg,#1b333c,#172d36);border-bottom:1px solid #7d9d8a70}
+.hud-title{min-width:0;display:flex;align-items:center;gap:12px;flex:1}
+.hud-title>div{min-width:0}
+.hud-level-badge{width:44px;height:44px;flex:none;display:grid;place-items:center;border:1px solid #b3c8a1;border-radius:8px;background:linear-gradient(145deg,#456f61,#284d4d);box-shadow:inset 0 0 0 3px #173540,0 3px 8px #071b2480;color:#f5e8be;font:900 18px Outfit,Arial,sans-serif}
+.app.playing .hud-title .kicker{margin:0 0 3px;color:#b1cab9;font-size:9px;font-weight:800;letter-spacing:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app.playing .game-top .hud-title h1{margin:0;color:#f0f0dd;font:800 clamp(18px,1.45vw,25px)/1.1 Outfit,Arial,sans-serif;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-right{flex:none;display:flex;align-items:center;gap:13px;margin:0}
+.game-stats{display:flex;align-items:center;gap:7px;max-width:none;flex-wrap:nowrap}
+.game-stats .life-frame,.game-stats .file-frame,.game-stats .timer-frame{height:48px;min-width:83px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:5px 11px;border:1px solid #78988a8c;border-radius:7px;background:#234149;color:#f1efdc;box-shadow:inset 0 1px #ffffff10}
+.game-stats .life-frame{min-width:112px;padding:5px 10px}
+.game-stats small,.life-frame small{font-size:8px;line-height:1;font-weight:900;letter-spacing:1.2px;color:#c1d4c0}
+.game-stats strong{font-size:15px;line-height:1;color:#f1efdc}
+.game-stats .life-frame strong{justify-content:flex-start;gap:3px}
+.life-frame i,.game-stats .life-frame i{font-size:22px;line-height:1}
+.game-menu{display:flex;align-items:center;gap:4px;padding-left:12px;border-left:1px solid #7c9b8c75}
+.game-menu button{height:38px;min-width:38px;display:flex;align-items:center;justify-content:center;gap:7px;padding:5px 8px;border:1px solid #81a496a6;border-radius:7px;background:#2c4c50;color:#eaf0e4;font-size:17px;line-height:1;transition:background .15s,transform .15s}
+.game-menu button:hover{background:#3b6664;transform:translateY(-2px)}
+.game-menu button:first-child{min-width:76px;background:#385e57;color:#f5f3dd;font-size:17px}
+.game-menu button .menu-text{font-size:11px;font-weight:800;letter-spacing:.3px}
+.app.playing .mission-note{display:flex;flex-wrap:nowrap;align-items:center;gap:10px;min-height:34px;margin:0;padding:6px 18px;border:0;border-bottom:1px solid #72978a50;border-radius:0;background:#203a40;color:#e0eadd;font-size:11px;font-weight:700}
+.mission-label{flex:none;padding:4px 7px;border-radius:4px;background:#3b6558;color:#e8ecd2;font-size:9px;line-height:1;font-weight:900;letter-spacing:1.1px}
+.app.playing .mission-note>span{min-width:0;flex:1;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app.playing .mission-note .journey-meter{width:90px;height:6px;flex:none;background:#54716a}
+.app.playing .mission-note small{flex:none;color:#bdd0c0;font-size:9px;font-weight:800;white-space:nowrap}
+@media(max-width:1000px){.app.playing .game-top{gap:10px;padding:8px 12px}.hud-title{gap:8px}.hud-level-badge{width:38px;height:38px;font-size:16px}.hud-right{gap:7px}.game-stats .life-frame{min-width:96px}.game-stats .file-frame,.game-stats .timer-frame{min-width:69px;padding:5px 7px}.game-menu{padding-left:7px}.game-menu button:first-child{min-width:42px}.game-menu .menu-text{display:none}}
+@media(max-width:720px){.app.playing .game-top{display:grid;grid-template-columns:1fr;gap:7px;padding:8px 10px}.app.playing .game-top .hud-title h1{font-size:20px}.hud-right{width:100%;justify-content:space-between;margin:0}.game-stats{gap:5px}.game-stats .life-frame{min-width:90px}.game-menu button{height:33px;min-width:33px;font-size:14px}.game-menu button:first-child{min-width:33px;font-size:14px}.app.playing .mission-note{padding:6px 10px;font-size:10px}.app.playing .mission-note .journey-meter{width:60px}}
+@media(max-width:450px){.hud-level-badge{width:34px;height:34px}.app.playing .hud-title .kicker{font-size:8px}.app.playing .game-top .hud-title h1{font-size:17px}.game-stats .life-frame{min-width:77px;padding:5px 6px}.game-stats .file-frame,.game-stats .timer-frame{min-width:58px}.life-frame i,.game-stats .life-frame i{font-size:18px}.game-menu{gap:3px;padding-left:5px}.game-menu button{min-width:29px;height:31px;padding:3px}.game-menu button:first-child{min-width:29px}.app.playing .mission-note .journey-meter,.app.playing .mission-note small{display:none}}
+@media(prefers-reduced-motion:reduce){.game-menu button{transition:none}}
