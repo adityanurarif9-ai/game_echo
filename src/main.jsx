@@ -8,6 +8,7 @@ import './cache-props.css';
 import './scanner-effects.css';
 import './game-over.css';
 import './game-hud.css';
+import './title-logo.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -363,7 +364,8 @@ function App(){
         </div>
         <div className="title-content">
           <p className="title-kicker">MISTERI · MATEMATIKA · PETUALANGAN</p>
-          <h1>JEJAK <em>YANG</em><br/>HILANG</h1>
+          <h1 className="title-accessible-name">Jejak yang Hilang</h1>
+          <img className="title-logo" src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang dengan kaca pembesar dan papan investigasi" fetchPriority="high" />
           <p className="title-story">Vira menemukan kebocoran data dan pergi. Raka mengikuti pesan berkode yang ia tinggalkan untuk mengungkap kebenarannya.</p>
           <div className="title-actions"><button className="title-play" onClick={()=>setScreen('mode')}>▶ PLAY</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
           <p className="title-subline">4 LEVEL · 2 CARA BERMAIN · 1 MISTERI</p>
