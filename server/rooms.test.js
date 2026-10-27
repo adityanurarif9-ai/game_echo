@@ -60,6 +60,10 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
     host.send(JSON.stringify({type:'advance'}));
     assert.equal((await hostNext(message=>message.type==='state'&&message.puzzleIndex===index+1)).puzzleIndex,index+1);
   }
+  guest.send(JSON.stringify({type:'solve',answer:'1'}));
+  const guestScored=await guestNext(message=>message.type==='state'&&message.correct&&message.coins>0);
+  assert.equal(guestScored.puzzleIndex,0);
+  assert.equal((await hostNext(message=>message.type==='state'&&message.scores.guest===guestScored.coins)).puzzleIndex,3);
   const hidden=levels[0].map.caches[levels[0].map.hidden].x;
   host.send(JSON.stringify({type:'move',x:hidden,direction:'right',walking:false}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===hidden);
