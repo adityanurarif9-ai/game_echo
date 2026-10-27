@@ -7,7 +7,7 @@ const rooms=new Map();
 const letters='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const clamp=value=>Math.max(3,Math.min(97,Number(value)||9));
 const send=(socket,data)=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data))};
-const racer=()=>({puzzleIndex:0,correct:false,collected:false,restartCount:0,mistakes:0,coins:0,puzzleStartedAt:Date.now()});
+const racer=()=>({puzzleIndex:0,correct:false,collected:false,restartCount:0,mistakes:0,coins:0,puzzleStartedAt:null});
 const position=x=>({x,direction:'right',walking:false,running:false});
 
 function code(){
@@ -71,7 +71,7 @@ export function attachRooms(httpServer){
         if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
         if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
         room.phase='game';room.paused=false;room.level=index;room.ending=null;room.winner=null;
-        for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:Date.now()});
+        for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:null});
         room.positions={host:position(9),guest:position(7)};
         broadcast(room);return;
       }
@@ -87,13 +87,13 @@ export function attachRooms(httpServer){
       if(room.paused)return;
       if(message.type==='fail'){
         self.mistakes++;self.restartCount++;
-        Object.assign(self,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:Date.now()});
+        Object.assign(self,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:null});
         room.positions[role]=position(role==='host'?9:7);
         broadcast(room);return;
       }
       if(message.type==='restart'){
         self.restartCount++;
-        Object.assign(self,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:Date.now()});
+        Object.assign(self,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:null});
         room.positions[role]=position(role==='host'?9:7);
         broadcast(room);return;
       }
@@ -102,13 +102,14 @@ export function attachRooms(httpServer){
       }
       if(message.type==='move'){
         room.positions[role]={x:clamp(message.x),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking),running:Boolean(message.running)};
+        if(self.puzzleIndex===0&&self.puzzleStartedAt===null&&Math.abs(room.positions[role].x-levels[room.level].map.terminal)<3.2)self.puzzleStartedAt=Date.now();
         broadcast(room);return;
       }
       if(message.type==='solve'&&!self.correct){
         const puzzle=levels[room.level].puzzles[self.puzzleIndex];
         if(puzzle&&isCorrect(puzzle,String(message.answer||'').slice(0,80))){
           self.correct=true;
-          self.coins+=10+Math.max(0,20-Math.floor((Date.now()-self.puzzleStartedAt)/3000));
+          self.coins+=10+Math.max(0,20-Math.floor((Date.now()-(self.puzzleStartedAt??Date.now()))/3000));
           broadcast(room);
         }
         else send(socket,{type:'wrong',message:'Kode belum cocok. Periksa rumusnya lagi.'});

@@ -92,7 +92,7 @@ function App(){
   const pickupSeen=useRef(false);
   const firstScreen=useRef(true);
   const restartSeen=useRef(0);
-  const puzzleStartedAt=useRef(Date.now());
+  const puzzleStartedAt=useRef(null);
   const hostedWithoutRoomServer=location.hostname.endsWith('.vercel.app');
   const paused=mode==='multi'?Boolean(room?.paused):pauseOpen;
   const dossiers=mode==='multi'&&room?room.completed.length+(room.collected&&!room.completed.includes(level)?1:0):progress.completed.length+(collected&&!progress.completed.includes(level)?1:0);
@@ -182,7 +182,7 @@ function App(){
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
     setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
     pickupSeen.current=false;setPickupOpen(false);setCollected(false);setLevelClear(false);setEnding(null);
-    setSeconds(150);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false,run:false};puzzleStartedAt.current=Date.now();
+    setSeconds(150);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false,run:false};puzzleStartedAt.current=null;
   }
   function restartAttempt(){
     const start=roomRole==='guest'&&mode==='multi'?7:9;
@@ -190,7 +190,7 @@ function App(){
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
     setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);setHealth(3);
-    setSeconds(150);setScannerOn(false);setHurt(false);setRecovering(false);
+    setSeconds(150);setScannerOn(false);setHurt(false);setRecovering(false);puzzleStartedAt.current=null;
     invincibleUntil.current=Date.now()+1200;
     setToast('Pemindai mendeteksi gerakan. Level dimulai lagi dari awal.');
   }
@@ -251,7 +251,7 @@ function App(){
     if(talking){advanceConversation();return}
     if(screen!=='game'||dialog||levelClear||pickupOpen||ending||paused||loading)return;
     if(nearby('npc')&&(!conversationSeen||!nearby('terminal'))){sound('open');keys.current={left:false,right:false};setWalking(false);setConversationStep(0);return}
-    if(nearby('terminal')&&!solved){sound('open');setDialog(true);setFeedback(null);setAnswer('');setShowAnswer(false);return}
+    if(nearby('terminal')&&!solved){sound('open');if(puzzleStartedAt.current===null)puzzleStartedAt.current=Date.now();setDialog(true);setFeedback(null);setAnswer('');setShowAnswer(false);return}
     if(nearbyCache!==-1&&!collected){
       if(!solved){setToast('Tempat terkunci · pecahkan kode terminal dahulu');return}
       if(nearbyCache===map.hidden){sound('pickup');if(mode==='multi')sendRoom({type:'collect'});else{setCollected(true);setProgress(p=>({...p,coins:p.coins+15}))}}
@@ -334,7 +334,7 @@ function App(){
       sound('correct');
       if(mode==='multi')sendRoom({type:'solve',answer});
       else {
-        const reward=10+Math.max(0,20-Math.floor((Date.now()-puzzleStartedAt.current)/3000));
+        const reward=10+Math.max(0,20-Math.floor((Date.now()-(puzzleStartedAt.current??Date.now()))/3000));
         setProgress(p=>({...p,coins:p.coins+reward}));
         setFeedback({correct:true,text:`+${reward} koin! ${puzzle.explain}`});
       }
