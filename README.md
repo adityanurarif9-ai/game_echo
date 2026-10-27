@@ -16,6 +16,12 @@ Node.js dan Visual Studio Code sudah terpasang. React sudah terpasang di folder 
 4. Buka alamat **Local** yang muncul di terminal, biasanya `http://127.0.0.1:5173/`.
 5. Biarkan terminal terbuka selama bermain. Untuk berhenti, tekan **Ctrl+C**.
 
+## Deploy ke Vercel
+
+Repository GitHub game ini adalah `https://github.com/adityanurarif9-ai/game_echo`. Masuk ke Vercel, pilih **Add New → Project**, hubungkan GitHub, lalu impor repository `game_echo`. Proyek sudah menyediakan `vercel.json` dengan preset Vite, perintah build `npm run build`, dan folder hasil `dist`. Setelah deploy, setiap push ke cabang `main` akan memicu deploy produksi berikutnya.
+
+**Single Player** dapat dimainkan di alamat Vercel dari laptop atau HP tanpa menjalankan server lokal. **Multiplayer** saat ini menggunakan ruang WebSocket dalam memori server Vite lokal; build statis di Vercel belum menyediakan ruang bersama yang andal untuk dua perangkat. Untuk bermain bersama, jalankan game dari laptop pada Wi-Fi yang sama seperti petunjuk di bawah. Mode online lintas jaringan memerlukan backend ruang dan penyimpanan bersama yang dideploy terpisah.
+
 Untuk **multiplayer dua laptop dalam Wi-Fi yang sama**, cukup jalankan game di laptop pertama. Tekan **Play → Multiplayer → Buat Ruang Baru**. Alamat untuk laptop teman akan muncul di layar bersama kode ruang enam karakter. Buka alamat itu di browser laptop kedua, tekan **Play → Multiplayer**, lalu masukkan kode jika belum terisi. Setelah kedua pemain siap, Raka memilih level. Posisi pemain, soal yang terpecahkan, dan berkas tersinkron langsung. Laptop pertama dan terminalnya harus tetap menyala. Bila Windows Firewall meminta izin akses Node.js untuk jaringan privat, izinkan agar laptop lain bisa terhubung. Kalau alamat otomatis tidak cocok dengan Wi-Fi yang dipakai, cari alamat IPv4 laptop pertama dengan `ipconfig`, lalu buka `http://ALAMAT-IPv4:PORT/` di laptop kedua (PORT adalah angka pada alamat Local, misalnya 5173). Mode ini untuk jaringan yang sama; bermain lewat internet berbeda jaringan memerlukan server publik.
 
 Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https://nodejs.org dan Visual Studio Code dari https://code.visualstudio.com. Setelah membuka folder proyek, jalankan `npm.cmd install`, lalu `npm.cmd run dev`. Pada macOS/Linux gunakan `npm` tanpa `.cmd`.
