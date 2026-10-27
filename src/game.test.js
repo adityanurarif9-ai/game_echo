@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {levels,isCorrect,getEnding} from './game.js';
+import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,floorHeightAt,canEnterAtHeight} from './game.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
   assert.deepEqual(levels.map(level=>level.puzzles.length),[3,3,3,3]);
@@ -30,4 +30,14 @@ test('true, neutral and bad endings depend on evidence, accuracy and escape',()=
   assert.equal(getEnding({dossiers:4,mistakes:4,escaped:true}),'neutral');
   assert.equal(getEnding({dossiers:3,mistakes:0,escaped:true}),'neutral');
   assert.equal(getEnding({dossiers:4,mistakes:0,escaped:false}),'bad');
+});
+test('level three stairs require jumping and its coins follow reachable heights',()=>{
+  assert.equal(tierPlatforms.length,4);
+  assert.equal(floorHeightAt(2,42),44);
+  assert.equal(floorHeightAt(2,67),128);
+  assert.equal(floorHeightAt(1,67),0);
+  assert.equal(canEnterAtHeight(2,42,0),false);
+  assert.equal(canEnterAtHeight(2,42,40),true);
+  assert.deepEqual(coinTrails.map(trail=>trail.length),[7,7,7,7]);
+  for(const coin of coinTrails[2])assert.ok(coin.height-floorHeightAt(2,coin.x)<=30);
 });

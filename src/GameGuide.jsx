@@ -20,9 +20,9 @@ export default function GameGuide({onClose}){
           <p className="guide-lead">Bantu Raka mengikuti jejak Vira, membuka terminal, dan membawa pulang bukti kebocoran data.</p>
           <div className="guide-steps">
             <div><b>01</b><span><strong>Mulai misi</strong><small>Pilih Single Player, atau buat ruang Multiplayer dan kirim kodenya ke teman pada jaringan yang sama. Dua Raka berlomba menyelesaikan soal dan membawa berkas ke pintu keluar. Level berikutnya terbuka setelah balapan selesai.</small></span></div>
-            <div><b>02</b><span><strong>Jelajahi ruangan</strong><small>Jalan dengan ← → atau A D. Tahan Shift untuk lari. Di layar sentuh, tahan tombol panah dan LARI. Dekati tokoh, terminal, atau benda, lalu tekan E.</small></span></div>
+            <div><b>02</b><span><strong>Jelajahi ruangan</strong><small>Jalan dengan ← → atau A D. Tahan Shift untuk lari, tekan Spasi / ↑ / W untuk lompat. Di layar sentuh gunakan tombol panah, LARI, dan LOMPAT. Dekati tokoh, terminal, atau benda, lalu tekan E.</small></span></div>
             <div><b>03</b><span><strong>Pecahkan tiga kode</strong><small>Baca rumus dan contoh di terminal. Hitung invers untuk mengubah cipherteks menjadi angka atau huruf. Tabel konversinya ada di tab Kode & rumus.</small></span></div>
-            <div><b>04</b><span><strong>Amankan berkas</strong><small>Ikuti petunjuk lokasi, periksa benda yang tepat, hindari pemindai merah, lalu kembali ke pintu keluar.</small></span></div>
+            <div><b>04</b><span><strong>Amankan berkas</strong><small>Ambil koin di sepanjang jalur (+5 per koin), ikuti petunjuk berkas, dan hindari pemindai merah. Di level 3, lompat naik tangga bertingkat dan lewati drone patroli. Setelah menemukan berkas, kembali ke pintu keluar.</small></span></div>
           </div>
           <p className="guide-note">Jawaban cepat memberi lebih banyak koin. Setiap jawaban benar memberi 10–30 koin, berkas memberi 15, dan pemenang balapan mendapat bonus 50. Jawaban salah atau terkena pemindai mengurangi nyawa. Jika terkena pemindai, level dimulai lagi dari awal. Level terakhir dibatasi 150 detik.</p>
         </> : <>

@@ -1,14 +1,14 @@
 import {randomBytes} from 'node:crypto';
 import {networkInterfaces} from 'node:os';
 import {WebSocket,WebSocketServer} from 'ws';
-import {levels,isCorrect} from '../src/game.js';
+import {levels,isCorrect,coinTrails} from '../src/game.js';
 
 const rooms=new Map();
 const letters='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const clamp=value=>Math.max(3,Math.min(97,Number(value)||9));
 const send=(socket,data)=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data))};
-const racer=()=>({puzzleIndex:0,correct:false,collected:false,restartCount:0,mistakes:0,coins:0,puzzleStartedAt:null});
-const position=x=>({x,direction:'right',walking:false,running:false});
+const racer=()=>({puzzleIndex:0,correct:false,collected:false,restartCount:0,mistakes:0,coins:0,coinIds:[],puzzleStartedAt:null});
+const position=x=>({x,height:0,direction:'right',walking:false,running:false,jumping:false});
 
 function code(){
   let value;
@@ -28,7 +28,7 @@ function snapshot(room,role){
   const self=room.racers[role];
   return {type:'state',code:room.code,phase:room.phase,paused:room.paused,level:room.level,unlocked:room.unlocked,
     completed:room.completed,puzzleIndex:self.puzzleIndex,correct:self.correct,collected:self.collected,restartCount:self.restartCount,
-    mistakes:self.mistakes,coins:self.coins,scores:{host:room.racers.host.coins,guest:room.racers.guest.coins},winner:room.winner,ending:room.ending,
+    mistakes:self.mistakes,coins:self.coins,coinIds:self.coinIds,scores:{host:room.racers.host.coins,guest:room.racers.guest.coins},winner:room.winner,ending:room.ending,
     players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions};
 }
 function broadcast(room){
@@ -71,7 +71,7 @@ export function attachRooms(httpServer){
         if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
         if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
         room.phase='game';room.paused=false;room.level=index;room.ending=null;room.winner=null;
-        for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,puzzleStartedAt:null});
+        for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,coinIds:[],puzzleStartedAt:null});
         room.positions={host:position(9),guest:position(7)};
         broadcast(room);return;
       }
@@ -101,9 +101,17 @@ export function attachRooms(httpServer){
         self.mistakes++;broadcast(room);return;
       }
       if(message.type==='move'){
-        room.positions[role]={x:clamp(message.x),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking),running:Boolean(message.running)};
+        room.positions[role]={x:clamp(message.x),height:Math.max(0,Math.min(240,Number(message.height)||0)),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking),running:Boolean(message.running),jumping:Boolean(message.jumping)};
         if(self.puzzleIndex===0&&self.puzzleStartedAt===null&&Math.abs(room.positions[role].x-levels[room.level].map.terminal)<3.2)self.puzzleStartedAt=Date.now();
         broadcast(room);return;
+      }
+      if(message.type==='coin'){
+        const index=Number(message.index);
+        const coin=coinTrails[room.level]?.[index];
+        const player=room.positions[role];
+        if(!Number.isInteger(index)||!coin||self.coinIds.includes(index))return;
+        if(Math.abs(player.x-coin.x)>3.2||Math.abs(player.height+29-coin.height)>39)return;
+        self.coinIds.push(index);self.coins+=5;broadcast(room);return;
       }
       if(message.type==='solve'&&!self.correct){
         const puzzle=levels[room.level].puzzles[self.puzzleIndex];

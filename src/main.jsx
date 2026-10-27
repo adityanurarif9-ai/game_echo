@@ -1,6 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {levels,isCorrect,getEnding} from './game';
+import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,floorHeightAt,canEnterAtHeight} from './game';
 import {createAudio} from './audio';
 import CacheProp from './CacheProp';
 import GameGuide from './GameGuide';
@@ -13,6 +13,7 @@ import './title-logo.css';
 import './guide.css';
 import './loading-brand.css';
 import './race-features.css';
+import './adventure-upgrade.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -24,7 +25,7 @@ function readProgress(){
   }catch{return {unlocked:0,completed:[],coins:0}}
 }
 
-function Sprite({id='r',walking=false,running=false,direction='right',className=''}){
+function Sprite({id='r',walking=false,running=false,jumping=false,jumpFrame=2,direction='right',className=''}){
   const [frame,setFrame]=useState(0);
   useEffect(()=>{
     for(let index=0;index<5;index++){
@@ -33,10 +34,15 @@ function Sprite({id='r',walking=false,running=false,direction='right',className=
     }
   },[id]);
   useEffect(()=>{
-    if(!walking){setFrame(0);return}
+    if(!walking||jumping){setFrame(0);return}
     const clock=setInterval(()=>setFrame(v=>(v+1)%5),running?78:125);
     return()=>clearInterval(clock);
-  },[walking,running]);
+  },[walking,running,jumping]);
+  if(id==='r'){
+    const row=jumping?3:running?2:walking?1:0;
+    const column=jumping?jumpFrame:walking?frame:0;
+    return <div className={`sprite hd-sprite ${className} ${direction==='left'?'face-left':''}`} style={{backgroundPosition:`${column*25}% ${row*100/3}%`}} aria-hidden="true"/>;
+  }
   return <img className={`sprite ${className} ${direction==='left'?'face-left':''}`} src={`/sprites/${id}-${walking?`walk-${frame}`:'idle'}.png`} alt="" draggable="false"/>;
 }
 
@@ -58,6 +64,11 @@ function App(){
   const [x,setX]=useState(9);
   const [walking,setWalking]=useState(false);
   const [running,setRunning]=useState(false);
+  const [elevation,setElevation]=useState(0);
+  const [jumping,setJumping]=useState(false);
+  const [jumpFrame,setJumpFrame]=useState(2);
+  const [coinIds,setCoinIds]=useState([]);
+  const [droneX,setDroneX]=useState(57);
   const [direction,setDirection]=useState('right');
   const [dialog,setDialog]=useState(false);
   const [conversationStep,setConversationStep]=useState(null);
@@ -81,8 +92,11 @@ function App(){
   const [toast,setToast]=useState('');
   const [hurt,setHurt]=useState(false);
   const [recovering,setRecovering]=useState(false);
-  const keys=useRef({left:false,right:false,run:false});
+  const keys=useRef({left:false,right:false,run:false,jump:false});
   const xRef=useRef(9);
+  const elevationRef=useRef(0);
+  const velocityRef=useRef(0);
+  const coinIdsRef=useRef(new Set());
   const invincibleUntil=useRef(0);
   const interactRef=useRef(null);
   const audioRef=useRef(null);
@@ -104,6 +118,7 @@ function App(){
   const peerSprite='r';
   const current=levels[level];
   const map=current.map;
+  const trail=coinTrails[level];
   const solved=puzzleIndex>=current.puzzles.length;
   const nearby=(node)=>Math.abs(x-map[node])<(node==='npc'?2.8:3.2);
   const nearbyCache=map.caches.findIndex(cache=>Math.abs(x-cache.x)<3.2);
@@ -140,7 +155,7 @@ function App(){
     return()=>clearTimeout(timer);
   },[screen]);
   useEffect(()=>{
-    if(paused||loading||pickupOpen){keys.current={left:false,right:false,run:false};setWalking(false);setRunning(false)}
+    if(paused||loading||pickupOpen){keys.current={left:false,right:false,run:false,jump:false};setWalking(false);setRunning(false)}
   },[paused,loading,pickupOpen]);
   useEffect(()=>{
     if(screen==='game'&&collected&&!pickupSeen.current){
@@ -179,14 +194,16 @@ function App(){
     if(mode==='multi')restartSeen.current=room?.restartCount??0;
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
     setStarted(true);setPauseOpen(false);setScreen('game');setLevel(index);xRef.current=roomRole==='guest'?7:9;setX(xRef.current);setWalking(false);
+    elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);setJumpFrame(2);coinIdsRef.current=new Set();setCoinIds([]);
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
     setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
     pickupSeen.current=false;setPickupOpen(false);setCollected(false);setLevelClear(false);setEnding(null);
-    setSeconds(150);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false,run:false};puzzleStartedAt.current=null;
+    setSeconds(150);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false,run:false,jump:false};puzzleStartedAt.current=null;
   }
   function restartAttempt(){
     const start=roomRole==='guest'&&mode==='multi'?7:9;
-    keys.current={left:false,right:false,run:false};xRef.current=start;setX(start);setWalking(false);setRunning(false);setDirection('right');
+    keys.current={left:false,right:false,run:false,jump:false};xRef.current=start;setX(start);setWalking(false);setRunning(false);setDirection('right');
+    elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
     setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);setHealth(3);
@@ -210,11 +227,12 @@ function App(){
       setEnding(null);setScreen('select');setToast(room.winner===roomRole?'Kamu menang! Bonus 50 koin.':'Raka lain lebih dulu sampai. Coba level berikutnya!');return;
     }
     if(room.phase==='game'){
+      if(room.coinIds){room.coinIds.forEach(id=>coinIdsRef.current.add(id));setCoinIds([...coinIdsRef.current])}
       if(room.puzzleIndex!==puzzleIndex){setPuzzleIndex(room.puzzleIndex);setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);puzzleStartedAt.current=Date.now();if(room.puzzleIndex===3)setDialog(false)}
       setCollected(room.collected);
       if(room.correct&&room.puzzleIndex<3)setFeedback({correct:true,text:levels[room.level].puzzles[room.puzzleIndex].explain});
     }
-  },[mode,room?.phase,room?.level,room?.puzzleIndex,room?.correct,room?.collected,room?.ending,screen,level,puzzleIndex]);
+  },[mode,room?.phase,room?.level,room?.puzzleIndex,room?.correct,room?.collected,room?.coinIds,room?.ending,screen,level,puzzleIndex]);
 
   function startLevel(index){
     if(index>unlocked)return;
@@ -269,12 +287,13 @@ function App(){
   },[screen,x,level,conversationSeen,talking,dialog,levelClear,ending,paused,loading]);
   useEffect(()=>{
     function down(e){
-      if(['ArrowLeft','ArrowRight','a','A','d','D','e','E','Shift'].includes(e.key) && e.target.tagName!=='INPUT')e.preventDefault();
+      if(['ArrowLeft','ArrowRight','ArrowUp','a','A','d','D','w','W','e','E','Shift',' '].includes(e.key) && e.target.tagName!=='INPUT')e.preventDefault();
       if(e.target.tagName==='INPUT')return;
       if(screen==='game'&&!paused&&!pickupOpen&&!loading&&!recovering){
         if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')keys.current.left=true;
         if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')keys.current.right=true;
         if(e.key==='Shift')keys.current.run=true;
+        if((e.key==='ArrowUp'||e.key.toLowerCase()==='w'||e.code==='Space')&&!e.repeat)keys.current.jump=true;
       }
       if(e.key.toLowerCase()==='e'&&!e.repeat)interactRef.current?.();
       if(e.key==='Escape'&&screen==='game'&&!dialog&&!levelClear&&!loading){
@@ -294,14 +313,31 @@ function App(){
       const delta=(keys.current.right?1:0)-(keys.current.left?1:0);
       setWalking(delta!==0);
       setRunning(delta!==0&&keys.current.run);
-      if(!delta){if(mode==='multi'&&lastSentMove.current){sendRoom({type:'move',x:xRef.current,direction,walking:false,running:false});lastSentMove.current=false}return}
-      setDirection(delta<0?'left':'right');
-      if(Date.now()-lastStep.current>360){sound('step');lastStep.current=Date.now()}
+      const floorBefore=floorHeightAt(level,xRef.current);
+      if(keys.current.jump&&elevationRef.current<=floorBefore+2&&velocityRef.current<=0){
+        velocityRef.current=16.5;
+        sound('jump');
+      }
+      keys.current.jump=false;
+      let nextHeight=elevationRef.current+velocityRef.current;
+      velocityRef.current-=1.3;
       let next=Math.max(3,Math.min(97,xRef.current+delta*(keys.current.run?.54:.32)));
+      if(!canEnterAtHeight(level,next,nextHeight))next=xRef.current;
+      const floorAfter=floorHeightAt(level,next);
+      if(nextHeight<=floorAfter&&velocityRef.current<=0){nextHeight=floorAfter;velocityRef.current=0}
+      const airborne=nextHeight>floorAfter+2||velocityRef.current>0;
+      setJumping(airborne);
+      setJumpFrame(velocityRef.current>8?0:velocityRef.current>1?1:velocityRef.current>-4?2:velocityRef.current>-9?3:4);
+      if(Math.abs(nextHeight-elevationRef.current)>.05){elevationRef.current=nextHeight;setElevation(nextHeight)}
+      if(delta){setDirection(delta<0?'left':'right');if(!airborne&&Date.now()-lastStep.current>360){sound('step');lastStep.current=Date.now()}}
+      const patroller=55+Math.sin(Date.now()/650)*8;
+      if(level===2)setDroneX(patroller);
       const beams=map.scanners;
-      const hit=active&&beams.some(point=>Math.abs(next-point)<1.4)&&Date.now()>invincibleUntil.current;
+      const beamHit=active&&beams.some(point=>Math.abs(next-point)<1.4&&(level!==2||nextHeight<floorHeightAt(level,point)+51));
+      const droneHit=level===2&&Math.abs(next-patroller)<1.65&&Math.abs(nextHeight-112)<47;
+      const hit=(beamHit||droneHit)&&Date.now()>invincibleUntil.current;
       if(hit){
-        sound('hit');setHurt(true);setRecovering(true);keys.current={left:false,right:false};setWalking(false);
+        sound('hit');setHurt(true);setRecovering(true);keys.current={left:false,right:false,run:false,jump:false};setWalking(false);setRunning(false);
         invincibleUntil.current=Date.now()+2000;
         setHealth(h=>Math.max(0,h-1));
         setTimeout(()=>{
@@ -312,11 +348,19 @@ function App(){
         return;
       }
       xRef.current=next;setX(next);
-      if(mode==='multi'){lastSentMove.current=true;sendRoom({type:'move',x:next,direction:delta<0?'left':'right',walking:true,running:keys.current.run})}
+      if(mode==='multi'&&(delta||airborne||lastSentMove.current)){
+        sendRoom({type:'move',x:next,height:nextHeight,direction:delta<0?'left':delta>0?'right':direction,walking:delta!==0,running:keys.current.run,jumping:airborne});
+        lastSentMove.current=Boolean(delta||airborne);
+      }
+      trail.forEach((coin,index)=>{
+        if(coinIdsRef.current.has(index)||Math.abs(next-coin.x)>1.45||Math.abs(nextHeight+29-coin.height)>36)return;
+        coinIdsRef.current.add(index);setCoinIds([...coinIdsRef.current]);sound('coin');
+        if(mode==='multi')sendRoom({type:'coin',index});
+        else setProgress(p=>({...p,coins:p.coins+5}));
+      });
     },40);
     return()=>clearInterval(loop);
   },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading,recovering,health]);
-  useEffect(()=>{if(mode==='multi'&&!walking&&lastSentMove.current){sendRoom({type:'move',x:xRef.current,direction,walking:false,running:false});lastSentMove.current=false}},[mode,walking]);
   useEffect(()=>{if(screen==='game'&&health===0&&!ending&&!recovering){if(mode==='multi')sendRoom({type:'fail'});else{setEnding('bad');setScreen('ending')}}},[screen,health,ending,mode,recovering]);
   useEffect(()=>{
     if(screen!=='game'||level!==3||talking||levelClear||pickupOpen||ending||paused||loading)return;
@@ -378,10 +422,12 @@ function App(){
           <div className="title-vignette"/>
         </div>
         <div className="title-content">
+          <div className="title-case-tag"><span className="live-dot"/> CASE 047 <i/> BERKAS RAHASIA</div>
           <p className="title-kicker">MISTERI · MATEMATIKA · PETUALANGAN</p>
           <h1 className="title-accessible-name">Jejak yang Hilang</h1>
           <img className="title-logo" src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang dengan kaca pembesar dan papan investigasi" fetchPriority="high" />
           <p className="title-story">Vira menemukan kebocoran data dan pergi. Raka mengikuti pesan berkode yang ia tinggalkan untuk mengungkap kebenarannya.</p>
+          <p className="title-brief">TELUSURI JEJAKNYA · PECAHKAN KODENYA · TEMUKAN KEBENARAN</p>
           <div className="title-actions"><button className="title-play" onClick={()=>setScreen('mode')}>▶ PLAY</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
           <p className="title-subline">4 LEVEL · 2 CARA BERMAIN · 1 MISTERI</p>
         </div>
@@ -417,7 +463,7 @@ function App(){
         <div className="level-cards">{levels.map((item,index)=>{const locked=index>unlocked;const done=(mode==='multi'?room?.completed:progress.completed)?.includes(index);return <button key={item.name} className={`level-card ${locked?'locked':''} ${done?'complete':''}`} onClick={()=>startLevel(index)} disabled={locked||(mode==='multi'&&roomRole!=='host')}><div className="level-card-art" style={{backgroundImage:`url('/scenes/room-${index}.svg')`}}/><div className="level-card-content"><span className="level-number">{String(index+1).padStart(2,'0')}</span><div><small>{item.chapter}</small><strong>{item.name}</strong><em>{item.location}</em></div><b>{locked?'🔒 TERKUNCI':done?'✓ SELESAI':mode==='multi'&&roomRole==='guest'?'MENUNGGU':'▶ MAIN'}</b></div></button>})}</div>
         <p className="level-select-foot">BERKAS TERKUMPUL {dossiers}/4 · LEVEL TERBUKA {unlocked+1}/4</p>
       </section> : ending==='bad' ? <section className="game-over-screen" aria-label="Misi gagal" style={{'--failure-scene':`url('/scenes/room-${level}.svg')`}}>
-        <div className="game-over-stage"><div className="failure-orbit"/><div className="failure-signal">×<span>CONNECTION LOST</span></div><img src={`/sprites/${heroSprite}-idle.png`} alt={heroName}/><div className="failure-floor"/><span className="failure-stage-caption">JEJAK YANG HILANG · {current.location.toUpperCase()}</span></div>
+        <div className="game-over-stage"><div className="failure-orbit"/><div className="failure-signal">×<span>CONNECTION LOST</span></div><Sprite id={heroSprite}/><div className="failure-floor"/><span className="failure-stage-caption">JEJAK YANG HILANG · {current.location.toUpperCase()}</span></div>
         <div className="game-over-copy"><p className="failure-kicker"><i/> GAME OVER · LEVEL {String(level+1).padStart(2,'0')} / 04</p><h1>MISI<br/><em>TERHENTI.</em></h1><p className="failure-reason">{seconds===0?'Waktu operasi habis sebelum bukti terkirim. Jalur ini masih bisa dicoba lagi.':health===0?`${heroName} terdeteksi terlalu sering oleh pemindai. Petunjuk Vira masih menunggu untuk dipecahkan.`:'Operasi tim terhenti. Susun kembali langkah kalian dan coba lagi.'}</p><div className="failure-progress"><span><small>LOKASI</small><strong>{current.name}</strong></span><span><small>BERKAS</small><strong>{dossiers} / 4 diamankan</strong></span></div><div className="failure-actions"><button className="failure-retry" onClick={()=>{if(mode!=='multi')setMistakes(0);startLevel(level)}} disabled={mode==='multi'&&roomRole!=='host'}>↻ <span>{mode==='multi'&&roomRole!=='host'?'Menunggu Raka':'Ulangi Level'}</span> →</button><button className="failure-levels" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih Level</button></div><small className="failure-tip">{mode==='multi'?'Kalian akan mengulang level bersama.':'Nyawa dan soal di level ini akan dimulai dari awal.'}</small></div>
       </section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mode==='multi'?room?.mistakes:mistakes}</span><span>✦ {mode==='multi'?room?.coins??0:progress.coins} koin</span>{mode==='multi'&&<span>{room?.winner===roomRole?'🏆 Kamu menang!':'Raka lain menang'}</span>}</div><button className="main-button" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih level →</button></div></section> : <>
         <section className="game-frame" aria-label="Bingkai permainan Jejak yang Hilang">
@@ -428,19 +474,22 @@ function App(){
             <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
             <div className="atmosphere"><i/><i/><i/><i/><i/></div>
             <div className="scene-ground"/>
+            {level===2&&tierPlatforms.map((step,index)=><div key={step.start} className={`stair-platform stair-${index}`} style={{left:`${step.start}%`,width:`${step.end-step.start}%`,'--rise':`${step.height}px`}}><span>{index+1}</span></div>)}
+            {trail.map((coin,index)=>!coinIds.includes(index)&&<div key={index} className="path-coin" style={{left:`${coin.x}%`,bottom:`calc(30% - 5px + ${coin.height}px)`}} aria-label={`Koin ${index+1}`}><i>✦</i></div>)}
+            {level===2&&<div className="security-drone" style={{left:`${droneX}%`}} aria-label="Drone patroli bergerak"><i/><b>●</b><i/></div>}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
             {map.caches.map((cache,index)=><div key={cache.name} className={`object cache-object cache-${index} ${solved&&!collected?'searchable':''} ${collected&&index===map.hidden?'taken':''}`} style={{left:`${cache.x}%`}}><CacheProp kind={cache.kind}/><span className="cache-name">{cache.name}</span>{nearbyCache===index&&!collected&&<i>TEKAN E</i>}</div>)}
             <div className={`object door-object ${collected?'ready':''}`} style={{left:`${map.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{nearby('door')&&<i>TEKAN E</i>}</div>
-            {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`}} aria-label={`Pemindai ${scannerOn?'aktif':'siaga'}`}><div className="scanner-head"><i/><b/><i/></div><div className="scanner-beam"/><div className="scanner-base"/><span>PEMINDAI</span></div>)}
-            {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player rival-raka" style={{left:`${peer.x}%`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} running={peer.running} direction={peer.direction}/><i className="foot-shadow"/></div>}
-            <div className={`player ${hurt?'player-hit':''}`} style={{left:`${x}%`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} direction={heroFacing}/><i className="foot-shadow"/></div>
+            {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`,bottom:`calc(30% - 4px + ${floorHeightAt(level,point)}px)`}} aria-label={`Pemindai ${scannerOn?'aktif':'siaga'}`}><div className="scanner-head"><i/><b/><i/></div><div className="scanner-beam"/><div className="scanner-base"/><span>PEMINDAI</span></div>)}
+            {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player rival-raka" style={{left:`${peer.x}%`,bottom:`calc(30% - 5px + ${peer.height||0}px)`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} running={peer.running} jumping={peer.jumping} direction={peer.direction}/><i className="foot-shadow"/></div>}
+            <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
           {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?'Mengulang level dari awal...':'Nyawa habis...'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>
-        <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><button className="run-control" aria-label="Tahan untuk lari" onPointerDown={e=>{e.preventDefault();keys.current.run=true;e.currentTarget.setPointerCapture(e.pointerId)}} onPointerUp={()=>keys.current.run=false} onPointerCancel={()=>keys.current.run=false} onLostPointerCapture={()=>keys.current.run=false}>⚡ LARI</button><span>← → / A D bergerak · tahan Shift untuk lari</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
+        <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><button className="run-control" aria-label="Tahan untuk lari" onPointerDown={e=>{e.preventDefault();keys.current.run=true;e.currentTarget.setPointerCapture(e.pointerId)}} onPointerUp={()=>keys.current.run=false} onPointerCancel={()=>keys.current.run=false} onLostPointerCapture={()=>keys.current.run=false}>⚡ LARI</button><button className="jump-control" aria-label="Lompat" onPointerDown={e=>{e.preventDefault();keys.current.jump=true}}>↑ LOMPAT</button><span>← → / A D gerak · Shift lari · Spasi lompat</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
         </section>
         {pickupOpen&&<div className="evidence-reveal" role="dialog" aria-modal="true" aria-label="Berkas ditemukan"><div className="evidence-particles" aria-hidden="true"><i/><i/><i/><i/><i/><i/></div><div className="evidence-card"><p className="evidence-kicker">BUKTI DITEMUKAN · {current.dossier.code}</p><div className="evidence-art" aria-hidden="true"><div className="evidence-glow"/><div className="evidence-folder-back"/><div className="evidence-page"><span>CASE 047</span><i/><i/><i/></div><div className="evidence-folder-front"><b>▣</b><span>{current.dossier.code}</span></div></div><h2>{current.dossier.title}</h2><p>{current.dossier.detail}</p><button onClick={()=>setPickupOpen(false)}>Simpan berkas dan lanjut →</button></div></div>}
         {levelClear&&<div className="modal-backdrop"><section className="clear-card" role="dialog" aria-modal="true" aria-label="Level selesai"><p className="kicker">LEVEL {level+1} SELESAI</p><h2>Berkas diamankan.</h2><p>Kode terpecahkan dan jalur keluar terbuka. {level===3?'Saatnya mengirim bukti.':'Level berikutnya kini terbuka di layar pilih level.'}</p><button className="main-button" onClick={nextLevel}>{level===3?'Lihat akhir cerita':'Pilih level berikutnya'} →</button></section></div>}

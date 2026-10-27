@@ -46,8 +46,8 @@ export const levels = [
       {who:'r',text:'Aku akan memeriksa pesanmu dengan fungsi invers.'},
       {who:'npc',text:'Bagus. Angka positif berarti huruf besar, negatif huruf kecil, dan nol adalah spasi.'}
     ],
-    story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, balikkan enkripsi dan baca pesan tersembunyi. Dua pemindai melindungi server.',
-    goal:'Periksa ruang server, bongkar fungsi invers, dan ikuti petunjuk tentang Vira.',
+    story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, naik tangga server bertingkat, lewati drone patroli, lalu balikkan enkripsi pada terminal di atas.',
+    goal:'Lompati tangga ruang server, hindari drone dan pemindai, lalu bongkar fungsi invers di terminal atas.',
     map:{npc:32,terminal:77,door:3,scanners:[42,71],caches:[{x:15,name:'Rak server A',kind:'server'},{x:49,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Jejak akses tertua berasal dari rak pertama, dekat pintu masuk.'},
     puzzles:[
       {prompt:'Dekripsi 11, −1, −52, −25, 2, −4, −13, −52, −31, −1, −55. Pesan lokasi berkas apa yang muncul?', formula:'f(x) = 3x + 2 · f⁻¹(y) = (y − 2) ÷ 3', rule:'Positif: huruf besar A=1–Z=26. Negatif: huruf kecil a=−1–z=−26. Nol: spasi.', example:'11 → (11 − 2) ÷ 3 = 3 → C; −1 → −1 → a.', answers:['CARI BERKAS'], hint:'Hasil awalnya 3, −1, −18, −9, 0.', explain:'Cari berkas. Petunjuk Vira ternyata tersembunyi dalam angka bertanda.'},
@@ -77,3 +77,20 @@ export const levels = [
 export const normalizeAnswer = value => value.trim().toUpperCase().replace(/\s*[-–—]\s*/g,'-').replace(/\s*,\s*/g,',').replace(/\s+/g,' ');
 export const isCorrect = (puzzle,value) => puzzle.answers.some(answer => normalizeAnswer(answer)===normalizeAnswer(value));
 export const getEnding = ({dossiers,mistakes,escaped}) => !escaped ? 'bad' : dossiers===4 && mistakes<=3 ? 'true' : 'neutral';
+
+// Koin berada di jalur yang benar-benar bisa dijangkau pemain. Tinggi diukur dari lantai.
+export const coinTrails = [
+  [{x:22,height:29},{x:35,height:29},{x:47,height:29},{x:59,height:29},{x:69,height:29},{x:81,height:29},{x:92,height:29}],
+  [{x:23,height:29},{x:34,height:29},{x:51,height:29},{x:61,height:29},{x:74,height:29},{x:87,height:29},{x:94,height:29}],
+  [{x:21,height:29},{x:33,height:29},{x:42,height:73},{x:54,height:117},{x:67,height:157},{x:79,height:117},{x:91,height:29}],
+  [{x:16,height:29},{x:30,height:29},{x:46,height:29},{x:58,height:29},{x:72,height:29},{x:84,height:29},{x:94,height:29}]
+];
+
+export const tierPlatforms=[
+  {start:37,end:49,height:44},
+  {start:49,end:61,height:88},
+  {start:61,end:73,height:128},
+  {start:73,end:86,height:88}
+];
+export const floorHeightAt=(level,x)=>level===2?(tierPlatforms.find(step=>x>=step.start&&x<step.end)?.height??0):0;
+export const canEnterAtHeight=(level,x,height)=>floorHeightAt(level,x)<=height+8;

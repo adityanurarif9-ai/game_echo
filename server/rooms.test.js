@@ -49,6 +49,14 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused===false)).positions.host.x,9);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true}));
   assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.running,true);
+  host.send(JSON.stringify({type:'move',x:22,height:0,direction:'left',walking:true}));
+  await hostNext(message=>message.type==='state'&&message.positions.host.x===22);
+  host.send(JSON.stringify({type:'coin',index:0}));
+  const coinState=await hostNext(message=>message.type==='state'&&message.coinIds.includes(0));
+  assert.equal(coinState.coins,5);
+  assert.equal((await guestNext(message=>message.type==='state'&&message.scores.host===5)).coinIds.length,0);
+  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true}));
+  await hostNext(message=>message.type==='state'&&message.positions.host.x===73);
   for(const [index,answer] of ['1','ORANG','HILANG'].entries()){
     host.send(JSON.stringify({type:'solve',answer}));
     const scored=await hostNext(message=>message.type==='state'&&message.puzzleIndex===index&&message.correct);
