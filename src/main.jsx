@@ -53,6 +53,11 @@ function App(){
   const [roomInput,setRoomInput]=useState(new URLSearchParams(location.search).get('room')||'');
   const [roomError,setRoomError]=useState('');
   const [roomConnected,setRoomConnected]=useState(false);
+  const [roomConnecting,setRoomConnecting]=useState(false);
+  const [roomServerAddress,setRoomServerAddress]=useState(()=>{
+    const shared=new URLSearchParams(location.search).get('server');
+    try{return shared||localStorage.getItem('echo-room-server')||import.meta.env.VITE_ROOM_SERVER_URL||''}catch{return shared||import.meta.env.VITE_ROOM_SERVER_URL||''}
+  });
   const [started,setStarted]=useState(false);
   const [progress,setProgress]=useState(readProgress);
   const [level,setLevel]=useState(0);
@@ -108,7 +113,7 @@ function App(){
   const firstScreen=useRef(true);
   const restartSeen=useRef(0);
   const puzzleStartedAt=useRef(null);
-  const hostedWithoutRoomServer=location.hostname.endsWith('.vercel.app');
+  const hostedGame=location.protocol==='https:';
   const paused=mode==='multi'?Boolean(room?.paused):pauseOpen;
   const dossiers=mode==='multi'&&room?room.completed.length+(room.collected&&!room.completed.includes(level)?1:0):progress.completed.length+(collected&&!progress.completed.includes(level)?1:0);
   const unlocked=mode==='multi'?(room?.unlocked??0):progress.unlocked;
@@ -173,21 +178,37 @@ function App(){
     wsRef.current?.close();restartSeen.current=0;setRoomError('');setRoomConnected(false);setRoom(null);setRoomCode('');setRoomRole(null);
     const code=roomInput.toUpperCase().trim();
     if(!create&&!code){setRoomError('Masukkan kode ruang dari temanmu.');return}
-    const protocol=location.protocol==='https:'?'wss:':'ws:';
-    const socket=new WebSocket(`${protocol}//${location.host}/echo-room`);
+    let serverUrl;
+    try{
+      serverUrl=new URL(roomServerAddress.trim()||location.origin);
+      if(!['http:','https:','ws:','wss:'].includes(serverUrl.protocol))throw new Error('protocol');
+      serverUrl.protocol=serverUrl.protocol==='https:'||serverUrl.protocol==='wss:'?'wss:':'ws:';
+      if(hostedGame&&serverUrl.protocol!=='wss:')throw new Error('secure');
+      serverUrl.pathname='/echo-room';serverUrl.search='';serverUrl.hash='';
+    }catch{setRoomError('Masukkan alamat server yang benar, misalnya https://nama-server.onrender.com.');return}
+    try{localStorage.setItem('echo-room-server',roomServerAddress.trim())}catch{}
+    setRoomConnecting(true);
+    const socket=new WebSocket(serverUrl.href);
+    let welcomed=false;
     wsRef.current=socket;
     socket.onopen=()=>socket.send(JSON.stringify(create?{type:'create'}:{type:'join',code}));
     socket.onmessage=event=>{
       let data;try{data=JSON.parse(event.data)}catch{return}
       if(data.type==='welcome'){
-        setRoomRole(data.role);setRoomCode(data.code);setRoomUrl(data.lanUrl||'');setRoomConnected(true);setRoomError('');
+        welcomed=true;
+        const link=new URL(location.origin);
+        link.searchParams.set('room',data.code);
+        if(hostedGame)link.searchParams.set('server',roomServerAddress.trim());
+        setRoomRole(data.role);setRoomCode(data.code);setRoomUrl(hostedGame?link.href:data.lanUrl||'');setRoomConnected(true);setRoomConnecting(false);setRoomError('');
       }else if(data.type==='state')setRoom(data);
       else if(data.type==='error'||data.type==='roomClosed'){
-        setRoomError(data.message);if(data.type==='roomClosed'){setRoomConnected(false);setRoom(null);setRoomRole(null);setScreen('lobby')}
+        setRoomError(data.message);
+        if(!welcomed){setRoomConnecting(false);socket.close()}
+        if(data.type==='roomClosed'){setRoomConnected(false);setRoom(null);setRoomRole(null);setScreen('lobby')}
       }else if(data.type==='wrong')setRoomError(data.message);
     };
-    socket.onerror=()=>setRoomError('Ruang multiplayer belum tersambung. Untuk dua laptop, buka alamat jaringan dari game yang berjalan di laptop pembuat ruang.');
-    socket.onclose=()=>setRoomConnected(false);
+    socket.onerror=()=>{setRoomConnecting(false);setRoomError('Server belum tersambung. Periksa alamat server dan tunggu sebentar jika baru dinyalakan.')};
+    socket.onclose=()=>{if(wsRef.current===socket){setRoomConnected(false);setRoomConnecting(false);if(!welcomed)setRoomError(previous=>previous||'Sambungan server terputus. Coba lagi sebentar.') }};
   }
   function leaveRoom(destination='mode'){
     wsRef.current?.close();wsRef.current=null;setRoom(null);setRoomRole(null);setRoomCode('');setRoomConnected(false);
@@ -460,19 +481,19 @@ function App(){
       </section> : screen==='lobby' ? <section className="lobby-screen" aria-label="Ruang multiplayer">
         <button className="game-back" onClick={leaveRoom}>← Pilih mode</button>
         <div className="lobby-panel"><p className="title-kicker">MULTIPLAYER · 2 PEMAIN</p><h1>{roomCode?'Ruang siap':'Main bersama teman'}</h1>
-          {hostedWithoutRoomServer&&<p className="lobby-hint">Balapan dua laptop saat ini tersedia lewat game yang berjalan di laptop pembuat ruang pada Wi-Fi yang sama. Situs Vercel belum memiliki server ruang untuk bermain lewat internet.</p>}
+          {hostedGame&&<label className="room-link">Alamat server multiplayer<input aria-label="Alamat server multiplayer" type="url" value={roomServerAddress} onChange={event=>setRoomServerAddress(event.target.value)} placeholder="https://nama-server.onrender.com" spellCheck="false"/><small>Isi sekali dengan alamat server online. Kode ruang tetap dibagikan ke temanmu.</small></label>}
           {roomConnected&&roomCode ? <>
             <div className="room-code"><small>KODE RUANG</small><strong>{roomCode}</strong></div>
-            <p className="lobby-hint">{roomRole==='host'?'Kirim alamat dan kode ini ke temanmu. Keduanya harus membuka game di jaringan Wi-Fi yang sama.':'Kamu bergabung sebagai Raka 2. Tunggu Raka 1 memilih level.'}</p>
+            <p className="lobby-hint">{roomRole==='host'?'Kirim tautan dan kode ruang ini ke temanmu. Alamat server akan terisi otomatis dari tautan.':'Kamu bergabung sebagai Raka 2. Tunggu Raka 1 memilih level.'}</p>
             {roomRole==='host'&&roomUrl&&<label className="room-link">Alamat untuk laptop teman<input value={roomUrl} readOnly onFocus={e=>e.target.select()} onClick={e=>e.target.select()}/></label>}
             <div className="room-players"><span>● Raka 1 {room?.players?.host?'siap':'menunggu'}</span><span>● Raka 2 {room?.players?.guest?'siap':'menunggu'}</span></div>
             {roomRole==='host'&&<button className="title-play" disabled={!room?.players?.guest} onClick={()=>setScreen('select')}>PILIH LEVEL →</button>}
             {roomRole==='guest'&&<p className="waiting-note">Menunggu Raka 1 memulai balapan…</p>}
           </> : <>
-            <p className="lobby-hint">Pemain pertama membuat ruang. Pemain kedua membuka game dari laptop lain lalu memasukkan kodenya.</p>
-            <button className="title-play" disabled={hostedWithoutRoomServer} onClick={()=>connectRoom(true)}>BUAT RUANG BARU</button>
+            <p className="lobby-hint">Pemain pertama membuat ruang. Pemain kedua membuka game dari laptop lain lalu memasukkan kodenya.{roomConnecting?' Server sedang disambungkan, tunggu sebentar…':''}</p>
+            <button className="title-play" disabled={roomConnecting} onClick={()=>connectRoom(true)}>{roomConnecting?'MENYAMBUNG…':'BUAT RUANG BARU'}</button>
             <div className="join-divider">ATAU MASUKKAN KODE TEMAN</div>
-            <form className="join-form" onSubmit={event=>{event.preventDefault();connectRoom(false)}}><input aria-label="Kode ruang" value={roomInput} maxLength={6} disabled={hostedWithoutRoomServer} onChange={event=>setRoomInput(event.target.value.toUpperCase())} placeholder="CONTOH: A7K2QP"/><button type="submit" disabled={hostedWithoutRoomServer}>GABUNG →</button></form>
+            <form className="join-form" onSubmit={event=>{event.preventDefault();connectRoom(false)}}><input aria-label="Kode ruang" value={roomInput} maxLength={6} disabled={roomConnecting} onChange={event=>setRoomInput(event.target.value.toUpperCase())} placeholder="CONTOH: A7K2QP"/><button type="submit" disabled={roomConnecting}>GABUNG →</button></form>
           </>}
           {roomError&&<p className="room-error" role="alert">{roomError}</p>}
         </div>

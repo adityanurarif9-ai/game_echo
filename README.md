@@ -20,7 +20,17 @@ Node.js dan Visual Studio Code sudah terpasang. React sudah terpasang di folder 
 
 Repository GitHub game ini adalah `https://github.com/adityanurarif9-ai/game_echo`. Masuk ke Vercel, pilih **Add New → Project**, hubungkan GitHub, lalu impor repository `game_echo`. Proyek sudah menyediakan `vercel.json` dengan preset Vite, perintah build `npm run build`, dan folder hasil `dist`. Setelah deploy, setiap push ke cabang `main` akan memicu deploy produksi berikutnya.
 
-**Single Player** dapat dimainkan di alamat Vercel dari laptop atau HP tanpa menjalankan server lokal. **Multiplayer** saat ini menggunakan ruang WebSocket dalam memori server Vite lokal; build statis di Vercel belum menyediakan ruang bersama yang andal untuk dua perangkat. Untuk bermain bersama, jalankan game dari laptop pada Wi-Fi yang sama seperti petunjuk di bawah. Mode online lintas jaringan memerlukan backend ruang dan penyimpanan bersama yang dideploy terpisah.
+**Single Player** dapat dimainkan di alamat Vercel dari laptop atau HP tanpa menjalankan server lokal. Untuk **Multiplayer lewat internet**, deploy server ruang dari repository ini ke Render, lalu isi alamatnya pada layar Multiplayer. Render menjalankan `npm run server` dan menyediakan koneksi langsung untuk dua pemain. Server ini menyimpan ruang dan skor selama prosesnya hidup; ruang akan hilang jika server restart atau tertidur. Koin Single Player tersimpan di browser masing-masing, belum menjadi akun online.
+
+### Menyalakan server Multiplayer online
+
+1. Buka [Render Dashboard](https://dashboard.render.com/) dan masuk dengan GitHub.
+2. Pilih **New → Blueprint**, lalu pilih repository `adityanurarif9-ai/game_echo`. Render akan membaca `render.yaml` dan membuat layanan `game-echo-room` pada paket Free. Jika memilih **New → Web Service** secara manual, isi **Build Command** `npm ci`, **Start Command** `npm run server`, dan **Health Check Path** `/health`.
+3. Tunggu sampai status layanan **Live**. Salin alamat publik `https://...onrender.com` yang ditampilkan Render. Buka alamat itu di browser; bila server siap, muncul `{"ok":true,"service":"jejak-yang-hilang-room"}`.
+4. Buka game di Vercel → **Play → Multiplayer**. Masukkan alamat Render tadi ke kolom **Alamat server multiplayer**, lalu tekan **Buat Ruang Baru**. Tunggu jika layanan Free baru bangun dari tidur.
+5. Salin tautan ruang yang muncul dan kirim ke teman. Teman membuka tautan dari laptop/HP lain, tekan **Play → Multiplayer → Gabung**. Pembuat ruang memilih level setelah keduanya siap.
+
+Alamat server tersimpan di browser setelah dipakai. Bila ingin semua pemain mendapat alamat otomatis tanpa tautan, atur variabel lingkungan Vercel `VITE_ROOM_SERVER_URL` ke alamat Render tadi dan lakukan redeploy. Kode frontend memakai variabel itu saat build.
 
 Untuk **multiplayer dua laptop dalam Wi-Fi yang sama**, cukup jalankan game di laptop pertama. Tekan **Play → Multiplayer → Buat Ruang Baru**. Alamat untuk laptop teman akan muncul di layar bersama kode ruang enam karakter. Buka alamat itu di browser laptop kedua, tekan **Play → Multiplayer**, lalu masukkan kode jika belum terisi. Setelah kedua pemain siap, Raka memilih level. Posisi pemain, soal yang terpecahkan, dan berkas tersinkron langsung. Laptop pertama dan terminalnya harus tetap menyala. Bila Windows Firewall meminta izin akses Node.js untuk jaringan privat, izinkan agar laptop lain bisa terhubung. Kalau alamat otomatis tidak cocok dengan Wi-Fi yang dipakai, cari alamat IPv4 laptop pertama dengan `ipconfig`, lalu buka `http://ALAMAT-IPv4:PORT/` di laptop kedua (PORT adalah angka pada alamat Local, misalnya 5173). Mode ini untuk jaringan yang sama; bermain lewat internet berbeda jaringan memerlukan server publik.
 
@@ -29,7 +39,7 @@ Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https
 ## Cara bermain
 
 - Pada layar judul **Jejak yang Hilang**, tekan **Play**, lalu pilih **Single Player** atau **Multiplayer**. Tombol **Cara Bermain** membuka panduan.
-- Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan pemain kedua menjadi Vira.
+- Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan kedua pemain menjadi Raka.
 - Pilih kartu level untuk masuk ke arena. Nyawa, berkas, waktu, dan tombol pengaturan berada di bingkai game.
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
 - Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
@@ -46,7 +56,7 @@ Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https
 
 - `src/game.js`: judul level, dialog, rumus, tiga soal per level, jawaban, dan petunjuk. Untuk menerima lebih dari satu bentuk jawaban, tambah nilainya ke array `answers`.
 - `src/main.jsx`: layar judul, mode, ruang multiplayer, gerakan pemain, interaksi terminal/berkas/pintu, pemindai, timer, dan perpindahan level.
-- `server/rooms.js` dan `vite.config.js`: ruang multiplayer WebSocket untuk dua laptop pada jaringan yang sama.
+- `server/rooms.js`, `server/index.js`, `vite.config.js`, dan `render.yaml`: ruang multiplayer WebSocket untuk jaringan lokal dan server publik.
 - Setiap level di `src/game.js` juga memiliki `map` yang menentukan lokasi tokoh, terminal, pintu, pemindai, tiga tempat pencarian, dan petunjuk berkas.
 - `src/style.css`: warna, tata letak, bayangan pijakan, dan efek ruangan.
 - `src/audio.js`: melodi latar dan efek suara. Ubah nada dan volume di sini.
