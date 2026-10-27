@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,floorHeightAt,canEnterAtHeight} from './game.js';
+import {MAX_STAMINA,stepStamina,rewardStamina} from './stamina.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
   assert.deepEqual(levels.map(level=>level.puzzles.length),[3,3,3,3]);
@@ -30,6 +31,20 @@ test('true, neutral and bad endings depend on evidence, accuracy and escape',()=
   assert.equal(getEnding({dossiers:4,mistakes:4,escaped:true}),'neutral');
   assert.equal(getEnding({dossiers:3,mistakes:0,escaped:true}),'neutral');
   assert.equal(getEnding({dossiers:4,mistakes:0,escaped:false}),'bad');
+});
+test('lari cepat menghabiskan energi, berhenti untuk pulih, jawaban benar menambah energi',()=>{
+  let state={energy:MAX_STAMINA,exhausted:false};
+  for(let tick=0;tick<150&&!state.exhausted;tick++)state=stepStamina(state.energy,state.exhausted,true,true);
+  assert.equal(state.energy,0);
+  assert.equal(state.exhausted,true);
+  assert.equal(stepStamina(state.energy,state.exhausted,true,true).running,false);
+  for(let tick=0;tick<80;tick++)state=stepStamina(state.energy,state.exhausted,false,false);
+  assert.ok(state.energy>=19&&state.energy<22);
+  assert.equal(stepStamina(state.energy,state.exhausted,true,true).running,false);
+  const restored=rewardStamina(state.energy);
+  assert.ok(restored>state.energy);
+  assert.equal(stepStamina(restored,false,true,true).running,true);
+  assert.equal(rewardStamina(95),MAX_STAMINA);
 });
 test('level three stairs require jumping and its coins follow reachable heights',()=>{
   assert.equal(tierPlatforms.length,4);

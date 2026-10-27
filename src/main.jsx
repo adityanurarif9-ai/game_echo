@@ -2,6 +2,7 @@ import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,floorHeightAt,canEnterAtHeight} from './game';
 import {createAudio} from './audio';
+import {MAX_STAMINA,EXHAUSTION_RECOVERY,stepStamina,rewardStamina} from './stamina';
 import CacheProp from './CacheProp';
 import GameGuide from './GameGuide';
 import './style.css';
@@ -28,22 +29,16 @@ function readProgress(){
 function Sprite({id='r',walking=false,running=false,jumping=false,jumpFrame=2,direction='right',className=''}){
   const [frame,setFrame]=useState(0);
   useEffect(()=>{
-    for(let index=0;index<5;index++){
-      const preload=new Image();
-      preload.src=`/sprites/${id}-walk-${index}.png`;
-    }
+    const preload=new Image();preload.src=`/sprites/${id}-hd-sheet.png`;
   },[id]);
   useEffect(()=>{
     if(!walking||jumping){setFrame(0);return}
     const clock=setInterval(()=>setFrame(v=>(v+1)%5),running?78:125);
     return()=>clearInterval(clock);
   },[walking,running,jumping]);
-  if(id==='r'){
-    const row=jumping?3:running?2:walking?1:0;
-    const column=jumping?jumpFrame:walking?frame:0;
-    return <div className={`sprite hd-sprite ${className} ${direction==='left'?'face-left':''}`} style={{backgroundPosition:`${column*25}% ${row*100/3}%`}} aria-hidden="true"/>;
-  }
-  return <img className={`sprite ${className} ${direction==='left'?'face-left':''}`} src={`/sprites/${id}-${walking?`walk-${frame}`:'idle'}.png`} alt="" draggable="false"/>;
+  const row=id==='r'?(jumping?3:running?2:walking?1:0):(walking?1:0);
+  const column=id==='r'?(jumping?jumpFrame:walking?frame:0):(walking?frame:0);
+  return <div className={`sprite hd-sprite hd-${id} ${className} ${direction==='left'?'face-left':''}`} style={{backgroundPosition:`${column*25}% ${id==='r'?row*100/3:row*100}%`}} aria-hidden="true"/>;
 }
 
 function App(){
@@ -64,10 +59,13 @@ function App(){
   const [x,setX]=useState(9);
   const [walking,setWalking]=useState(false);
   const [running,setRunning]=useState(false);
+  const [energy,setEnergy]=useState(MAX_STAMINA);
+  const [energyFlash,setEnergyFlash]=useState(false);
   const [elevation,setElevation]=useState(0);
   const [jumping,setJumping]=useState(false);
   const [jumpFrame,setJumpFrame]=useState(2);
   const [coinIds,setCoinIds]=useState([]);
+  const [coinBurst,setCoinBurst]=useState(null);
   const [droneX,setDroneX]=useState(57);
   const [direction,setDirection]=useState('right');
   const [dialog,setDialog]=useState(false);
@@ -96,6 +94,9 @@ function App(){
   const xRef=useRef(9);
   const elevationRef=useRef(0);
   const velocityRef=useRef(0);
+  const energyRef=useRef(MAX_STAMINA);
+  const exhaustedRef=useRef(false);
+  const awardedEnergyRef=useRef(new Set());
   const coinIdsRef=useRef(new Set());
   const invincibleUntil=useRef(0);
   const interactRef=useRef(null);
@@ -148,6 +149,8 @@ function App(){
   useEffect(()=>()=>wsRef.current?.close(),[]);
   useEffect(()=>{try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress))}catch{}},[progress]);
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),2200);return()=>clearTimeout(timer)},[toast]);
+  useEffect(()=>{if(!coinBurst)return;const timer=setTimeout(()=>setCoinBurst(null),620);return()=>clearTimeout(timer)},[coinBurst]);
+  useEffect(()=>{if(!energyFlash)return;const timer=setTimeout(()=>setEnergyFlash(false),1300);return()=>clearTimeout(timer)},[energyFlash]);
   useEffect(()=>{
     if(firstScreen.current){firstScreen.current=false;return}
     setLoading(true);
@@ -194,6 +197,7 @@ function App(){
     if(mode==='multi')restartSeen.current=room?.restartCount??0;
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
     setStarted(true);setPauseOpen(false);setScreen('game');setLevel(index);xRef.current=roomRole==='guest'?7:9;setX(xRef.current);setWalking(false);
+    energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);setJumpFrame(2);coinIdsRef.current=new Set();setCoinIds([]);
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
     setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
@@ -203,6 +207,7 @@ function App(){
   function restartAttempt(){
     const start=roomRole==='guest'&&mode==='multi'?7:9;
     keys.current={left:false,right:false,run:false,jump:false};xRef.current=start;setX(start);setWalking(false);setRunning(false);setDirection('right');
+    energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
@@ -230,7 +235,7 @@ function App(){
       if(room.coinIds){room.coinIds.forEach(id=>coinIdsRef.current.add(id));setCoinIds([...coinIdsRef.current])}
       if(room.puzzleIndex!==puzzleIndex){setPuzzleIndex(room.puzzleIndex);setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);puzzleStartedAt.current=Date.now();if(room.puzzleIndex===3)setDialog(false)}
       setCollected(room.collected);
-      if(room.correct&&room.puzzleIndex<3)setFeedback({correct:true,text:levels[room.level].puzzles[room.puzzleIndex].explain});
+      if(room.correct&&room.puzzleIndex<3)setFeedback({correct:true,text:`Energi lari siap! ${levels[room.level].puzzles[room.puzzleIndex].explain}`});
     }
   },[mode,room?.phase,room?.level,room?.puzzleIndex,room?.correct,room?.collected,room?.coinIds,room?.ending,screen,level,puzzleIndex]);
 
@@ -311,8 +316,13 @@ function App(){
       const active=level>0 && Math.floor(Date.now()/1450)%2===0;
       setScannerOn(active);
       const delta=(keys.current.right?1:0)-(keys.current.left?1:0);
+      const wasExhausted=exhaustedRef.current;
+      const sprint=stepStamina(energyRef.current,wasExhausted,keys.current.run,delta!==0);
+      energyRef.current=sprint.energy;exhaustedRef.current=sprint.exhausted;
+      setEnergy(sprint.energy);
+      if(!wasExhausted&&sprint.exhausted)setToast('Energi habis. Jalan dulu atau pecahkan soal untuk mengisinya.');
       setWalking(delta!==0);
-      setRunning(delta!==0&&keys.current.run);
+      setRunning(sprint.running);
       const floorBefore=floorHeightAt(level,xRef.current);
       if(keys.current.jump&&elevationRef.current<=floorBefore+2&&velocityRef.current<=0){
         velocityRef.current=16.5;
@@ -321,7 +331,7 @@ function App(){
       keys.current.jump=false;
       let nextHeight=elevationRef.current+velocityRef.current;
       velocityRef.current-=1.3;
-      let next=Math.max(3,Math.min(97,xRef.current+delta*(keys.current.run?.54:.32)));
+      let next=Math.max(3,Math.min(97,xRef.current+delta*(sprint.running?.54:.32)));
       if(!canEnterAtHeight(level,next,nextHeight))next=xRef.current;
       const floorAfter=floorHeightAt(level,next);
       if(nextHeight<=floorAfter&&velocityRef.current<=0){nextHeight=floorAfter;velocityRef.current=0}
@@ -349,12 +359,12 @@ function App(){
       }
       xRef.current=next;setX(next);
       if(mode==='multi'&&(delta||airborne||lastSentMove.current)){
-        sendRoom({type:'move',x:next,height:nextHeight,direction:delta<0?'left':delta>0?'right':direction,walking:delta!==0,running:keys.current.run,jumping:airborne});
+        sendRoom({type:'move',x:next,height:nextHeight,direction:delta<0?'left':delta>0?'right':direction,walking:delta!==0,running:sprint.running,jumping:airborne});
         lastSentMove.current=Boolean(delta||airborne);
       }
       trail.forEach((coin,index)=>{
         if(coinIdsRef.current.has(index)||Math.abs(next-coin.x)>1.45||Math.abs(nextHeight+29-coin.height)>36)return;
-        coinIdsRef.current.add(index);setCoinIds([...coinIdsRef.current]);sound('coin');
+        coinIdsRef.current.add(index);setCoinIds([...coinIdsRef.current]);setCoinBurst({x:coin.x,height:coin.height,index});sound('coin');
         if(mode==='multi')sendRoom({type:'coin',index});
         else setProgress(p=>({...p,coins:p.coins+5}));
       });
@@ -376,11 +386,19 @@ function App(){
     if(!answer.trim())return;
     if(isCorrect(puzzle,answer)){
       sound('correct');
+      let energyGain=0;
+      if(!awardedEnergyRef.current.has(puzzleIndex)){
+        awardedEnergyRef.current.add(puzzleIndex);
+        const restored=rewardStamina(energyRef.current);
+        energyGain=Math.round(restored-energyRef.current);
+        energyRef.current=restored;exhaustedRef.current=restored<EXHAUSTION_RECOVERY;
+        setEnergy(restored);setEnergyFlash(true);
+      }
       if(mode==='multi')sendRoom({type:'solve',answer});
       else {
         const reward=10+Math.max(0,20-Math.floor((Date.now()-(puzzleStartedAt.current??Date.now()))/3000));
         setProgress(p=>({...p,coins:p.coins+reward}));
-        setFeedback({correct:true,text:`+${reward} koin! ${puzzle.explain}`});
+        setFeedback({correct:true,text:`+${reward} koin · ${energyGain?`+${energyGain} energi lari`:'energi penuh'}! ${puzzle.explain}`});
       }
       return;
     }
@@ -428,7 +446,7 @@ function App(){
           <img className="title-logo" src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang dengan kaca pembesar dan papan investigasi" fetchPriority="high" />
           <p className="title-story">Vira menemukan kebocoran data dan pergi. Raka mengikuti pesan berkode yang ia tinggalkan untuk mengungkap kebenarannya.</p>
           <p className="title-brief">TELUSURI JEJAKNYA · PECAHKAN KODENYA · TEMUKAN KEBENARAN</p>
-          <div className="title-actions"><button className="title-play" onClick={()=>setScreen('mode')}>▶ PLAY</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
+          <div className="title-actions"><button className="title-play" onClick={()=>{if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}setScreen('mode')}}>▶ PLAY</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
           <p className="title-subline">4 LEVEL · 2 CARA BERMAIN · 1 MISTERI</p>
         </div>
         <button className="title-sound" onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'♫ Suara nyala':'♪ Suara mati'}</button>
@@ -436,8 +454,8 @@ function App(){
         <button className="game-back" onClick={()=>setScreen('poster')}>← Kembali</button>
         <div className="mode-heading"><p>JEJAK YANG HILANG</p><h1>Pilih cara bermain</h1><span>Petualangan yang sama, sendiri atau bersama teman.</span></div>
         <div className="mode-options">
-          <button onClick={()=>{setMode('single');setScreen('select')}}><span className="mode-icon">◈</span><strong>Single Player</strong><small>Jalani misi sebagai Raka di laptop ini.</small><b>MAIN SENDIRI →</b></button>
-          <button onClick={()=>{setMode('multi');setScreen('lobby')}}><span className="mode-icon">◆ ◆</span><strong>Multiplayer</strong><small>Dua Raka berlomba memecahkan kode dan mengumpulkan koin.</small><b>MULAI BALAPAN →</b></button>
+          <button onClick={()=>{setMode('single');setScreen('select')}}><span className="mode-icon">◈</span><strong>Single Player</strong><small>Jalani misi sebagai Raka di laptop ini.</small><b>MAIN SENDIRI →</b><span className="mode-portrait mode-portrait-one"><Sprite id="r"/></span></button>
+          <button onClick={()=>{setMode('multi');setScreen('lobby')}}><span className="mode-icon">◆ ◆</span><strong>Multiplayer</strong><small>Dua Raka berlomba memecahkan kode dan mengumpulkan koin.</small><b>MULAI BALAPAN →</b><span className="mode-portrait mode-portrait-two"><Sprite id="r"/></span><span className="mode-portrait mode-portrait-three rival-preview"><Sprite id="r"/></span></button>
         </div>
       </section> : screen==='lobby' ? <section className="lobby-screen" aria-label="Ruang multiplayer">
         <button className="game-back" onClick={leaveRoom}>← Pilih mode</button>
@@ -476,6 +494,7 @@ function App(){
             <div className="scene-ground"/>
             {level===2&&tierPlatforms.map((step,index)=><div key={step.start} className={`stair-platform stair-${index}`} style={{left:`${step.start}%`,width:`${step.end-step.start}%`,'--rise':`${step.height}px`}}><span>{index+1}</span></div>)}
             {trail.map((coin,index)=>!coinIds.includes(index)&&<div key={index} className="path-coin" style={{left:`${coin.x}%`,bottom:`calc(30% - 5px + ${coin.height}px)`}} aria-label={`Koin ${index+1}`}><i>✦</i></div>)}
+            {coinBurst&&<div key={`${coinBurst.index}-${coinBurst.x}`} className="coin-burst" style={{left:`${coinBurst.x}%`,bottom:`calc(30% - 5px + ${coinBurst.height}px)`}} aria-hidden="true"><span>✦</span><b>+5</b></div>}
             {level===2&&<div className="security-drone" style={{left:`${droneX}%`}} aria-label="Drone patroli bergerak"><i/><b>●</b><i/></div>}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
@@ -485,6 +504,7 @@ function App(){
             {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player rival-raka" style={{left:`${peer.x}%`,bottom:`calc(30% - 5px + ${peer.height||0}px)`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} running={peer.running} jumping={peer.jumping} direction={peer.direction}/><i className="foot-shadow"/></div>}
             <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
+          <div className={`energy-hud ${energyFlash?'energy-gained':''} ${energy<EXHAUSTION_RECOVERY?'energy-low':''}`} role="meter" aria-label="Energi lari cepat" aria-valuemin={0} aria-valuemax={MAX_STAMINA} aria-valuenow={Math.round(energy)}><div className="energy-heading"><span>⚡ ENERGI LARI</span><strong>{Math.round(energy)}%</strong></div><div className="energy-track"><i style={{width:`${energy}%`}}/></div><small>{energyFlash?'JAWABAN BENAR · ENERGI BERTAMBAH':energy<EXHAUSTION_RECOVERY?'LARI TERKUNCI · PULIHKAN ENERGI':'SHIFT / TAHAN LARI · BENAR +35'}</small></div>
           {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?'Mengulang level dari awal...':'Nyawa habis...'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}

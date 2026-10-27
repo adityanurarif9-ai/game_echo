@@ -34,7 +34,7 @@ export function createAudio(){
       if(kind==='correct'){tone(523,t,.13,.13,'triangle');tone(659,t+.13,.13,.12,'triangle');tone(784,t+.26,.24,.11,'triangle')}
       if(kind==='wrong'){tone(196,t,.18,.15,'sawtooth');tone(150,t+.14,.25,.10,'sawtooth')}
       if(kind==='pickup'){tone(659,t,.1,.12,'sine');tone(988,t+.1,.27,.12,'sine')}
-      if(kind==='coin'){tone(880,t,.07,.09,'sine');tone(1174,t+.06,.13,.08,'triangle')}
+      if(kind==='coin'){tone(784,t,.09,.16,'triangle');tone(1174,t+.055,.12,.15,'sine');tone(1568,t+.12,.21,.12,'sine')}
       if(kind==='jump'){tone(330,t,.08,.045,'triangle');tone(494,t+.05,.12,.045,'triangle')}
       if(kind==='hit'){tone(120,t,.16,.17,'sawtooth');tone(85,t+.11,.25,.12,'sawtooth')}
       if(kind==='clear'){[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.12,.35,.11,'triangle'))}
