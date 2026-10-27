@@ -1,0 +1,12 @@
+.coin-frame{display:flex;flex-direction:column;justify-content:center;min-width:92px;padding:8px 13px;border:1px solid #a8ad8a;border-radius:11px;background:#33483e;color:#f6e8b0;text-align:center}
+.coin-frame small{font-size:10px;letter-spacing:.12em;color:#d8dfbd}
+.coin-frame strong{font-size:19px;line-height:1.25}
+.coin-frame em{font-size:10px;font-style:normal;color:#dce8de}
+.select-coins,.race-result{display:inline-flex;align-items:center;margin-top:14px;padding:8px 14px;border:1px solid #a6bdab;border-radius:999px;background:#193c3d;color:#f8e2a8;font-weight:700}
+.race-result{margin-left:8px;background:#2b5144;color:#e9f3df}
+.movement .run-control{width:auto;min-width:78px;padding:0 11px;touch-action:none;background:#d5b87c;color:#183438;border-color:#ebd7a9;font-size:12px;font-weight:900}
+.movement .run-control:active{background:#f5d99a;transform:translateY(1px)}
+.rival-raka .sprite{filter:hue-rotate(115deg) saturate(.85) drop-shadow(0 0 4px #c3e3a4)}
+.rival-raka>span{background:#3c624d!important;border-color:#b9d6a2!important;color:#fff!important}
+@media(max-width:900px){.coin-frame{min-width:74px;padding:5px 8px}.coin-frame strong{font-size:15px}}
+@media(max-width:600px){.coin-frame small{font-size:8px}.coin-frame em{font-size:8px}.movement .run-control{min-width:58px;padding:0 5px;font-size:10px}.race-result{margin-left:0}}

@@ -4,6 +4,7 @@ import {createServer} from 'node:http';
 import {once} from 'node:events';
 import WebSocket from 'ws';
 import {attachRooms} from './rooms.js';
+import {levels} from '../src/game.js';
 
 function inbox(socket){
   const pending=[];
@@ -24,7 +25,7 @@ function inbox(socket){
   };
 }
 
-test('two laptops share movement, puzzle progress, evidence and unlocked level',async t=>{
+test('two Rakas race with separate puzzles, coins, movement and restart',async t=>{
   const http=createServer();attachRooms(http);http.listen(0,'127.0.0.1');await once(http,'listening');
   t.after(()=>http.close());
   const url=`ws://127.0.0.1:${http.address().port}/echo-room`;
@@ -46,37 +47,49 @@ test('two laptops share movement, puzzle progress, evidence and unlocked level',
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
   host.send(JSON.stringify({type:'resume'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused===false)).positions.host.x,9);
-  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
-  assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.walking,true);
+  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true}));
+  assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.running,true);
   for(const [index,answer] of ['1','ORANG','HILANG'].entries()){
     host.send(JSON.stringify({type:'solve',answer}));
-    assert.equal((await guestNext(message=>message.type==='state'&&message.puzzleIndex===index&&message.correct)).correct,true);
+    const scored=await hostNext(message=>message.type==='state'&&message.puzzleIndex===index&&message.correct);
+    assert.ok(scored.coins>=10);
+    const rival=await guestNext(message=>message.type==='state'&&message.scores.host===scored.coins);
+    assert.equal(rival.puzzleIndex,0);
+    assert.equal(rival.correct,false);
+    assert.equal(rival.coins,0);
     host.send(JSON.stringify({type:'advance'}));
-    assert.equal((await guestNext(message=>message.type==='state'&&message.puzzleIndex===index+1)).puzzleIndex,index+1);
+    assert.equal((await hostNext(message=>message.type==='state'&&message.puzzleIndex===index+1)).puzzleIndex,index+1);
   }
-  guest.send(JSON.stringify({type:'move',x:89,direction:'right',walking:false}));
-  await guestNext(message=>message.type==='state'&&message.positions.guest.x===89);
-  guest.send(JSON.stringify({type:'collect'}));
+  const hidden=levels[0].map.caches[levels[0].map.hidden].x;
+  host.send(JSON.stringify({type:'move',x:hidden,direction:'right',walking:false}));
+  await hostNext(message=>message.type==='state'&&message.positions.host.x===hidden);
+  host.send(JSON.stringify({type:'collect'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.collected)).collected,true);
+  assert.equal((await guestNext(message=>message.type==='state'&&message.scores.host>=45)).collected,false);
   host.send(JSON.stringify({type:'move',x:3,direction:'left',walking:false}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===3);
   host.send(JSON.stringify({type:'clear'}));
   const cleared=await guestNext(message=>message.type==='state'&&message.phase==='select'&&message.unlocked===1);
   assert.deepEqual(cleared.completed,[0]);
+  assert.equal(cleared.winner,'host');
+  assert.ok(cleared.scores.host>cleared.scores.guest);
   host.send(JSON.stringify({type:'start',level:1}));
   await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);
   host.send(JSON.stringify({type:'move',x:50,direction:'right',walking:true}));
   await guestNext(message=>message.type==='state'&&message.positions.host.x===50);
   host.send(JSON.stringify({type:'solve',answer:'TEMUKAN'}));
-  await guestNext(message=>message.type==='state'&&message.correct);
+  await hostNext(message=>message.type==='state'&&message.correct);
   host.send(JSON.stringify({type:'advance'}));
-  await guestNext(message=>message.type==='state'&&message.puzzleIndex===1);
+  await hostNext(message=>message.type==='state'&&message.puzzleIndex===1);
+  guest.send(JSON.stringify({type:'move',x:30,direction:'right',walking:true}));
+  await guestNext(message=>message.type==='state'&&message.positions.guest.x===30);
   guest.send(JSON.stringify({type:'restart'}));
-  const restarted=await hostNext(message=>message.type==='state'&&message.restartCount===1);
-  assert.equal(restarted.positions.host.x,9);
+  const restarted=await guestNext(message=>message.type==='state'&&message.restartCount===1);
+  assert.equal(restarted.positions.host.x,50);
   assert.equal(restarted.positions.guest.x,7);
   assert.equal(restarted.puzzleIndex,0);
   assert.equal(restarted.collected,false);
+  assert.equal((await hostNext(message=>message.type==='state'&&message.positions.guest.x===7&&message.puzzleIndex===1)).puzzleIndex,1);
   guest.send(JSON.stringify({type:'menu'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.phase==='select'&&message.level===1)).paused,false);
 });
