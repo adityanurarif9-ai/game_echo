@@ -80,10 +80,12 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   assert.equal((await guestNext(message=>message.type==='state'&&message.scores.host>=45)).collected,false);
   host.send(JSON.stringify({type:'move',x:3,direction:'left',walking:false}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===3);
-  host.send(JSON.stringify({type:'clear'}));
+  host.send(JSON.stringify({type:'clear',remaining:120,health:3}));
   const cleared=await guestNext(message=>message.type==='state'&&message.phase==='select'&&message.unlocked===1);
   assert.deepEqual(cleared.completed,[0]);
   assert.equal(cleared.winner,'host');
+  assert.equal(cleared.lastResult.stars,3);
+  assert.equal(cleared.stars[0],3);
   assert.ok(cleared.scores.host>cleared.scores.guest);
   host.send(JSON.stringify({type:'start',level:1}));
   await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);

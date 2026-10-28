@@ -1,0 +1,100 @@
+/* Misi terasa seperti layar permainan: arena dominan, informasi di panel instrumen. */
+.app.playing .game-frame:before{content:'';position:absolute;z-index:24;inset:5px;border:1px solid #9bc1b03b;clip-path:polygon(0 0,38px 0,38px 1px,calc(100% - 38px) 1px,calc(100% - 38px) 0,100% 0,100% 100%,calc(100% - 38px) 100%,calc(100% - 38px) calc(100% - 1px),38px calc(100% - 1px),38px 100%,0 100%);pointer-events:none}
+.app.playing .game-top{border-color:#b8d0af9c;border-radius:6px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));background:linear-gradient(100deg,#0b2734f5,#173b40ec 55%,#0b2834f5);box-shadow:inset 0 1px #e4f4de37,0 11px 28px #020e17bb}
+.hud-level-badge{border-radius:3px;box-shadow:inset 0 0 0 2px #173540,0 3px 8px #071b2480}
+.app.playing .mission-note{border-radius:3px;border-left:3px solid #c9d6a4;background:linear-gradient(90deg,#122f38ed,#122f38c9)}
+.app.playing .control-strip{border-radius:5px;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);background:#102b36ee}
+.game-frame .game-stats .life-frame,.game-frame .game-stats .file-frame,.game-frame .game-stats .timer-frame,.game-frame .coin-frame{border-radius:3px;border-color:#9bb8a46e;background:#24434bba}
+.game-frame .game-stats .timer-frame{min-width:108px;gap:4px;border-color:#d5ca9b8e;background:#4b4b4080}
+.timer-frame strong{font-variant-numeric:tabular-nums;letter-spacing:.07em;color:#fae3ae!important}
+.timer-track{display:block!important;width:100%;height:3px;overflow:hidden;border:0!important;border-radius:2px!important;background:#132c35!important;padding:0!important}
+.timer-track i{display:block;height:100%;background:linear-gradient(90deg,#93c3ab,#efda9a);transition:width .3s linear}
+.timer-frame.urgent{border-color:#ec9a83!important;background:#703f3fbd!important;animation:timer-danger 1s ease-in-out infinite alternate}
+.timer-frame.urgent .timer-track i{background:#ffb08a}
+@keyframes timer-danger{to{box-shadow:0 0 16px #e4776388}}
+
+/* Kartu level menyimpan rekor bintang terbaik setelah misi selesai. */
+.app.screen-select .level-select{max-width:1160px}
+.level-card{clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));border-radius:0!important;background:#122e3b}
+.level-card-art{position:relative}
+.level-card-art:after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 25%,#0d2838 100%)}
+.level-card-content{position:relative;border-top:2px solid #9fc4ad7d}
+.level-card.complete .level-card-content{border-color:#e1cb8e}
+.level-stars{display:flex;gap:3px;margin-top:4px}
+.level-stars i{font-style:normal;font-size:15px;line-height:1;color:#627983;text-shadow:0 1px 2px #071a23}
+.level-stars i.earned{color:#efcf82;text-shadow:0 0 10px #eec87966}
+.race-result{gap:10px;border-radius:5px;flex-wrap:wrap}
+.race-result span{display:inline-flex;gap:2px}
+.race-result i{font-style:normal;color:#607b74}
+.race-result i.earned{color:#f2d28b;text-shadow:0 0 9px #eacb7f88}
+.race-result small{color:#c6d9ca;font-size:10px}
+
+/* Hasil misi tampil sebagai layar penghargaan, bukan dialog formulir. */
+.mission-result-backdrop{z-index:35;padding:24px;background:radial-gradient(circle at 50% 45%,#173a45dc,#04131be8 73%);backdrop-filter:blur(10px)}
+.mission-result.clear-card{display:grid;grid-template-columns:42% 58%;width:min(920px,100%);max-height:calc(100dvh - 48px);padding:0;border:1px solid #a5c7ad;border-radius:10px;background:#112d37;color:#edf2e4;box-shadow:0 0 0 5px #071a24,0 28px 80px #020b12d9;overflow:auto}
+.mission-result-art{position:relative;min-height:470px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:38px 28px;background-size:cover;background-position:center;border-right:1px solid #adc3a175;text-align:center;isolation:isolate}
+.mission-result-art:before{content:'';position:absolute;inset:12px;border:1px solid #e5d8ae57;pointer-events:none}
+.result-chapter{position:absolute;top:27px;left:26px;color:#e8d6a4;font-size:10px;font-weight:900;letter-spacing:.18em}
+.result-seal{width:104px;height:104px;display:grid;place-items:center;margin:12px auto 22px;border:5px double #eedaa6;border-radius:50%;background:#12363dc7;box-shadow:0 0 0 9px #eedaa625,0 0 35px #f2d9996b;color:#f7edc8;font:900 68px/1 Outfit,Arial,sans-serif;animation:result-seal .7s cubic-bezier(.2,1.5,.4,1) both}
+.mission-result-art h2{margin:0 0 8px;color:#f5efd7;font:900 clamp(32px,3.4vw,51px)/.98 Outfit,Arial,sans-serif;letter-spacing:-.03em;text-shadow:0 5px 18px #06131b}
+.mission-result-art p{margin:0;color:#d2e0d6!important;font-size:15px!important;font-weight:700;line-height:1.35!important}
+.mission-result-details{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:42px clamp(25px,4vw,54px);text-align:center;background:radial-gradient(circle at 50% 25%,#31534c55,transparent 60%),#132e37}
+.result-kicker{color:#bcdbbd;font-size:10px;font-weight:900;letter-spacing:.18em}
+.result-stars{display:flex;align-items:center;justify-content:center;gap:5px;margin:21px 0 5px}
+.result-stars span{display:block;color:#5c7881;font-size:clamp(56px,6vw,90px);line-height:1;filter:drop-shadow(0 3px 1px #071a24)}
+.result-stars span.earned{color:#f3d48e;filter:drop-shadow(0 4px 0 #9a7044) drop-shadow(0 0 15px #eecb76aa);animation:result-star .5s cubic-bezier(.2,1.6,.3,1) backwards;animation-delay:calc(var(--star-index)*.17s)}
+.result-rank{color:#f4e5bc;font:800 clamp(22px,2.5vw,32px)/1.1 Outfit,Arial,sans-serif;letter-spacing:.04em}
+.mission-result .result-criteria{max-width:390px;margin:15px 0 19px;color:#b8cdc4!important;font-size:12px!important;line-height:1.5!important}
+.result-metrics{display:grid;grid-template-columns:repeat(3,1fr);width:100%;margin:0 0 22px;border-block:1px solid #a4c3ad66}
+.result-metrics span{display:grid;gap:6px;padding:15px 6px}
+.result-metrics span+span{border-left:1px solid #a4c3ad66}
+.result-metrics small{color:#a8c8b9;font-size:9px;font-weight:900;letter-spacing:.1em}
+.result-metrics b{color:#f7e7bb;font:800 20px Outfit,Arial,sans-serif;font-variant-numeric:tabular-nums}
+.result-next{width:100%;min-height:54px;display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border:1px solid #ffe2ac;border-radius:4px;background:linear-gradient(#e9d3a4,#caa873);color:#18333b;font-size:12px;font-weight:900;letter-spacing:.1em;box-shadow:0 5px 0 #715c42;transition:transform .15s,background .15s}
+.result-next:hover{background:#f2deb1;transform:translateY(-2px)}
+.result-next span{font-size:25px;line-height:1}
+@keyframes result-star{from{opacity:0;transform:translateY(25px) scale(.45)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes result-seal{from{opacity:0;transform:scale(.3) rotate(-25deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+
+@media(max-width:720px){
+  .app.playing .scene-ground{height:30%}
+  .app.playing .scene-world .scene-npc{bottom:calc(30% - 5px)}
+  .app.playing .scene-world .object{bottom:calc(30% - 2px)}
+  .app.playing .scene-world .scanner{bottom:calc(30% - 4px)}
+  .app.playing .player .sprite,.app.playing .scene-npc .sprite{width:clamp(90px,28vw,115px);height:clamp(125px,37vw,155px)}
+  .app.playing .scene-npc{min-width:clamp(90px,28vw,115px)}
+  .app.playing .scene-npc>span{top:-34px;max-width:none;white-space:nowrap;font-size:8px}
+  .app.playing .game-top{min-height:119px;align-items:start}
+  .app.playing .game-top .hud-title{padding-right:148px}
+  .app.playing .game-top .hud-right{width:100%}
+  .app.playing .game-top .game-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:4px}
+  .game-frame .game-stats .life-frame,.game-frame .game-stats .file-frame,.game-frame .game-stats .timer-frame,.game-frame .coin-frame{min-width:0!important;padding:5px 4px;text-align:center}
+  .game-frame .game-stats .timer-frame strong{font-size:12px}
+  .app.playing .game-top .game-menu{position:absolute;top:8px;right:10px;padding:0;border:0}
+  .app.playing .mission-note{top:132px}
+  .energy-hud{top:178px}
+  .mission-result.clear-card{grid-template-columns:1fr;max-width:520px}
+  .mission-result-art{min-height:190px;padding:52px 20px 18px;border-right:0;border-bottom:1px solid #adc3a175}
+  .result-chapter{top:20px;left:20px}
+  .result-seal{width:58px;height:58px;margin:4px auto 11px;border-width:3px;font-size:35px}
+  .mission-result-art h2{font-size:31px}
+  .mission-result-art p{font-size:12px!important}
+  .mission-result-details{padding:20px 23px 27px}
+  .result-stars{margin:13px 0 4px}.result-stars span{font-size:58px}
+  .mission-result .result-criteria{margin:8px 0 12px;font-size:11px!important}
+  .result-metrics{margin-bottom:15px}.result-metrics span{padding:9px 4px}
+}
+@media(max-width:450px){
+  .app.playing .game-top{min-height:121px}
+  .app.playing .game-top .hud-title{padding-right:130px}
+  .app.playing .game-top .hud-title h1{font-size:15px}
+  .app.playing .game-top .game-stats small{font-size:7px;letter-spacing:0}
+  .app.playing .game-top .game-stats strong{font-size:12px}
+  .game-frame .game-stats .life-frame i{font-size:15px}
+  .app.playing .mission-note{top:132px}
+  .energy-hud{top:177px}
+  .mission-result-backdrop{padding:10px}
+  .mission-result.clear-card{max-height:calc(100dvh - 20px)}
+  .mission-result-details{padding:16px 18px 21px}
+}
+@media(prefers-reduced-motion:reduce){.timer-frame.urgent,.result-stars span.earned,.result-seal{animation:none}.timer-track i,.result-next{transition:none}}

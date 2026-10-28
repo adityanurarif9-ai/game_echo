@@ -47,7 +47,8 @@ Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https
 - Setelah menyelesaikan tiga soal terminal, baca petunjuk di atas map. Berkas tersembunyi di salah satu dari tiga tempat pemeriksaan. Dekati tempat itu dan tekan **E** untuk memeriksanya.
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
-- Level terakhir dibatasi 150 detik. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
+- Semua level punya timer: 4:00, 3:30, 3:00, dan 2:30. Timer berhenti saat jeda, percakapan, animasi berkas, dan layar hasil. Kehabisan waktu membuat percobaan gagal.
+- Selesai level memberi 1–3 bintang. Tiga bintang memerlukan tiga nyawa dan setidaknya separuh waktu tersisa; dua bintang memerlukan dua nyawa dan setidaknya 20% waktu tersisa. Rekor Single Player tersimpan di browser; rekor Multiplayer berlaku selama ruang aktif. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
 - Musik dan efek suara dimulai setelah level dimulai. Tombol suara pada layar judul dan di bingkai permainan mematikan atau menghidupkan semuanya. Tidak perlu mengunduh file musik; suaranya dibuat langsung di browser.
 - Saat bermain di desktop, arena otomatis mengisi lebar dan tinggi jendela. Tombol **Layar penuh** di bagian atas menyembunyikan bilah browser; tekan lagi atau **Esc** untuk keluar. Browser hanya mengizinkan layar penuh setelah tombol ditekan.
 - Tombol **Cara main** berisi panduan singkat dalam game.

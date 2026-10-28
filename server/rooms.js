@@ -2,6 +2,7 @@ import {randomBytes} from 'node:crypto';
 import {networkInterfaces} from 'node:os';
 import {WebSocket,WebSocketServer} from 'ws';
 import {levels,isCorrect,coinTrails} from '../src/game.js';
+import {levelTimeLimits,calculateStars} from '../src/progression.js';
 
 const rooms=new Map();
 const letters='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -29,7 +30,7 @@ function snapshot(room,role){
   return {type:'state',code:room.code,phase:room.phase,paused:room.paused,level:room.level,unlocked:room.unlocked,
     completed:room.completed,puzzleIndex:self.puzzleIndex,correct:self.correct,collected:self.collected,restartCount:self.restartCount,
     mistakes:self.mistakes,coins:self.coins,coinIds:self.coinIds,scores:{host:room.racers.host.coins,guest:room.racers.guest.coins},winner:room.winner,ending:room.ending,
-    players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions};
+    players:{host:Boolean(room.host),guest:Boolean(room.guest)},positions:room.positions,stars:room.stars,lastResult:room.lastResult};
 }
 function broadcast(room){
   send(room.host,snapshot(room,'host'));send(room.guest,snapshot(room,'guest'));
@@ -49,7 +50,7 @@ export function attachRooms(httpServer){
       try{message=JSON.parse(raw.toString())}catch{return}
       if(!message||typeof message.type!=='string')return;
       if(message.type==='create'&&!room){
-        room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],ending:null,winner:null,
+        room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],ending:null,winner:null,stars:levels.map(()=>0),lastResult:null,
           racers:{host:racer(),guest:racer()},positions:{host:position(9),guest:position(7)}};
         rooms.set(room.code,room);role='host';
         const port=Number(request.headers.host?.split(':').at(-1))||5175;
@@ -70,7 +71,7 @@ export function attachRooms(httpServer){
         const index=Number(message.level);
         if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
         if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
-        room.phase='game';room.paused=false;room.level=index;room.ending=null;room.winner=null;
+        room.phase='game';room.paused=false;room.level=index;room.ending=null;room.winner=null;room.lastResult=null;
         for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,coinIds:[],puzzleStartedAt:null});
         room.positions={host:position(9),guest:position(7)};
         broadcast(room);return;
@@ -133,6 +134,12 @@ export function attachRooms(httpServer){
       }
       if(message.type==='clear'&&self.collected){
         if(Math.abs(room.positions[role].x-levels[room.level].map.door)>=3.2)return;
+        const limit=levelTimeLimits[room.level];
+        const remaining=Number.isFinite(Number(message.remaining))?Math.max(0,Math.min(limit,Number(message.remaining))):limit;
+        const health=Number.isFinite(Number(message.health))?Math.max(0,Math.min(3,Number(message.health))):3;
+        const stars=calculateStars(remaining,limit,health);
+        room.lastResult={level:room.level,winner:role,stars,remaining,health};
+        room.stars[room.level]=Math.max(room.stars[room.level],stars);
         room.winner=role;self.coins+=50;
         if(!room.completed.includes(room.level))room.completed.push(room.level);
         room.unlocked=Math.min(levels.length-1,Math.max(room.unlocked,room.level+1));
