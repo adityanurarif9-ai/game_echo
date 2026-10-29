@@ -1,6 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,floorHeightAt,canEnterAtHeight} from './game';
+import {levels,isCorrect,coinTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,advanceVira,catchesVira} from './game';
 import {createAudio} from './audio';
 import {MAX_STAMINA,EXHAUSTION_RECOVERY,stepStamina,rewardStamina} from './stamina';
 import {levelTimeLimits,formatClock,calculateStars} from './progression';
@@ -17,6 +17,7 @@ import './loading-brand.css';
 import './race-features.css';
 import './adventure-upgrade.css';
 import './mission-results.css';
+import './chase-story.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -75,6 +76,8 @@ function App(){
   const [coinIds,setCoinIds]=useState([]);
   const [coinBurst,setCoinBurst]=useState(null);
   const [droneX,setDroneX]=useState(57);
+  const [viraX,setViraX]=useState(levels[0].map.vira);
+  const [viraStage,setViraStage]=useState('waiting');
   const [direction,setDirection]=useState('right');
   const [dialog,setDialog]=useState(false);
   const [conversationStep,setConversationStep]=useState(null);
@@ -102,6 +105,8 @@ function App(){
   const xRef=useRef(9);
   const elevationRef=useRef(0);
   const velocityRef=useRef(0);
+  const viraXRef=useRef(levels[0].map.vira);
+  const viraStageRef=useRef('waiting');
   const energyRef=useRef(MAX_STAMINA);
   const exhaustedRef=useRef(false);
   const awardedEnergyRef=useRef(new Set());
@@ -134,6 +139,7 @@ function App(){
   const solved=puzzleIndex>=current.puzzles.length;
   const nearby=(node)=>Math.abs(x-map[node])<(node==='npc'?2.8:3.2);
   const nearbyCache=map.caches.findIndex(cache=>Math.abs(x-cache.x)<3.2);
+  const viraPosition=level===3?viraX:map.vira;
   const camera=Math.max(-120,Math.min(0,50-x*2.2));
   const talking=conversationStep!==null;
   const speakerPosition=talking?(current.dialogue[conversationStep].who==='r'?(roomRole==='guest'&&mode==='multi'?room?.positions?.host?.x??x:x):map.npc):x;
@@ -176,6 +182,26 @@ function App(){
       pickupSeen.current=true;keys.current={left:false,right:false};setWalking(false);setPickupOpen(true);
     }
   },[screen,collected]);
+  useEffect(()=>{
+    if(screen!=='game'||level===3||viraStage!=='waiting'||loading||talking||dialog||pickupOpen||levelClear)return;
+    if(x>=map.vira-3.2){
+      viraStageRef.current='escaping';setViraStage('escaping');sound('step');
+      setToast(`Vira kabur ke ${level===2?'markas terakhir':`level ${level+2}`}! Cari kunci dan susul dia.`);
+    }
+  },[screen,level,x,viraStage,loading,talking,dialog,pickupOpen,levelClear]);
+  useEffect(()=>{
+    if(viraStage!=='escaping'||level===3)return;
+    const timer=setTimeout(()=>{viraStageRef.current='gone';setViraStage('gone')},1050);
+    return()=>clearTimeout(timer);
+  },[viraStage,level]);
+  useEffect(()=>{
+    if(screen!=='game'||level!==3||viraStage!=='caught'||levelClear)return;
+    const timer=setTimeout(()=>{
+      sound('clear');keys.current={left:false,right:false,run:false,jump:false};setWalking(false);
+      if(mode==='multi')sendRoom({type:'clear',remaining:seconds,health});else setLevelClear(true);
+    },850);
+    return()=>clearTimeout(timer);
+  },[screen,level,viraStage,levelClear,mode]);
 
   function sendRoom(message){
     if(wsRef.current?.readyState===WebSocket.OPEN)wsRef.current.send(JSON.stringify(message));
@@ -226,6 +252,7 @@ function App(){
     setStarted(true);setPauseOpen(false);setScreen('game');setLevel(index);xRef.current=roomRole==='guest'?7:9;setX(xRef.current);setWalking(false);
     energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);setJumpFrame(2);coinIdsRef.current=new Set();setCoinIds([]);
+    viraXRef.current=levels[index].map.vira;viraStageRef.current='waiting';setViraX(levels[index].map.vira);setViraStage('waiting');
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
     setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
     pickupSeen.current=false;setPickupOpen(false);setCollected(false);setLevelClear(false);setEnding(null);
@@ -236,6 +263,7 @@ function App(){
     keys.current={left:false,right:false,run:false,jump:false};xRef.current=start;setX(start);setWalking(false);setRunning(false);setDirection('right');
     energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);
+    viraXRef.current=levels[level].map.vira;viraStageRef.current='waiting';setViraX(levels[level].map.vira);setViraStage('waiting');
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
     setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);setHealth(3);
@@ -305,11 +333,11 @@ function App(){
     if(nearbyCache!==-1&&!collected){
       if(!solved){setToast('Tempat terkunci · pecahkan kode terminal dahulu');return}
       if(nearbyCache===map.hidden){sound('pickup');if(mode==='multi')sendRoom({type:'collect'});else{setCollected(true);setProgress(p=>({...p,coins:p.coins+15}))}}
-      else{sound('wrong');setToast('Tidak ada berkas di sini. Ikuti petunjuk misi di atas map.')}
+      else{sound('wrong');setToast('Kunci tidak ada di sini. Ikuti petunjuk misi di atas peta.')}
       return;
     }
-    if(nearby('door')&&collected){sound('clear');keys.current={left:false,right:false};setWalking(false);if(mode==='multi')sendRoom({type:'clear',remaining:seconds,health});else setLevelClear(true);return}
-    if(nearby('door'))setToast('Pintu terkunci · temukan berkas tersembunyi');
+    if(nearby('door')&&collected&&level<3&&viraStage==='gone'){sound('clear');keys.current={left:false,right:false};setWalking(false);if(mode==='multi')sendRoom({type:'clear',remaining:seconds,health});else setLevelClear(true);return}
+    if(nearby('door'))setToast(level===3?'Susul Vira di jalur atas untuk menyelesaikan misi.':collected?'Vira masih di dekat pintu. Dekati dia!':'Pintu terkunci · cari kunci tersembunyi.');
   }
   interactRef.current=interact;
   useEffect(()=>{
@@ -385,6 +413,16 @@ function App(){
         return;
       }
       xRef.current=next;setX(next);
+      if(level===3&&collected&&viraStageRef.current!=='caught'&&next>map.vira-21){
+        if(viraStageRef.current==='waiting'){viraStageRef.current='escaping';setViraStage('escaping');setToast('Vira kabur! Lompati platform dan kejar dia.');}
+        if(viraStageRef.current==='escaping'){
+          viraXRef.current=advanceVira(viraXRef.current);
+          setViraX(viraXRef.current);
+          if(catchesVira(next,nextHeight,viraXRef.current)){
+            viraStageRef.current='caught';setViraStage('caught');setToast('Raka berhasil menyusul Vira!');
+          }
+        }
+      }
       if(mode==='multi'&&(delta||airborne||lastSentMove.current)){
         sendRoom({type:'move',x:next,height:nextHeight,direction:delta<0?'left':delta>0?'right':direction,walking:delta!==0,running:sprint.running,jumping:airborne});
         lastSentMove.current=Boolean(delta||airborne);
@@ -397,7 +435,7 @@ function App(){
       });
     },40);
     return()=>clearInterval(loop);
-  },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading,recovering,health]);
+  },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading,recovering,health,collected]);
   useEffect(()=>{if(screen==='game'&&health===0&&!ending&&!recovering){if(mode==='multi')sendRoom({type:'fail'});else{setEnding('bad');setScreen('ending')}}},[screen,health,ending,mode,recovering]);
   useEffect(()=>{
     if(screen!=='game'||talking||levelClear||pickupOpen||ending||paused||loading||recovering)return;
@@ -437,7 +475,7 @@ function App(){
   }
   function nextPuzzle(){
     if(mode==='multi'){sendRoom({type:'advance'});return}
-    if(puzzleIndex===2){setPuzzleIndex(3);setDialog(false);setToast('Petunjuk lokasi berkas muncul di atas map!')}
+    if(puzzleIndex===2){setPuzzleIndex(3);setDialog(false);setToast('Petunjuk lokasi kunci muncul di atas peta!')}
     else setPuzzleIndex(v=>v+1);
     puzzleStartedAt.current=Date.now();
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
@@ -448,13 +486,13 @@ function App(){
       completed:p.completed.includes(level)?p.completed:[...p.completed,level],
       stars:p.stars.map((value,index)=>index===level?Math.max(value,starsEarned):value)
     }));
-    if(level===3){setEnding(getEnding({dossiers,mistakes,escaped:true}));setScreen('ending');return}
+    if(level===3){setEnding(viraStage==='caught'?'true':'bad');setScreen('ending');return}
     showLevelSelect();
   }
   const marker=nearby('npc')&&!conversationSeen?'npc':nearby('terminal')&&!solved?'terminal':nearbyCache!==-1&&!collected?'cache':nearby('npc')?'npc':nearby('door')?'door':null;
-  const actionLabel=talking?'Lanjutkan percakapan':{npc:conversationSeen?'Bicara lagi':'Bicara dengan tokoh',terminal:'Buka terminal',cache:`Periksa ${map.caches[nearbyCache]?.name||'tempat'}`,door:collected?'Buka pintu':'Periksa pintu'}[marker];
+  const actionLabel=talking?'Lanjutkan percakapan':{npc:conversationSeen?'Bicara lagi':'Bicara dengan tokoh',terminal:'Buka terminal',cache:`Periksa ${map.caches[nearbyCache]?.name||'tempat'}`,door:level===3?'Kejar Vira di atas':collected?'Buka pintu':'Periksa pintu'}[marker];
   const endingInfo={
-    true:{eyebrow:'TRUE ENDING',title:'Kebenaran terungkap.',description:'Empat berkas lengkap. Raka lolos, bukti terkirim, dan lokasi Vira akhirnya terungkap.'},
+    true:{eyebrow:'MISI BERHASIL',title:'Vira ditemukan.',description:'Raka berhasil menyusul Vira di markas terakhir. Empat kunci membuka jalan untuk mengungkap kebocoran data.'},
     neutral:{eyebrow:'NEUTRAL ENDING',title:'Raka berhasil lolos.',description:'Bukti terkirim, tetapi terlalu banyak kesalahan membuat beberapa data rusak. Kasus masih terbuka.'},
     bad:{eyebrow:'BAD ENDING',title:'Transmisi terputus.',description:'Sistem mengunci akses sebelum misi selesai. Ulangi operasi, gunakan petunjuk, dan amati pemindai.'}
   };
@@ -462,20 +500,18 @@ function App(){
     <main className="shell">
       {screen==='poster' ? <section className="title-screen" aria-label="Poster Jejak yang Hilang">
         <div className="title-scene">
-          <div className="title-cast">
-            {[{id:'chief',name:'Arman',side:'back-left'},{id:'anonim',name:'Nara',side:'back-mid'},{id:'pelaku',name:'Damar',side:'back-right'},{id:'v',name:'Vira',side:'front-left'},{id:'r',name:'Raka',side:'front-right'}].map(actor=><div key={actor.id} className={`cast-member ${actor.side}`}><img src={`/sprites/${actor.id}-idle.png`} alt={actor.name}/><span>{actor.name}</span></div>)}
-          </div>
+          <div className="title-chase" aria-hidden="true"><span className="title-chase-line"/><div className="title-chase-raka"><Sprite id="r" walking running direction="right"/><b>RAKA</b></div><div className="title-chase-vira"><Sprite id="v" walking direction="right"/><b>VIRA →</b></div><div className="title-chase-floor"/></div>
           <div className="title-vignette"/>
         </div>
         <div className="title-content">
-          <div className="title-case-tag"><span className="live-dot"/> CASE 047 <i/> BERKAS RAHASIA</div>
-          <p className="title-kicker">MISTERI · MATEMATIKA · PETUALANGAN</p>
+          <div className="title-case-tag"><span className="live-dot"/> MISI PENCARIAN VIRA <i/> CASE 047</div>
+          <p className="title-kicker">4 KUNCI · 4 LOKASI · 1 SAHABAT YANG HILANG</p>
           <h1 className="title-accessible-name">Jejak yang Hilang</h1>
           <img className="title-logo" src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang dengan kaca pembesar dan papan investigasi" fetchPriority="high" />
-          <p className="title-story">Vira menemukan kebocoran data dan pergi. Raka mengikuti pesan berkode yang ia tinggalkan untuk mengungkap kebenarannya.</p>
-          <p className="title-brief">TELUSURI JEJAKNYA · PECAHKAN KODENYA · TEMUKAN KEBENARAN</p>
-          <div className="title-actions"><button className="title-play" onClick={()=>{if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}setScreen('mode')}}>▶ PLAY</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
-          <p className="title-subline">4 LEVEL · 2 CARA BERMAIN · 1 MISTERI</p>
+          <p className="title-story">Vira melihat kebocoran data lalu menghilang. Kejar jejaknya dari satu pintu ke pintu berikutnya, pecahkan kode, dan temukan empat kunci sebelum ia lenyap lagi.</p>
+          <div className="title-route"><span>01 RUANG VIRA</span><i>→</i><span>02 KORIDOR</span><i>→</i><span>03 SERVER</span><i>→</i><span>04 MARKAS</span></div>
+          <div className="title-actions"><button className="title-play" onClick={()=>{if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}setScreen('mode')}}>▶ MULAI KEJAR</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
+          <p className="title-subline">SINGLE ATAU MULTIPLAYER · GUNAKAN KUNCI · SUSUL VIRA</p>
         </div>
         <button className="title-sound" onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'♫ Suara nyala':'♪ Suara mati'}</button>
       </section> : screen==='mode' ? <section className="mode-screen" aria-label="Pilih cara bermain">
@@ -505,29 +541,30 @@ function App(){
           {roomError&&<p className="room-error" role="alert">{roomError}</p>}
         </div>
       </section> : screen==='select' ? <section className="level-select" aria-label="Pilih level">
-        <div className="level-select-heading"><button className="menu-back" onClick={()=>mode==='multi'?setScreen('lobby'):setScreen('mode')}>← {mode==='multi'?'Ruang':'Pilih mode'}</button><p>JEJAK YANG HILANG · {mode==='multi'?`RUANG ${roomCode}`:'SINGLE PLAYER'}</p><h1>Pilih level</h1><span>{mode==='multi'&&roomRole==='guest'?'Raka 1 memilih level. Siapkan diri untuk balapan!':'Lokasi berikutnya terbuka setelah berkas di lokasi sebelumnya diamankan.'}</span><div className="select-coins">✦ {mode==='multi'?room?.coins??0:progress.coins} koin {mode==='multi'&&`· Lawan ${room?.scores?.[roomRole==='host'?'guest':'host']??0}`}</div>{mode==='multi'&&room?.lastResult&&<div className="race-result"><strong>{room.lastResult.winner===roomRole?'🏆 Kamu menang!':'Raka lain menang!'}</strong><span aria-label={`${room.lastResult.stars} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=room.lastResult.stars?'earned':''}>★</i>)}</span><small>Sisa waktu pemenang {formatClock(room.lastResult.remaining)}</small></div>}</div>
+        <div className="level-select-heading"><button className="menu-back" onClick={()=>mode==='multi'?setScreen('lobby'):setScreen('mode')}>← {mode==='multi'?'Ruang':'Pilih mode'}</button><p>JEJAK YANG HILANG · {mode==='multi'?`RUANG ${roomCode}`:'SINGLE PLAYER'}</p><h1>Pilih level</h1><span>{mode==='multi'&&roomRole==='guest'?'Raka 1 memilih level. Siapkan diri untuk balapan!':'Level berikutnya terbuka setelah kunci ditemukan dan pintu ujung area dilewati.'}</span><div className="select-coins">✦ {mode==='multi'?room?.coins??0:progress.coins} koin {mode==='multi'&&`· Lawan ${room?.scores?.[roomRole==='host'?'guest':'host']??0}`}</div>{mode==='multi'&&room?.lastResult&&<div className="race-result"><strong>{room.lastResult.winner===roomRole?'🏆 Kamu menang!':'Raka lain menang!'}</strong><span aria-label={`${room.lastResult.stars} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=room.lastResult.stars?'earned':''}>★</i>)}</span><small>Sisa waktu pemenang {formatClock(room.lastResult.remaining)}</small></div>}</div>
         <div className="level-cards">{levels.map((item,index)=>{const locked=index>unlocked;const done=(mode==='multi'?room?.completed:progress.completed)?.includes(index);const best=mode==='multi'?room?.stars?.[index]??0:progress.stars[index];return <button key={item.name} className={`level-card ${locked?'locked':''} ${done?'complete':''}`} onClick={()=>startLevel(index)} disabled={locked||(mode==='multi'&&roomRole!=='host')}><div className="level-card-art" style={{backgroundImage:`url('/scenes/room-${index}.svg')`}}/><div className="level-card-content"><span className="level-number">{String(index+1).padStart(2,'0')}</span><div><small>{item.chapter} · {formatClock(levelTimeLimits[index])}</small><strong>{item.name}</strong><em>{item.location}</em><span className="level-stars" aria-label={`Rekor ${best} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=best?'earned':''}>★</i>)}</span></div><b>{locked?'🔒 TERKUNCI':done?'✓ SELESAI':mode==='multi'&&roomRole==='guest'?'MENUNGGU':'▶ MAIN'}</b></div></button>})}</div>
-        <p className="level-select-foot">BERKAS TERKUMPUL {dossiers}/4 · LEVEL TERBUKA {unlocked+1}/4</p>
+        <p className="level-select-foot">KUNCI TERKUMPUL {dossiers}/4 · LEVEL TERBUKA {unlocked+1}/4</p>
       </section> : ending==='bad' ? <section className="game-over-screen" aria-label="Misi gagal" style={{'--failure-scene':`url('/scenes/room-${level}.svg')`}}>
         <div className="game-over-stage"><div className="failure-orbit"/><div className="failure-signal">×<span>CONNECTION LOST</span></div><Sprite id={heroSprite}/><div className="failure-floor"/><span className="failure-stage-caption">JEJAK YANG HILANG · {current.location.toUpperCase()}</span></div>
-        <div className="game-over-copy"><p className="failure-kicker"><i/> GAME OVER · LEVEL {String(level+1).padStart(2,'0')} / 04</p><h1>MISI<br/><em>TERHENTI.</em></h1><p className="failure-reason">{seconds===0?'Waktu operasi habis sebelum bukti terkirim. Jalur ini masih bisa dicoba lagi.':health===0?`${heroName} terdeteksi terlalu sering oleh pemindai. Petunjuk Vira masih menunggu untuk dipecahkan.`:'Operasi tim terhenti. Susun kembali langkah kalian dan coba lagi.'}</p><div className="failure-progress"><span><small>LOKASI</small><strong>{current.name}</strong></span><span><small>BERKAS</small><strong>{dossiers} / 4 diamankan</strong></span></div><div className="failure-actions"><button className="failure-retry" onClick={()=>{if(mode!=='multi')setMistakes(0);startLevel(level)}} disabled={mode==='multi'&&roomRole!=='host'}>↻ <span>{mode==='multi'&&roomRole!=='host'?'Menunggu Raka':'Ulangi Level'}</span> →</button><button className="failure-levels" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih Level</button></div><small className="failure-tip">{mode==='multi'?'Kalian akan mengulang level bersama.':'Nyawa dan soal di level ini akan dimulai dari awal.'}</small></div>
-      </section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Berkas {dossiers}/4</span><span>Kesalahan {mode==='multi'?room?.mistakes:mistakes}</span><span>✦ {mode==='multi'?room?.coins??0:progress.coins} koin</span>{mode==='multi'&&<span>{room?.winner===roomRole?'🏆 Kamu menang!':'Raka lain menang'}</span>}</div><button className="main-button" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih level →</button></div></section> : <>
+        <div className="game-over-copy"><p className="failure-kicker"><i/> GAME OVER · LEVEL {String(level+1).padStart(2,'0')} / 04</p><h1>MISI<br/><em>TERHENTI.</em></h1><p className="failure-reason">{seconds===0?'Waktu operasi habis sebelum bukti terkirim. Jalur ini masih bisa dicoba lagi.':health===0?`${heroName} terdeteksi terlalu sering oleh pemindai. Petunjuk Vira masih menunggu untuk dipecahkan.`:'Operasi tim terhenti. Susun kembali langkah kalian dan coba lagi.'}</p><div className="failure-progress"><span><small>LOKASI</small><strong>{current.name}</strong></span><span><small>KUNCI</small><strong>{dossiers} / 4 ditemukan</strong></span></div><div className="failure-actions"><button className="failure-retry" onClick={()=>{if(mode!=='multi')setMistakes(0);startLevel(level)}} disabled={mode==='multi'&&roomRole!=='host'}>↻ <span>{mode==='multi'&&roomRole!=='host'?'Menunggu Raka':'Ulangi Level'}</span> →</button><button className="failure-levels" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih Level</button></div><small className="failure-tip">{mode==='multi'?'Kalian akan mengulang level bersama.':'Nyawa dan soal di level ini akan dimulai dari awal.'}</small></div>
+      </section> : ending ? <section className="result-card"><div className="result-actor"><Sprite id="r" walking/></div><div><p className="kicker">{endingInfo[ending].eyebrow}</p><h1>{endingInfo[ending].title}</h1><p>{endingInfo[ending].description}</p><div className="result-stats"><span>Kunci {dossiers}/4</span><span>Kesalahan {mode==='multi'?room?.mistakes:mistakes}</span><span>✦ {mode==='multi'?room?.coins??0:progress.coins} koin</span>{mode==='multi'&&<span>{room?.winner===roomRole?'🏆 Kamu menang!':'Raka lain menang'}</span>}</div><button className="main-button" onClick={()=>{setMistakes(0);showLevelSelect()}}>Pilih level →</button></div></section> : <>
         <section className="game-frame" aria-label="Bingkai permainan Jejak yang Hilang">
-        <div className="game-top"><div className="hud-title"><span className="hud-level-badge" aria-hidden="true">{String(level+1).padStart(2,'0')}</span><div><p className="kicker">JEJAK YANG HILANG · {current.chapter}{mode==='multi'?` · RUANG ${roomCode}`:''}</p><h1>{current.name}</h1></div></div><div className="hud-right"><div className="game-stats"><div className="life-frame" aria-label={`Nyawa ${health} dari 3`}><small>NYAWA {mode==='multi'?heroName.toUpperCase():''}</small><strong>{[0,1,2].map(i=><i key={i} className={i<health?'alive':'lost'}>♥</i>)}</strong></div><div className="file-frame"><small>BERKAS</small><strong>▣ {dossiers}/4</strong></div><div className="coin-frame"><small>KOIN {mode==='multi'?heroName.toUpperCase():''}</small><strong>✦ {mode==='multi'?room?.coins??0:progress.coins}</strong>{mode==='multi'&&<em>Lawan ✦ {room?.scores?.[roomRole==='host'?'guest':'host']??0}</em>}</div><div className={`timer-frame ${seconds<30?'urgent':''}`} aria-label={`Sisa waktu ${formatClock(seconds)}`}><small>WAKTU</small><strong>◷ {formatClock(seconds)}</strong><span className="timer-track"><i style={{width:`${seconds/timeLimit*100}%`}}/></span></div></div><div className="game-menu"><button onClick={pauseGame} aria-label="Buka menu jeda" title="Jeda"><span aria-hidden="true">Ⅱ</span><span className="menu-text">Jeda</span></button><button onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'} title={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'♫':'♪'}</button><button onClick={toggleFullScreen} aria-label={fullScreen?'Keluar layar penuh':'Layar penuh'} title={fullScreen?'⤢':'⛶'}>{fullScreen?'⤢':'⛶'}</button><button onClick={()=>setHelp(v=>!v)} aria-label="Cara main" title="Cara main">?</button></div></div></div>
-        <div className="mission-note"><b className="mission-label">{!solved?'MISI':collected?'TUJUAN':'PETUNJUK'}</b><span>{!solved?'Cari terminal di area ini dan pecahkan tiga kode.':collected?'Berkas aman. Kembali ke pintu keluar di awal area.':map.clue}</span><div className="journey-meter" aria-hidden="true"><i style={{width:`${x}%`}}/></div><small>{Math.round(x)}% area</small></div>
+        <div className="game-top"><div className="hud-title"><span className="hud-level-badge" aria-hidden="true">{String(level+1).padStart(2,'0')}</span><div><p className="kicker">JEJAK YANG HILANG · {current.chapter}{mode==='multi'?` · RUANG ${roomCode}`:''}</p><h1>{current.name}</h1></div></div><div className="hud-right"><div className="game-stats"><div className="life-frame" aria-label={`Nyawa ${health} dari 3`}><small>NYAWA {mode==='multi'?heroName.toUpperCase():''}</small><strong>{[0,1,2].map(i=><i key={i} className={i<health?'alive':'lost'}>♥</i>)}</strong></div><div className="file-frame"><small>KUNCI</small><strong>🗝 {dossiers}/4</strong></div><div className="coin-frame"><small>KOIN {mode==='multi'?heroName.toUpperCase():''}</small><strong>✦ {mode==='multi'?room?.coins??0:progress.coins}</strong>{mode==='multi'&&<em>Lawan ✦ {room?.scores?.[roomRole==='host'?'guest':'host']??0}</em>}</div><div className={`timer-frame ${seconds<30?'urgent':''}`} aria-label={`Sisa waktu ${formatClock(seconds)}`}><small>WAKTU</small><strong>◷ {formatClock(seconds)}</strong><span className="timer-track"><i style={{width:`${seconds/timeLimit*100}%`}}/></span></div></div><div className="game-menu"><button onClick={pauseGame} aria-label="Buka menu jeda" title="Jeda"><span aria-hidden="true">Ⅱ</span><span className="menu-text">Jeda</span></button><button onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'} title={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'♫':'♪'}</button><button onClick={toggleFullScreen} aria-label={fullScreen?'Keluar layar penuh':'Layar penuh'} title={fullScreen?'⤢':'⛶'}>{fullScreen?'⤢':'⛶'}</button><button onClick={()=>setHelp(v=>!v)} aria-label="Cara main" title="Cara main">?</button></div></div></div>
+        <div className="mission-note"><b className="mission-label">{!solved?'MISI':collected?'TUJUAN':'PETUNJUK'}</b><span>{!solved?'Pecahkan kode, temukan kunci, lalu susul Vira.':collected?(level===3?'Kunci aman. Lompati platform dan susul Vira.':'Kunci aman. Buka pintu di ujung area.'):map.clue}</span><div className="journey-meter" aria-hidden="true"><i style={{width:`${x}%`}}/></div><small>{Math.round(x)}% area</small></div>
         <section className={`scene scene-${level} ${hurt?'hurt':''}`} aria-label={`Area permainan ${current.location}`}>
           <div className="scene-world" style={{left:`${camera}%`}}>
             <div className="scene-backdrop"><div className="scene-title">{current.location}</div></div>
             <div className="atmosphere"><i/><i/><i/><i/><i/></div>
             <div className="scene-ground"/>
-            {level===2&&tierPlatforms.map((step,index)=><div key={step.start} className={`stair-platform stair-${index}`} style={{left:`${step.start}%`,width:`${step.end-step.start}%`,'--rise':`${step.height}px`}}><span>{index+1}</span></div>)}
+            {(level===2?tierPlatforms:level===3?finalPlatforms:[]).map((step,index)=><div key={step.start} className={`stair-platform ${level===3?'final-platform':''} stair-${index}`} style={{left:`${step.start}%`,width:`${step.end-step.start}%`,'--rise':`${step.height}px`}}><span>{level===3?'▣':index+1}</span></div>)}
             {trail.map((coin,index)=>!coinIds.includes(index)&&<div key={index} className="path-coin" style={{left:`${coin.x}%`,bottom:`calc(30% - 5px + ${coin.height}px)`}} aria-label={`Koin ${index+1}`}><i>✦</i></div>)}
             {coinBurst&&<div key={`${coinBurst.index}-${coinBurst.x}`} className="coin-burst" style={{left:`${coinBurst.x}%`,bottom:`calc(30% - 5px + ${coinBurst.height}px)`}} aria-hidden="true"><span>✦</span><b>+5</b></div>}
             {level===2&&<div className="security-drone" style={{left:`${droneX}%`}} aria-label="Drone patroli bergerak"><i/><b>●</b><i/></div>}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
+            {viraStage!=='gone'&&<div className={`vira-runner ${viraStage}`} style={{left:`${level<3&&viraStage==='escaping'?101:viraPosition}%`,bottom:`calc(30% - 5px + ${floorHeightAt(level,viraPosition)}px)`}} aria-label={level===3?'Vira sedang berlari di jalur atas':'Vira menunggu di depan pintu'}><span>{viraStage==='caught'?'VIRA DITEMUKAN':'VIRA'}</span><Sprite id="v" walking={viraStage==='escaping'} running={viraStage==='escaping'} direction="right"/><i className="foot-shadow"/></div>}
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
             {map.caches.map((cache,index)=><div key={cache.name} className={`object cache-object cache-${index} ${solved&&!collected?'searchable':''} ${collected&&index===map.hidden?'taken':''}`} style={{left:`${cache.x}%`}}><CacheProp kind={cache.kind}/><span className="cache-name">{cache.name}</span>{nearbyCache===index&&!collected&&<i>TEKAN E</i>}</div>)}
-            <div className={`object door-object ${collected?'ready':''}`} style={{left:`${map.door}%`}}><span className="object-icon">⇥</span><span>KELUAR</span>{nearby('door')&&<i>TEKAN E</i>}</div>
+            <div className={`object door-object exit-gate ${collected?'ready':''}`} style={{left:`${map.door}%`}}><span className="object-icon"><b className="gate-lock">{collected?'◇':'▣'}</b></span><span>PINTU KELUAR</span>{nearby('door')&&level<3&&<i>TEKAN E</i>}</div>
             {map.scanners.map(point=><div key={point} className={`scanner ${scannerOn?'on':''}`} style={{left:`${point}%`,bottom:`calc(30% - 4px + ${floorHeightAt(level,point)}px)`}} aria-label={`Pemindai ${scannerOn?'aktif':'siaga'}`}><div className="scanner-head"><i/><b/><i/></div><div className="scanner-beam"/><div className="scanner-base"/><span>PEMINDAI</span></div>)}
             {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player rival-raka" style={{left:`${peer.x}%`,bottom:`calc(30% - 5px + ${peer.height||0}px)`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} running={peer.running} jumping={peer.jumping} direction={peer.direction}/><i className="foot-shadow"/></div>}
             <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing}/><i className="foot-shadow"/></div>
@@ -539,10 +576,10 @@ function App(){
         </section>
         <div className="control-strip"><div className="movement"><button aria-label="Jalan ke kiri" onPointerDown={e=>{e.preventDefault();keys.current.left=true}} onPointerUp={()=>keys.current.left=false} onPointerCancel={()=>keys.current.left=false} onPointerLeave={()=>keys.current.left=false}>←</button><button aria-label="Jalan ke kanan" onPointerDown={e=>{e.preventDefault();keys.current.right=true}} onPointerUp={()=>keys.current.right=false} onPointerCancel={()=>keys.current.right=false} onPointerLeave={()=>keys.current.right=false}>→</button><button className="run-control" aria-label="Tahan untuk lari" onPointerDown={e=>{e.preventDefault();keys.current.run=true;e.currentTarget.setPointerCapture(e.pointerId)}} onPointerUp={()=>keys.current.run=false} onPointerCancel={()=>keys.current.run=false} onLostPointerCapture={()=>keys.current.run=false}>⚡ LARI</button><button className="jump-control" aria-label="Lompat" onPointerDown={e=>{e.preventDefault();keys.current.jump=true}}>↑ LOMPAT</button><span>← → / A D gerak · Shift lari · Spasi lompat</span></div><div><button className="interact-button" onClick={interact} disabled={!marker}>{actionLabel || 'Dekati objek untuk berinteraksi'} <kbd>E</kbd></button></div></div>
         </section>
-        {pickupOpen&&<div className="evidence-reveal" role="dialog" aria-modal="true" aria-label="Berkas ditemukan"><div className="evidence-particles" aria-hidden="true"><i/><i/><i/><i/><i/><i/></div><div className="evidence-card"><p className="evidence-kicker">BUKTI DITEMUKAN · {current.dossier.code}</p><div className="evidence-art" aria-hidden="true"><div className="evidence-glow"/><div className="evidence-folder-back"/><div className="evidence-page"><span>CASE 047</span><i/><i/><i/></div><div className="evidence-folder-front"><b>▣</b><span>{current.dossier.code}</span></div></div><h2>{current.dossier.title}</h2><p>{current.dossier.detail}</p><button onClick={()=>setPickupOpen(false)}>Simpan berkas dan lanjut →</button></div></div>}
-        {levelClear&&<div className="modal-backdrop mission-result-backdrop"><section className="clear-card mission-result" role="dialog" aria-modal="true" aria-label="Level selesai"><div className="mission-result-art" style={{backgroundImage:`linear-gradient(90deg,#0b2432aa,#0b243288),url('/scenes/room-${level}.svg')`}}><span className="result-chapter">MISI {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</span><div className="result-seal">✓</div><h2>LEVEL SELESAI</h2><p>{current.name}</p></div><div className="mission-result-details"><span className="result-kicker">BERKAS DIAMANKAN · {current.dossier.code}</span><div className="result-stars" aria-label={`${starsEarned} dari 3 bintang`}>{[1,2,3].map(star=><span key={star} className={star<=starsEarned?'earned':''} style={{'--star-index':star}}>★</span>)}</div><strong className="result-rank">{starsEarned===3?'MISI SEMPURNA':starsEarned===2?'KERJA BAGUS':'MISI BERHASIL'}</strong><p className="result-criteria">3 bintang: selesai sebelum separuh waktu habis dengan 3 nyawa. 2 bintang: sisa minimal 20% waktu dan 2 nyawa.</p><div className="result-metrics"><span><small>SISA WAKTU</small><b>{formatClock(seconds)}</b></span><span><small>NYAWA</small><b>{health} / 3</b></span><span><small>REKOR</small><b>{Math.max(progress.stars[level],starsEarned)} ★</b></span></div><button className="result-next" onClick={nextLevel}>{level===3?'LIHAT AKHIR CERITA':'LANJUT KE PILIH LEVEL'} <span>→</span></button></div></section></div>}
+        {pickupOpen&&<div className="evidence-reveal" role="dialog" aria-modal="true" aria-label="Kunci ditemukan"><div className="evidence-particles" aria-hidden="true"><i/><i/><i/><i/><i/><i/></div><div className="evidence-card key-card"><p className="evidence-kicker">KUNCI DITEMUKAN · {current.dossier.code}</p><div className="key-art" aria-hidden="true"><div className="key-halo"/><div className="key-bow"><i/></div><div className="key-shaft"><i/><b/></div><span className="key-spark one">✦</span><span className="key-spark two">✦</span></div><h2>{current.dossier.title}</h2><p>{current.dossier.detail}</p><button onClick={()=>setPickupOpen(false)}>Ambil kunci dan lanjut →</button></div></div>}
+        {levelClear&&<div className="modal-backdrop mission-result-backdrop"><section className="clear-card mission-result" role="dialog" aria-modal="true" aria-label="Level selesai"><div className="mission-result-art" style={{backgroundImage:`linear-gradient(90deg,#0b2432aa,#0b243288),url('/scenes/room-${level}.svg')`}}><span className="result-chapter">MISI {String(level+1).padStart(2,'0')} / 04 · {current.chapter}</span><div className="result-seal">✓</div><h2>LEVEL SELESAI</h2><p>{current.name}</p></div><div className="mission-result-details"><span className="result-kicker">KUNCI DITEMUKAN · {current.dossier.code}</span><div className="result-stars" aria-label={`${starsEarned} dari 3 bintang`}>{[1,2,3].map(star=><span key={star} className={star<=starsEarned?'earned':''} style={{'--star-index':star}}>★</span>)}</div><strong className="result-rank">{starsEarned===3?'MISI SEMPURNA':starsEarned===2?'KERJA BAGUS':'MISI BERHASIL'}</strong><p className="result-criteria">3 bintang: selesai sebelum separuh waktu habis dengan 3 nyawa. 2 bintang: sisa minimal 20% waktu dan 2 nyawa.</p><div className="result-metrics"><span><small>SISA WAKTU</small><b>{formatClock(seconds)}</b></span><span><small>NYAWA</small><b>{health} / 3</b></span><span><small>REKOR</small><b>{Math.max(progress.stars[level],starsEarned)} ★</b></span></div><button className="result-next" onClick={nextLevel}>{level===3?'LIHAT AKHIR CERITA':'LANJUT KE PILIH LEVEL'} <span>→</span></button></div></section></div>}
         {paused&&<div className="pause-backdrop"><section className="pause-card" role="dialog" aria-modal="true" aria-label="Menu jeda"><span className="pause-symbol">Ⅱ</span><p className="pause-kicker">JEJAK YANG HILANG · LEVEL {String(level+1).padStart(2,'0')}</p><h2>Permainan dijeda</h2><p className="pause-caption">{mode==='multi'?'Kedua pemain sedang berhenti sejenak.':'Lanjutkan petualangan kapan saja.'}</p><div className="pause-actions"><button className="pause-resume" onClick={resumeGame}>▶ <span>Resume</span></button><button onClick={showLevelSelect}>▦ <span>Pilih Level</span></button><button onClick={exitGame}>↩ <span>Keluar Game</span></button></div><small>Tekan Esc untuk lanjut bermain</small></section></div>}
-        {dialog&&puzzleIndex<3&&<div className="modal-backdrop terminal-backdrop"><section className="puzzle-card terminal-panel" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span className="terminal-live"><i/> TERMINAL VIRA <small>· TERHUBUNG</small></span><span className="terminal-steps">{[0,1,2].map(index=><b key={index} className={index<=puzzleIndex?'active':''}>{index+1}</b>)}</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('');setShowAnswer(false)}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">KODE {puzzleIndex+1} / 3 · {current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}{showAnswer&&<p className="answer-reveal" role="status"><strong>Jawaban: {current.puzzles[puzzleIndex].answers[0]}</strong><span>Ketik jawaban ini di kotak atas untuk lanjut.</span></p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button><button className="text-button" onClick={()=>setShowAnswer(v=>!v)}>{showAnswer?'Sembunyikan':'Lihat'} jawaban</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Cari berkas dari petunjuk':'Soal berikutnya'} →</button>}</div></div></section></div>}
+        {dialog&&puzzleIndex<3&&<div className="modal-backdrop terminal-backdrop"><section className="puzzle-card terminal-panel" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span className="terminal-live"><i/> TERMINAL VIRA <small>· TERHUBUNG</small></span><span className="terminal-steps">{[0,1,2].map(index=><b key={index} className={index<=puzzleIndex?'active':''}>{index+1}</b>)}</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('');setShowAnswer(false)}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">KODE {puzzleIndex+1} / 3 · {current.chapter} · {current.location}</p><h2>{current.puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{current.puzzles[puzzleIndex].formula}</strong><p>{current.puzzles[puzzleIndex].rule}</p><small>{current.puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {current.puzzles[puzzleIndex].hint}</p>}{showAnswer&&<p className="answer-reveal" role="status"><strong>Jawaban: {current.puzzles[puzzleIndex].answers[0]}</strong><span>Ketik jawaban ini di kotak atas untuk lanjut.</span></p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button><button className="text-button" onClick={()=>setShowAnswer(v=>!v)}>{showAnswer?'Sembunyikan':'Lihat'} jawaban</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Cari kunci dari petunjuk':'Soal berikutnya'} →</button>}</div></div></section></div>}
       </>}
       {help&&<GameGuide onClose={()=>setHelp(false)}/>}
     </main>

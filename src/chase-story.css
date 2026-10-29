@@ -1,0 +1,70 @@
+/* Panggung pembuka menampilkan alasan misi, bukan susunan kartu halaman. */
+.title-screen .title-scene{background-image:linear-gradient(90deg,#061a2580 0%,#071a2460 43%,#0a202dce 72%,#091d28 100%),url('/branding/title-key-art.png');background-position:34% center}
+.title-chase{position:absolute;z-index:3;left:2%;bottom:3%;width:57%;height:min(55vh,500px);pointer-events:none}
+.title-chase:before{content:'';position:absolute;left:9%;right:4%;bottom:17%;height:30%;background:radial-gradient(ellipse,#82d2c94d,transparent 69%);filter:blur(24px)}
+.title-chase-line{position:absolute;left:16%;right:12%;bottom:24%;height:3px;background:linear-gradient(90deg,transparent,#9ddac56f,#e8d59a8a,transparent);box-shadow:0 0 25px #b5ead377}
+.title-chase-floor{position:absolute;left:0;right:0;bottom:13%;height:11%;border-top:3px solid #bbd5a993;background:linear-gradient(#1c414db0,#081d29e0);transform:perspective(400px) rotateX(65deg);box-shadow:0 -10px 38px #a4e3c653}
+.title-chase-raka,.title-chase-vira{position:absolute;bottom:19%;display:grid;justify-items:center;filter:drop-shadow(0 18px 12px #031018e8)}
+.title-chase-raka{left:13%;animation:chase-raka 2.8s ease-in-out infinite}
+.title-chase-vira{left:62%;animation:chase-vira 2.8s ease-in-out infinite}
+.title-chase-raka .hd-sprite{width:clamp(130px,15vw,240px);height:clamp(185px,29vh,300px)}
+.title-chase-vira .hd-sprite{width:clamp(125px,13vw,210px);height:clamp(170px,26vh,270px)}
+.title-chase-raka b,.title-chase-vira b{position:absolute;top:-20px;padding:5px 10px;border:1px solid #a8dacc8a;border-radius:4px;background:#092631d9;color:#eff9e8;font-size:10px;letter-spacing:.17em;white-space:nowrap}
+.title-chase-vira b{border-color:#efdaaa9e;color:#f2dbaf}
+.title-screen .title-content{width:min(46%,680px);padding-block:clamp(38px,5vh,70px)}
+.title-content .title-logo{width:min(100%,455px);max-height:28vh;object-fit:cover;box-shadow:0 20px 48px #04121dc4,0 0 0 4px #8dd8cf22}
+.title-screen .title-story{font-size:clamp(15px,1.15vw,18px);line-height:1.55;margin:22px 0 17px}
+.title-route{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 23px;color:#f1deb5;font-size:9px;font-weight:900;letter-spacing:.1em}
+.title-route span{padding:6px 8px;border:1px solid #a9c8ab75;border-radius:4px;background:#1d4247a8}
+.title-route i{font-style:normal;color:#b7d4c0}
+.title-screen .title-play{min-width:210px;font-size:14px;letter-spacing:.07em;box-shadow:0 5px 0 #80694a,0 0 24px #d8c28c4d}
+.title-screen .title-play:hover{transform:translateY(-2px);box-shadow:0 7px 0 #80694a,0 0 29px #d8c28c7d}
+@keyframes chase-raka{50%{transform:translateX(9px) translateY(-4px)}}
+@keyframes chase-vira{50%{transform:translateX(14px) translateY(-3px)}}
+
+/* Vira adalah tokoh fisik di ujung level, terpisah dari tokoh pemberi petunjuk. */
+.vira-runner{position:absolute;z-index:5;display:grid;justify-items:center;transform:translateX(-50%);min-width:115px;pointer-events:none;transition:left 1s cubic-bezier(.25,.58,.33,1),bottom .08s linear}
+.vira-runner .hd-sprite{width:clamp(105px,8vw,150px);height:clamp(165px,21vh,225px);filter:drop-shadow(0 4px 3px #031621cc) drop-shadow(0 0 12px #87d8c65c)}
+.vira-runner>span{position:absolute;z-index:2;top:-18px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid #f2d79b9c;border-radius:5px;background:#263e45e8;color:#ffe3b0;font-size:9px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
+.vira-runner.escaping .hd-sprite{animation:vira-lean .3s ease-in-out infinite alternate}
+.vira-runner.caught{filter:drop-shadow(0 0 18px #d6eaae)}
+.vira-runner.caught>span{background:#dcebbe;color:#254a3f}
+.scene-3 .vira-runner{transition:left .04s linear,bottom .04s linear}
+@keyframes vira-lean{to{transform:translateY(-4px) rotate(2deg)}}
+
+/* Gerbang terakhir berada di ujung kanan peta dan hanya menyala setelah kunci diambil. */
+.scene-world .exit-gate{z-index:3;gap:7px;letter-spacing:.09em}
+.exit-gate .object-icon{position:relative;width:112px;height:190px;border:8px solid #719b99;border-radius:48px 48px 6px 6px;background:linear-gradient(90deg,#0a2431,#1a414b 48%,#0b2431 50%,#163841);box-shadow:inset 0 0 0 5px #102d35,inset 0 0 35px #71c4b141,0 0 0 3px #183b42,0 12px 18px #031722bb}
+.exit-gate .object-icon:before{content:'';position:absolute;inset:21px 11px 8px;border:2px solid #9ac7aa76;border-radius:28px 28px 2px 2px;background:linear-gradient(125deg,#87d5c526,transparent 45%)}
+.exit-gate .object-icon:after{content:'';position:absolute;right:17px;top:53%;width:10px;height:10px;border-radius:50%;background:#d9bd83;box-shadow:0 0 11px #f5dc9b}
+.exit-gate .gate-lock{position:relative;z-index:1;display:grid;place-items:center;width:36px;height:39px;border:1px solid #9ebdb0a8;border-radius:8px;background:#0b2631de;color:#e1c992;font-size:22px;font-weight:800;box-shadow:0 0 12px #d6c28b33}
+.exit-gate.ready .object-icon{border-color:#9fd8ac;background:linear-gradient(90deg,#124b46,#3a977b 48%,#154c46 50%,#2a7868);box-shadow:inset 0 0 0 5px #194d49,inset 0 0 42px #9ff2bf8c,0 0 25px #a4f0b66b}
+.exit-gate.ready .gate-lock{color:#d8f7cf;background:#315b4ba8}
+.exit-gate>span:last-of-type{padding:4px 6px;border-radius:4px;background:#0b2c35ce;color:#e6f2da;font-size:9px;white-space:nowrap}
+
+/* Level akhir memakai jalur platform dan objek pada ketinggian yang benar. */
+.scene-3 .final-platform{border-color:#b7a4a0;border-top-color:#f1cc9b;background:repeating-linear-gradient(0deg,#483b4b 0 15px,#655262 15px 18px);box-shadow:inset 0 0 0 4px #231e2a88,0 -7px 20px #e8bd9950}
+.scene-3 .final-platform:after{content:'';position:absolute;left:10px;right:10px;top:18px;height:7px;background:repeating-linear-gradient(90deg,#f3caa362 0 13px,transparent 13px 24px)}
+.scene-3 .terminal-object{bottom:calc(30% - 2px + 128px)!important}
+.scene-3 .cache-0,.scene-3 .cache-2{bottom:calc(30% - 2px + 44px)!important}
+.scene-3 .cache-1{bottom:calc(30% - 2px + 88px)!important}
+
+/* Hadiah kunci baru menggantikan animasi map berkas. */
+.key-card{border-color:#dfc98a;box-shadow:0 24px 65px #03131aee,0 0 45px #f0d89264}
+.key-art{position:relative;width:245px;height:180px;margin:9px auto 13px;transform:rotate(-19deg);animation:key-arrive .55s cubic-bezier(.2,.8,.2,1) both}
+.key-halo{position:absolute;inset:5px 18px;border-radius:50%;background:#f2d58e77;filter:blur(36px);animation:key-halo 1.5s ease-in-out infinite alternate}
+.key-bow{position:absolute;z-index:2;left:22px;top:45px;width:92px;height:92px;border:18px solid #e6c579;border-radius:50%;background:#173a40;box-shadow:inset 0 0 0 4px #f6df9a,0 0 0 4px #8c673e,0 12px 22px #071821aa}
+.key-bow i{position:absolute;inset:12px;border:3px solid #9fc9b4;border-radius:50%;opacity:.55}
+.key-shaft{position:absolute;z-index:1;left:98px;top:82px;width:126px;height:22px;border:3px solid #f7dfa0;border-radius:5px;background:linear-gradient(#f2d889,#ae7b3d);box-shadow:0 8px 13px #061a23a8}
+.key-shaft i,.key-shaft b{position:absolute;right:8px;top:17px;width:16px;height:30px;border:3px solid #f7dfa0;border-top:0;background:#d8ad63}
+.key-shaft b{right:34px;height:21px}
+.key-spark{position:absolute;z-index:3;color:#fff1b9;font-size:27px;text-shadow:0 0 12px #fff4c3;animation:key-spark 1.3s ease-in-out infinite alternate}
+.key-spark.one{left:30px;top:10px}.key-spark.two{right:15px;bottom:11px;animation-delay:.4s}
+@keyframes key-arrive{from{opacity:0;transform:rotate(-45deg) translateY(60px) scale(.55)}to{opacity:1;transform:rotate(-19deg) translateY(0) scale(1)}}
+@keyframes key-halo{to{opacity:.55;transform:scale(1.16)}}
+@keyframes key-spark{to{opacity:.35;transform:translateY(-8px)}}
+
+@media(max-width:900px){.title-chase{width:56%}.title-chase-raka .hd-sprite{width:140px;height:220px}.title-chase-vira .hd-sprite{width:120px;height:190px}.title-screen .title-content{width:51%}}
+@media(max-width:720px){.title-screen .title-scene{height:47dvh}.title-chase{left:5%;bottom:0;width:90%;height:43dvh}.title-chase-raka{left:10%}.title-chase-vira{left:62%}.title-chase-raka .hd-sprite{width:clamp(100px,24vw,160px);height:clamp(150px,27vh,225px)}.title-chase-vira .hd-sprite{width:clamp(95px,22vw,145px);height:clamp(135px,24vh,190px)}.title-screen .title-content{width:100%;margin-top:40dvh;min-height:60dvh;padding:29px 23px 43px}.title-content .title-logo{max-height:none;width:min(100%,430px)}.title-route{gap:4px}.title-route span{font-size:7px;padding:5px}.vira-runner .hd-sprite{width:clamp(90px,28vw,115px);height:clamp(125px,37vw,155px)}.vira-runner{min-width:90px}.exit-gate .object-icon{width:72px;height:138px;border-width:6px}.exit-gate .gate-lock{width:29px;height:31px;font-size:18px}}
+@media(max-width:430px){.title-screen .title-content{margin-top:38dvh}.title-screen .title-play{min-width:165px}.title-chase-raka b,.title-chase-vira b{font-size:8px}.key-art{transform:scale(.8) rotate(-19deg);margin:-6px auto -6px}}
+@media(prefers-reduced-motion:reduce){.title-chase-raka,.title-chase-vira,.vira-runner.escaping .hd-sprite,.key-art,.key-halo,.key-spark{animation:none}.vira-runner{transition:none}}

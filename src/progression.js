@@ -1,4 +1,4 @@
-export const levelTimeLimits=[240,210,180,150];
+export const levelTimeLimits=[240,210,240,300];
 
 export function formatClock(seconds){
   const safe=Math.max(0,Math.floor(Number(seconds)||0));

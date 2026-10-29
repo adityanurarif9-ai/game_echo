@@ -1,7 +1,7 @@
 import {randomBytes} from 'node:crypto';
 import {networkInterfaces} from 'node:os';
 import {WebSocket,WebSocketServer} from 'ws';
-import {levels,isCorrect,coinTrails} from '../src/game.js';
+import {levels,isCorrect,coinTrails,floorHeightAt} from '../src/game.js';
 import {levelTimeLimits,calculateStars} from '../src/progression.js';
 
 const rooms=new Map();
@@ -133,7 +133,10 @@ export function attachRooms(httpServer){
         return;
       }
       if(message.type==='clear'&&self.collected){
-        if(Math.abs(room.positions[role].x-levels[room.level].map.door)>=3.2)return;
+        if(room.level===levels.length-1){
+          const player=room.positions[role];
+          if(player.x<levels[room.level].map.vira-2||Math.abs(player.height-floorHeightAt(room.level,player.x))>48)return;
+        }else if(Math.abs(room.positions[role].x-levels[room.level].map.door)>=3.2)return;
         const limit=levelTimeLimits[room.level];
         const remaining=Number.isFinite(Number(message.remaining))?Math.max(0,Math.min(limit,Number(message.remaining))):limit;
         const health=Number.isFinite(Number(message.health))?Math.max(0,Math.min(3,Number(message.health))):3;

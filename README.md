@@ -4,7 +4,7 @@ Game React dengan layar judul, pilihan Single Player dan Multiplayer, lima karak
 
 ## Ringkasan cerita
 
-Raka, Agen R, mencari rekannya Vira yang menghilang setelah menemukan kebocoran data. Di empat lokasi, ia membaca pesan Vira, memecahkan kode matematika, dan mencari berkas bukti yang disembunyikan. Nara membantu menguji pesan itu, sementara jejak fungsi invers mengungkap bahwa Arman, kepala divisi sendiri, adalah pembocornya. Pada akhir misi, Raka harus membawa bukti keluar dari markas sebelum sistem menghapusnya. Hasil cerita bergantung pada jumlah berkas, kesalahan, dan apakah Raka berhasil lolos.
+Raka mencari rekannya Vira yang menghilang setelah menemukan kebocoran data. Di empat lokasi, ia memecahkan kode matematika dan mencari kunci yang disembunyikan. Vira terlihat sebelum pintu keluar, lalu kabur saat Raka mendekat. Nara membantu menguji pesan itu, sementara fungsi invers mengungkap jejak Arman. Di markas terakhir, Raka mengejar Vira melewati platform bertingkat. Misi berhasil saat Raka menyusulnya.
 
 ## Cara menjalankan di laptop ini
 
@@ -32,23 +32,23 @@ Repository GitHub game ini adalah `https://github.com/adityanurarif9-ai/game_ech
 
 Alamat server tersimpan di browser setelah dipakai. Bila ingin semua pemain mendapat alamat otomatis tanpa tautan, atur variabel lingkungan Vercel `VITE_ROOM_SERVER_URL` ke alamat Render tadi dan lakukan redeploy. Kode frontend memakai variabel itu saat build.
 
-Untuk **multiplayer dua laptop dalam Wi-Fi yang sama**, cukup jalankan game di laptop pertama. Tekan **Play → Multiplayer → Buat Ruang Baru**. Alamat untuk laptop teman akan muncul di layar bersama kode ruang enam karakter. Buka alamat itu di browser laptop kedua, tekan **Play → Multiplayer**, lalu masukkan kode jika belum terisi. Setelah kedua pemain siap, Raka memilih level. Posisi pemain, soal yang terpecahkan, dan berkas tersinkron langsung. Laptop pertama dan terminalnya harus tetap menyala. Bila Windows Firewall meminta izin akses Node.js untuk jaringan privat, izinkan agar laptop lain bisa terhubung. Kalau alamat otomatis tidak cocok dengan Wi-Fi yang dipakai, cari alamat IPv4 laptop pertama dengan `ipconfig`, lalu buka `http://ALAMAT-IPv4:PORT/` di laptop kedua (PORT adalah angka pada alamat Local, misalnya 5173). Mode ini untuk jaringan yang sama; bermain lewat internet berbeda jaringan memerlukan server publik.
+Untuk **multiplayer dua laptop dalam Wi-Fi yang sama**, cukup jalankan game di laptop pertama. Tekan **Play → Multiplayer → Buat Ruang Baru**. Alamat untuk laptop teman akan muncul di layar bersama kode ruang enam karakter. Buka alamat itu di browser laptop kedua, tekan **Play → Multiplayer**, lalu masukkan kode jika belum terisi. Setelah kedua pemain siap, Raka memilih level. Posisi pemain, soal yang terpecahkan, dan kunci tersinkron langsung. Laptop pertama dan terminalnya harus tetap menyala. Bila Windows Firewall meminta izin akses Node.js untuk jaringan privat, izinkan agar laptop lain bisa terhubung. Kalau alamat otomatis tidak cocok dengan Wi-Fi yang dipakai, cari alamat IPv4 laptop pertama dengan `ipconfig`, lalu buka `http://ALAMAT-IPv4:PORT/` di laptop kedua (PORT adalah angka pada alamat Local, misalnya 5173). Mode ini untuk jaringan yang sama; bermain lewat internet berbeda jaringan memerlukan server publik.
 
 Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https://nodejs.org dan Visual Studio Code dari https://code.visualstudio.com. Setelah membuka folder proyek, jalankan `npm.cmd install`, lalu `npm.cmd run dev`. Pada macOS/Linux gunakan `npm` tanpa `.cmd`.
 
 ## Cara bermain
 
 - Pada layar judul **Jejak yang Hilang**, tekan **Play**, lalu pilih **Single Player** atau **Multiplayer**. Tombol **Cara Bermain** membuka panduan.
-- Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah berkas level sebelumnya diamankan. Kemajuan level dan berkas tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan kedua pemain menjadi Raka.
-- Pilih kartu level untuk masuk ke arena. Nyawa, berkas, waktu, dan tombol pengaturan berada di bingkai game.
+- Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah kunci level sebelumnya ditemukan dan pintu ujung area dilewati. Kemajuan level dan kunci tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan kedua pemain menjadi Raka.
+- Pilih kartu level untuk masuk ke arena. Nyawa, kunci, waktu, dan tombol pengaturan berada di bingkai game.
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
 - Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
-- Setiap area lebih panjang dan kamera mengikuti Raka. Jelajahi area untuk menemukan terminal; pintu keluar berada dekat awal sehingga kamu perlu kembali ke sana.
-- Setelah menyelesaikan tiga soal terminal, baca petunjuk di atas map. Berkas tersembunyi di salah satu dari tiga tempat pemeriksaan. Dekati tempat itu dan tekan **E** untuk memeriksanya.
+- Setiap area lebih panjang dan kamera mengikuti Raka. Terminal berada di sepanjang jalur, sementara pintu keluar ada di ujung kanan. Vira muncul sebelum pintu dan kabur saat Raka mendekat pada tiga level pertama.
+- Setelah menyelesaikan tiga soal terminal, baca petunjuk di atas peta. Kunci tersembunyi di salah satu dari tiga tempat pemeriksaan. Dekati tempat itu dan tekan **E** untuk memeriksanya. Buka pintu dengan kunci.
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
 - Jawaban salah atau terkena pemindai mengurangi nyawa. Nyawa kembali penuh pada level berikutnya.
-- Semua level punya timer: 4:00, 3:30, 3:00, dan 2:30. Timer berhenti saat jeda, percakapan, animasi berkas, dan layar hasil. Kehabisan waktu membuat percobaan gagal.
-- Selesai level memberi 1–3 bintang. Tiga bintang memerlukan tiga nyawa dan setidaknya separuh waktu tersisa; dua bintang memerlukan dua nyawa dan setidaknya 20% waktu tersisa. Rekor Single Player tersimpan di browser; rekor Multiplayer berlaku selama ruang aktif. Empat berkas lengkap dan paling banyak tiga kesalahan memberi True Ending. Lebih banyak kesalahan tetapi berhasil lolos memberi Neutral Ending. Kehabisan nyawa atau waktu memberi Bad Ending.
+- Semua level punya timer: 4:00, 3:30, 4:00, dan 5:00. Timer berhenti saat jeda, percakapan, animasi kunci, dan layar hasil. Kehabisan waktu membuat percobaan gagal. Level akhir memberi waktu lebih banyak untuk lompatan dan pengejaran Vira.
+- Selesai level memberi 1–3 bintang. Tiga bintang memerlukan tiga nyawa dan setidaknya separuh waktu tersisa; dua bintang memerlukan dua nyawa dan setidaknya 20% waktu tersisa. Rekor Single Player tersimpan di browser; rekor Multiplayer berlaku selama ruang aktif. Di level akhir, temukan kunci lalu susul Vira di jalur platform untuk menang. Kehabisan nyawa atau waktu membuat misi gagal.
 - Musik dan efek suara dimulai setelah level dimulai. Tombol suara pada layar judul dan di bingkai permainan mematikan atau menghidupkan semuanya. Tidak perlu mengunduh file musik; suaranya dibuat langsung di browser.
 - Saat bermain di desktop, arena otomatis mengisi lebar dan tinggi jendela. Tombol **Layar penuh** di bagian atas menyembunyikan bilah browser; tekan lagi atau **Esc** untuk keluar. Browser hanya mengizinkan layar penuh setelah tombol ditekan.
 - Tombol **Cara main** berisi panduan singkat dalam game.
@@ -56,9 +56,9 @@ Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https
 ## Belajar mengubah game sendiri
 
 - `src/game.js`: judul level, dialog, rumus, tiga soal per level, jawaban, dan petunjuk. Untuk menerima lebih dari satu bentuk jawaban, tambah nilainya ke array `answers`.
-- `src/main.jsx`: layar judul, mode, ruang multiplayer, gerakan pemain, interaksi terminal/berkas/pintu, pemindai, timer, dan perpindahan level.
+- `src/main.jsx`: layar judul, mode, ruang multiplayer, gerakan pemain, interaksi terminal/kunci/pintu, pengejaran Vira, pemindai, timer, dan perpindahan level.
 - `server/rooms.js`, `server/index.js`, `vite.config.js`, dan `render.yaml`: ruang multiplayer WebSocket untuk jaringan lokal dan server publik.
-- Setiap level di `src/game.js` juga memiliki `map` yang menentukan lokasi tokoh, terminal, pintu, pemindai, tiga tempat pencarian, dan petunjuk berkas.
+- Setiap level di `src/game.js` juga memiliki `map` yang menentukan lokasi tokoh, Vira, terminal, pintu, pemindai, tiga tempat pencarian, dan petunjuk kunci.
 - `src/style.css`: warna, tata letak, bayangan pijakan, dan efek ruangan.
 - `src/audio.js`: melodi latar dan efek suara. Ubah nada dan volume di sini.
 - `public/scenes/`: empat latar lokasi yang digambar sebagai SVG.

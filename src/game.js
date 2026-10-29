@@ -3,16 +3,16 @@
 export const levels = [
   {
     name:'Jejak yang Hilang', location:'Ruang kerja Vira', chapter:'PROLOG',
-    dossier:{title:'Catatan terakhir Vira',code:'ECHO-01',detail:'Jejak pertama menunjukkan bahwa Vira pergi setelah mengetahui kebocoran data.'},
+    dossier:{title:'Kunci ruang arsip',code:'ECHO-01',detail:'Kunci pertama membuka jalur ke koridor tempat Vira berlari.'},
     color:'#86c8a4', npc:'chief', speaker:'Arman · Kepala Divisi',
     dialogue:[
-      {who:'npc',text:'Raka! Aku menunggumu di sini. Vira menghilang setelah mengirim kode terakhirnya.'},
+      {who:'npc',text:'Raka! Vira baru saja berlari ke pintu ujung ruangan setelah mengirim kode terakhirnya.'},
       {who:'r',text:'Kalau begitu, aku harus membaca jejak yang ia tinggalkan.'},
       {who:'npc',text:'Mulai dari terminal itu. Balikkan fungsi enkripsinya, lalu cocokkan angka dengan huruf.'}
     ],
-    story:'Vira hilang setelah menemukan kebocoran data. Di ruang kerjanya ada fungsi enkripsi dan transmisi yang terputus. Balikkan kode itu sebelum seseorang datang.',
-    goal:'Jelajahi kantor Vira, pecahkan kode terminal, lalu cari berkas di tempat tersembunyi.',
-    map:{npc:14,terminal:73,door:3,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Vira menulis: "Yang dicari bersembunyi di antara buku-buku, jauh dari meja kerjaku."'},
+    story:'Vira kabur setelah menemukan kebocoran data. Di ruang kerjanya ada fungsi enkripsi dan transmisi yang terputus. Balikkan kode itu dan cari kunci sebelum ia jauh.',
+    goal:'Pecahkan kode, temukan kunci di rak, lalu susul Vira ke pintu di ujung ruangan.',
+    map:{npc:14,terminal:73,vira:86,door:97,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Kunci pintu tersembunyi di antara buku-buku, jauh dari meja kerja Vira.'},
     puzzles:[
       {prompt:'Fungsi enkripsi f(x) = 2x + 3 menghasilkan cipherteks 5. Berapa nilai plainteks x?', formula:'f(x) = 2x + 3 · f⁻¹(y) = (y − 3) ÷ 2', rule:'Kurangi cipherteks dengan 3, lalu bagi 2.', example:'Contoh: jika cipherteks 9, plainteksnya (9 − 3) ÷ 2 = 3.', answers:['1'], hint:'(5 − 3) ÷ 2 = ?', explain:'Plainteksnya 1. Jejak pertama Vira berhasil dibaca.'},
       {prompt:'Dengan f(x) = 2x + 1, dekripsi 31–37–3–29–15 menjadi satu kata.', formula:'f⁻¹(y) = (y − 1) ÷ 2 · A = 1 sampai Z = 26', rule:'Balikkan tiap angka, lalu ubah hasilnya menjadi huruf kapital.', example:'Contoh: 7 → (7 − 1) ÷ 2 = 3 → C.', answers:['ORANG'], hint:'31 → 15 = O. Lanjutkan setiap angka dari kiri ke kanan.', explain:'ORANG. Vira memberi tanda bahwa ada seseorang di balik kebocoran.'},
@@ -21,7 +21,7 @@ export const levels = [
   },
   {
     name:'Terminal Pengodean', location:'Koridor terminal Vira', chapter:'CHAPTER 01',
-    dossier:{title:'Log akses rahasia',code:'ECHO-02',detail:'Seseorang memakai terminal internal untuk membaca berkas yang disembunyikan Vira.'},
+    dossier:{title:'Kunci akses koridor',code:'ECHO-02',detail:'Kunci kedua membuka jalur keluar dari koridor pengawasan.'},
     color:'#84bdc5', npc:'v', speaker:'Vira · Hologram',
     dialogue:[
       {who:'npc',text:'Raka, kalau kau melihat hologram ini, berarti seseorang sudah mengawasiku.'},
@@ -29,8 +29,8 @@ export const levels = [
       {who:'npc',text:'Uraikan dulu fungsi gandanya, lalu gunakan invers. Lihat baik-baik arah pemindainya.'}
     ],
     story:'Fungsi enkripsi berlapis ditemukan. Alarm pengawas mulai menyapu koridor. Uraikan fungsi di dalam kurung lebih dahulu sebelum membalikkan hasilnya.',
-    goal:'Jelajahi koridor panjang, hindari pemindai, dan ikuti petunjuk berkas.',
-    map:{npc:18,terminal:82,door:3,scanners:[45,68],caches:[{x:29,name:'Kotak peralatan',kind:'toolbox'},{x:55,name:'Panel listrik',kind:'panel'},{x:92,name:'Lemari keamanan',kind:'cabinet'}],hidden:1,clue:'Sinyal Vira menunjuk sumber daya di tengah koridor, bukan lemari di ujung.'},
+    goal:'Hindari pemindai, cari kunci tersembunyi, lalu ikuti Vira ke pintu di ujung koridor.',
+    map:{npc:18,terminal:72,vira:87,door:97,scanners:[45,68],caches:[{x:29,name:'Kotak peralatan',kind:'toolbox'},{x:55,name:'Panel listrik',kind:'panel'},{x:92,name:'Lemari keamanan',kind:'cabinet'}],hidden:1,clue:'Kunci berada di panel listrik tengah koridor, bukan lemari di ujung.'},
     puzzles:[
       {prompt:'Enkripsi f(x) = 3(2x + 1) − 4. Dekripsi 119–29–77–125–65–5–83 menjadi satu kata.', formula:'f(x) = 6x − 1 · f⁻¹(y) = (y + 1) ÷ 6', rule:'Hitung invers tiap angka, lalu cocokkan A = 1 sampai Z = 26.', example:'Contoh: 17 → (17 + 1) ÷ 6 = 3 → C.', answers:['TEMUKAN'], hint:'119 → 20 = T; 29 → 5 = E.', explain:'TEMUKAN. Vira meminta Raka mencari bukti yang disembunyikan.'},
       {prompt:'Enkripsi f(x) = 4(3x − 2) + 5 menghasilkan cipherteks 141. Berapa plainteks x?', formula:'f(x) = 12x − 3 · f⁻¹(y) = (y + 3) ÷ 12', rule:'Uraikan kurung lebih dahulu, lalu balikkan fungsi.', example:'Contoh: jika hasilnya 33, maka x = (33 + 3) ÷ 12 = 3.', answers:['12'], hint:'(141 + 3) ÷ 12 = ?', explain:'x = 12. Lapisan kedua terminal terbuka.'},
@@ -39,7 +39,7 @@ export const levels = [
   },
   {
     name:'Pengkhianat Dalam Selubung', location:'Fasilitas data terpencil', chapter:'CHAPTER 02–03',
-    dossier:{title:'Rekaman ruang server',code:'ECHO-03',detail:'Nama Arman muncul dalam rekaman akses sesaat sebelum Vira menghilang.'},
+    dossier:{title:'Kunci ruang server',code:'ECHO-03',detail:'Kunci ketiga membuka jalur menuju markas terakhir Vira.'},
     color:'#c4aa76', npc:'anonim', speaker:'Nara · Sumber Anonim',
     dialogue:[
       {who:'npc',text:'Aku membawa pesan dari Vira. Tapi kau tak boleh langsung percaya padaku.'},
@@ -47,26 +47,26 @@ export const levels = [
       {who:'npc',text:'Bagus. Angka positif berarti huruf besar, negatif huruf kecil, dan nol adalah spasi.'}
     ],
     story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, naik tangga server bertingkat, lewati drone patroli, lalu balikkan enkripsi pada terminal di atas.',
-    goal:'Lompati tangga ruang server, hindari drone dan pemindai, lalu bongkar fungsi invers di terminal atas.',
-    map:{npc:32,terminal:77,door:3,scanners:[42,71],caches:[{x:15,name:'Rak server A',kind:'server'},{x:49,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Jejak akses tertua berasal dari rak pertama, dekat pintu masuk.'},
+    goal:'Lompati tangga server, ambil kunci, lalu kejar Vira ke pintu paling kanan.',
+    map:{npc:32,terminal:77,vira:88,door:97,scanners:[42,71],caches:[{x:15,name:'Rak server A',kind:'server'},{x:49,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Kunci ada di rak server pertama, dekat tempat Raka masuk.'},
     puzzles:[
-      {prompt:'Dekripsi 11, −1, −52, −25, 2, −4, −13, −52, −31, −1, −55. Pesan lokasi berkas apa yang muncul?', formula:'f(x) = 3x + 2 · f⁻¹(y) = (y − 2) ÷ 3', rule:'Positif: huruf besar A=1–Z=26. Negatif: huruf kecil a=−1–z=−26. Nol: spasi.', example:'11 → (11 − 2) ÷ 3 = 3 → C; −1 → −1 → a.', answers:['CARI BERKAS'], hint:'Hasil awalnya 3, −1, −18, −9, 0.', explain:'Cari berkas. Petunjuk Vira ternyata tersembunyi dalam angka bertanda.'},
+      {prompt:'Dekripsi 11, −1, −52, −25, 2, −31, −61, −40, −7, −25. Pesan lokasi kunci apa yang muncul?', formula:'f(x) = 3x + 2 · f⁻¹(y) = (y − 2) ÷ 3', rule:'Positif: huruf besar A=1–Z=26. Negatif: huruf kecil a=−1–z=−26. Nol: spasi.', example:'11 → (11 − 2) ÷ 3 = 3 → C; −1 → −1 → a.', answers:['CARI KUNCI'], hint:'Hasil awalnya 3, −1, −18, −9, 0.', explain:'Cari kunci. Pesan Vira ternyata tersembunyi dalam angka bertanda.'},
       {prompt:'Dekripsi 14, −25, 2, −10, −13, −46, −1, −40. Ke mana arah pelarian Vira?', formula:'f⁻¹(y) = (y − 2) ÷ 3', rule:'Balikkan tiap angka. Positif = huruf besar, negatif = huruf kecil, 0 = spasi.', example:'14 → 4 → D; −25 → −9 → i.', answers:['DI DEPAN'], hint:'Dua huruf pertama membentuk “Di”.', explain:'Di depan. Raka harus mencari jalan melalui bagian depan fasilitas.'},
       {prompt:'Dekripsi −37, 17, −40, −19, 26, −25, −34, −1, −40, 23. Apa yang terjadi pada Vira?', formula:'f⁻¹(y) = (y − 2) ÷ 3', rule:'Ubah hasil invers menjadi huruf; tanda minus menentukan huruf kecil.', example:'17 → 5 → E; −40 → −14 → n.', answers:['MENGHILANG'], hint:'Pesan dimulai dengan “mEn…”.', explain:'mEngHilanG. Vira memang menghilang. Rekaman akses yang ditinggalkannya juga menunjukkan nama Arman.'}
     ]
   },
   {
     name:'Transmisi Terakhir', location:'Markas yang terkunci', chapter:'CHAPTER 04 · KLIMAKS',
-    dossier:{title:'Kunci transmisi Vira',code:'ECHO-04',detail:'Salinan terakhir berisi bukti lengkap untuk membuka kembali kasus Vira.'},
+    dossier:{title:'Kunci transmisi Vira',code:'ECHO-04',detail:'Kunci terakhir membuka jalur pengejaran menuju Vira.'},
     color:'#db907c', npc:'pelaku', speaker:'Damar · Penjaga Sistem',
     dialogue:[
-      {who:'npc',text:'Perintah Arman: semua bukti dihapus dalam 150 detik. Kau tak akan sempat, Raka.'},
+      {who:'npc',text:'Perintah Arman: sistem akan menghapus jejak Vira. Kau tak akan sempat mengejarnya, Raka.'},
       {who:'r',text:'Aku tahu Arman dalangnya. Aku akan membuka pintu dan membawa buktinya.'},
       {who:'npc',text:'Coba saja. Kode terakhir memakai komposisi dua fungsi. Balikkan urutannya kalau bisa.'}
     ],
-    story:'Arman memanipulasi sistem. Pintu terkunci dan bukti akan dihapus. Pecahkan tiga pesan komposisi dalam 150 detik, ambil bukti, lalu keluar.',
-    goal:'Cari bukti terakhir dan kembali ke pintu sebelum sistem menghapus semuanya.',
-    map:{npc:22,terminal:79,door:3,scanners:[40,65],caches:[{x:34,name:'Panel rusak',kind:'broken-panel'},{x:56,name:'Kontainer darurat',kind:'container'},{x:91,name:'Brankas cadangan',kind:'safe'}],hidden:2,clue:'Catatan Arman: salinan terakhir disimpan paling jauh dari pintu darurat.'},
+    story:'Arman mengunci markas. Pecahkan pesan terakhir, ambil kunci, lalu kejar Vira melewati panggung bertingkat sebelum ia menghilang lagi.',
+    goal:'Ambil kunci, lompati platform markas, dan susul Vira untuk menuntaskan misi.',
+    map:{npc:22,terminal:64,vira:80,door:97,scanners:[39,72],caches:[{x:34,name:'Panel rusak',kind:'broken-panel'},{x:56,name:'Kontainer darurat',kind:'container'},{x:91,name:'Brankas cadangan',kind:'safe'}],hidden:1,clue:'Kunci transmisi ada di kontainer darurat di tengah jalur bertingkat.'},
     puzzles:[
       {prompt:'Dekripsi 53, −3, 77, −35, 33, 1, 53, −19, 57, −11, −3, 73, −35. Apa status pencarian Raka?', formula:'f(x)=2x−1 · g(x)=2x+3 · h(x)=g(f(x))=4x+1 · h⁻¹(y)=(y−1)÷4', rule:'Positif = huruf besar, negatif = huruf kecil, 0 = spasi.', example:'53 → 13 → M; −3 → −1 → a.', answers:['MASIH MENCARI'], hint:'Pesan dimulai dengan “MaSiH”.', explain:'MaSiH MeNcARi. Laporan Raka berhasil dikirim.'},
       {prompt:'Dekripsi 17, −35, −51, −3, −55, −3. Apa pertanyaan balasan Kepala Divisi?', formula:'h⁻¹(y) = (y − 1) ÷ 4', rule:'Gunakan invers komposisi, lalu baca huruf bertanda seperti pada level sebelumnya.', example:'17 → 4 → D; −35 → −9 → i.', answers:['DIMANA'], hint:'Huruf awalnya “Di”.', explain:'Dimana. Balasan itu membuat Raka makin curiga pada Kepala Divisi.'},
@@ -83,7 +83,7 @@ export const coinTrails = [
   [{x:22,height:29},{x:35,height:29},{x:47,height:29},{x:59,height:29},{x:69,height:29},{x:81,height:29},{x:92,height:29}],
   [{x:23,height:29},{x:34,height:29},{x:51,height:29},{x:61,height:29},{x:74,height:29},{x:87,height:29},{x:94,height:29}],
   [{x:21,height:29},{x:33,height:29},{x:42,height:73},{x:54,height:117},{x:67,height:157},{x:79,height:117},{x:91,height:29}],
-  [{x:16,height:29},{x:30,height:29},{x:46,height:29},{x:58,height:29},{x:72,height:29},{x:84,height:29},{x:94,height:29}]
+  [{x:16,height:29},{x:33,height:73},{x:48,height:117},{x:62,height:157},{x:76,height:117},{x:87,height:73},{x:94,height:29}]
 ];
 
 export const tierPlatforms=[
@@ -92,5 +92,14 @@ export const tierPlatforms=[
   {start:61,end:73,height:128},
   {start:73,end:86,height:88}
 ];
-export const floorHeightAt=(level,x)=>level===2?(tierPlatforms.find(step=>x>=step.start&&x<step.end)?.height??0):0;
+export const finalPlatforms=[
+  {start:29,end:43,height:44},
+  {start:43,end:57,height:88},
+  {start:57,end:71,height:128},
+  {start:71,end:84,height:88},
+  {start:84,end:94,height:44}
+];
+export const floorHeightAt=(level,x)=>(level===2?tierPlatforms:level===3?finalPlatforms:[]).find(step=>x>=step.start&&x<step.end)?.height??0;
 export const canEnterAtHeight=(level,x,height)=>floorHeightAt(level,x)<=height+8;
+export const advanceVira=x=>Math.min(92,x+.12);
+export const catchesVira=(rakaX,rakaHeight,viraX)=>Math.abs(rakaX-viraX)<2.4&&Math.abs(rakaHeight-floorHeightAt(3,viraX))<43;

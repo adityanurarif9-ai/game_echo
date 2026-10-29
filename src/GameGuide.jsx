@@ -17,14 +17,14 @@ export default function GameGuide({onClose}){
       </div>
       <div className="guide-scroll">
         {tab==='play' ? <>
-          <p className="guide-lead">Bantu Raka mengikuti jejak Vira, membuka terminal, dan membawa pulang bukti kebocoran data.</p>
+          <p className="guide-lead">Bantu Raka mengejar Vira melalui empat lokasi, pecahkan kode terminal, dan kumpulkan kunci untuk membuka jalan.</p>
           <div className="guide-steps">
-            <div><b>01</b><span><strong>Mulai misi</strong><small>Pilih Single Player, atau buat ruang Multiplayer dan kirim kodenya ke teman pada jaringan yang sama. Dua Raka berlomba menyelesaikan soal dan membawa berkas ke pintu keluar. Level berikutnya terbuka setelah balapan selesai.</small></span></div>
+            <div><b>01</b><span><strong>Mulai misi</strong><small>Pilih Single Player, atau buat ruang Multiplayer dan bagikan kode ruang. Dua Raka berlomba memecahkan soal dan menemukan kunci. Level berikutnya terbuka setelah pintu ujung area dilewati.</small></span></div>
             <div><b>02</b><span><strong>Jelajahi ruangan</strong><small>Jalan dengan ← → atau A D. Tahan Shift untuk lari cepat selama energi tersedia; energi pulih saat tidak berlari. Tekan Spasi / ↑ / W untuk lompat. Di layar sentuh gunakan panah, LARI, dan LOMPAT. Dekati tokoh, terminal, atau benda, lalu tekan E.</small></span></div>
             <div><b>03</b><span><strong>Pecahkan tiga kode</strong><small>Baca rumus dan contoh di terminal. Hitung invers untuk mengubah cipherteks menjadi angka atau huruf. Tabel konversinya ada di tab Kode & rumus.</small></span></div>
-            <div><b>04</b><span><strong>Amankan berkas</strong><small>Ambil koin di sepanjang jalur (+5 per koin), ikuti petunjuk berkas, dan hindari pemindai merah. Di level 3, lompat naik tangga bertingkat dan lewati drone patroli. Setelah menemukan berkas, kembali ke pintu keluar.</small></span></div>
+            <div><b>04</b><span><strong>Temukan kunci dan Vira</strong><small>Ambil koin (+5 per koin), ikuti petunjuk kunci, dan hindari pemindai. Vira menunggu sebelum pintu paling kanan lalu kabur saat didekati. Ambil kunci dan buka pintu. Di level 4, lompati platform lalu susul Vira untuk menang.</small></span></div>
           </div>
-          <p className="guide-note">Koin berbunyi saat diambil. Jawaban benar menambah sampai 35 energi lari dan memberi 10–30 koin; berkas memberi 15 koin, pemenang balapan mendapat bonus 50. Jawaban salah atau terkena pemindai mengurangi nyawa. Jika terkena pemindai, level dimulai lagi dari awal. Level terakhir dibatasi 150 detik.</p>
+          <p className="guide-note">Koin berbunyi saat diambil. Jawaban benar menambah sampai 35 energi lari dan memberi 10–30 koin; kunci memberi 15 koin, pemenang balapan mendapat bonus 50. Jawaban salah atau terkena pemindai mengurangi nyawa. Jika terkena pemindai, level dimulai lagi dari awal. Setiap level memiliki timer.</p>
         </> : <>
           <p className="guide-lead">Ubah setiap cipherteks <b>y</b> menjadi angka asli <b>x</b> dengan fungsi invers, lalu cocokkan angkanya dengan huruf.</p>
           <div className="guide-equation"><span>ATURAN DASAR</span><strong>Jika y = ax + b, maka x = (y − b) ÷ a</strong><small>Contoh: y = 2x + 1 dan y = 7 → x = (7 − 1) ÷ 2 = 3 → C.</small></div>
