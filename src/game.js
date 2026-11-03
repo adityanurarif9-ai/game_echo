@@ -12,7 +12,7 @@ export const levels = [
     ],
     story:'Vira kabur setelah menemukan kebocoran data. Di ruang kerjanya ada fungsi enkripsi dan transmisi yang terputus. Balikkan kode itu dan cari kunci sebelum ia jauh.',
     goal:'Pecahkan kode, temukan kunci di rak, lalu susul Vira ke pintu di ujung ruangan.',
-    map:{npc:14,terminal:73,vira:86,door:97,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Kunci pintu tersembunyi di antara buku-buku, jauh dari meja kerja Vira.'},
+    map:{entrance:3,npc:14,terminal:73,vira:86,door:97,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Kunci pintu tersembunyi di antara buku-buku, jauh dari meja kerja Vira.'},
     puzzles:[
       {prompt:'Fungsi enkripsi f(x) = 2x + 3 menghasilkan cipherteks 5. Berapa nilai plainteks x?', formula:'f(x) = 2x + 3 · f⁻¹(y) = (y − 3) ÷ 2', rule:'Kurangi cipherteks dengan 3, lalu bagi 2.', example:'Contoh: jika cipherteks 9, plainteksnya (9 − 3) ÷ 2 = 3.', answers:['1'], hint:'(5 − 3) ÷ 2 = ?', explain:'Plainteksnya 1. Jejak pertama Vira berhasil dibaca.'},
       {prompt:'Dengan f(x) = 2x + 1, dekripsi 31–37–3–29–15 menjadi satu kata.', formula:'f⁻¹(y) = (y − 1) ÷ 2 · A = 1 sampai Z = 26', rule:'Balikkan tiap angka, lalu ubah hasilnya menjadi huruf kapital.', example:'Contoh: 7 → (7 − 1) ÷ 2 = 3 → C.', answers:['ORANG'], hint:'31 → 15 = O. Lanjutkan setiap angka dari kiri ke kanan.', explain:'ORANG. Vira memberi tanda bahwa ada seseorang di balik kebocoran.'},
@@ -30,7 +30,7 @@ export const levels = [
     ],
     story:'Fungsi enkripsi berlapis ditemukan. Alarm pengawas mulai menyapu koridor. Uraikan fungsi di dalam kurung lebih dahulu sebelum membalikkan hasilnya.',
     goal:'Hindari pemindai, cari kunci tersembunyi, lalu ikuti Vira ke pintu di ujung koridor.',
-    map:{npc:18,terminal:72,vira:87,door:97,scanners:[45,68],caches:[{x:29,name:'Kotak peralatan',kind:'toolbox'},{x:55,name:'Panel listrik',kind:'panel'},{x:92,name:'Lemari keamanan',kind:'cabinet'}],hidden:1,clue:'Kunci berada di panel listrik tengah koridor, bukan lemari di ujung.'},
+    map:{entrance:3,npc:18,terminal:36,vira:87,door:97,scanners:[45,68],caches:[{x:29,name:'Kotak peralatan',kind:'toolbox'},{x:55,name:'Panel listrik',kind:'panel'},{x:92,name:'Lemari keamanan',kind:'cabinet'}],hidden:1,clue:'Kunci berada di panel listrik tengah koridor, bukan lemari di ujung.'},
     puzzles:[
       {prompt:'Enkripsi f(x) = 3(2x + 1) − 4. Dekripsi 119–29–77–125–65–5–83 menjadi satu kata.', formula:'f(x) = 6x − 1 · f⁻¹(y) = (y + 1) ÷ 6', rule:'Hitung invers tiap angka, lalu cocokkan A = 1 sampai Z = 26.', example:'Contoh: 17 → (17 + 1) ÷ 6 = 3 → C.', answers:['TEMUKAN'], hint:'119 → 20 = T; 29 → 5 = E.', explain:'TEMUKAN. Vira meminta Raka mencari bukti yang disembunyikan.'},
       {prompt:'Enkripsi f(x) = 4(3x − 2) + 5 menghasilkan cipherteks 141. Berapa plainteks x?', formula:'f(x) = 12x − 3 · f⁻¹(y) = (y + 3) ÷ 12', rule:'Uraikan kurung lebih dahulu, lalu balikkan fungsi.', example:'Contoh: jika hasilnya 33, maka x = (33 + 3) ÷ 12 = 3.', answers:['12'], hint:'(141 + 3) ÷ 12 = ?', explain:'x = 12. Lapisan kedua terminal terbuka.'},
@@ -48,7 +48,7 @@ export const levels = [
     ],
     story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, naik tangga server bertingkat, lewati drone patroli, lalu balikkan enkripsi pada terminal di atas.',
     goal:'Lompati tangga server, ambil kunci, lalu kejar Vira ke pintu paling kanan.',
-    map:{npc:32,terminal:77,vira:88,door:97,scanners:[42,71],caches:[{x:15,name:'Rak server A',kind:'server'},{x:49,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Kunci ada di rak server pertama, dekat tempat Raka masuk.'},
+    map:{entrance:3,npc:32,terminal:37,vira:88,door:97,scanners:[42,71],caches:[{x:53,name:'Rak server A',kind:'server'},{x:64,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Kunci ada di rak server pertama setelah terminal, di atas tangga kedua.'},
     puzzles:[
       {prompt:'Dekripsi 11, −1, −52, −25, 2, −31, −61, −40, −7, −25. Pesan lokasi kunci apa yang muncul?', formula:'f(x) = 3x + 2 · f⁻¹(y) = (y − 2) ÷ 3', rule:'Positif: huruf besar A=1–Z=26. Negatif: huruf kecil a=−1–z=−26. Nol: spasi.', example:'11 → (11 − 2) ÷ 3 = 3 → C; −1 → −1 → a.', answers:['CARI KUNCI'], hint:'Hasil awalnya 3, −1, −18, −9, 0.', explain:'Cari kunci. Pesan Vira ternyata tersembunyi dalam angka bertanda.'},
       {prompt:'Dekripsi 14, −25, 2, −10, −13, −46, −1, −40. Ke mana arah pelarian Vira?', formula:'f⁻¹(y) = (y − 2) ÷ 3', rule:'Balikkan tiap angka. Positif = huruf besar, negatif = huruf kecil, 0 = spasi.', example:'14 → 4 → D; −25 → −9 → i.', answers:['DI DEPAN'], hint:'Dua huruf pertama membentuk “Di”.', explain:'Di depan. Raka harus mencari jalan melalui bagian depan fasilitas.'},
@@ -66,7 +66,7 @@ export const levels = [
     ],
     story:'Arman mengunci markas. Pecahkan pesan terakhir, ambil kunci, lalu kejar Vira melewati panggung bertingkat sebelum ia menghilang lagi.',
     goal:'Ambil kunci, lompati platform markas, dan susul Vira untuk menuntaskan misi.',
-    map:{npc:22,terminal:64,vira:80,door:97,scanners:[39,72],caches:[{x:34,name:'Panel rusak',kind:'broken-panel'},{x:56,name:'Kontainer darurat',kind:'container'},{x:91,name:'Brankas cadangan',kind:'safe'}],hidden:1,clue:'Kunci transmisi ada di kontainer darurat di tengah jalur bertingkat.'},
+    map:{entrance:3,npc:22,terminal:42,vira:80,door:97,scanners:[39,72],caches:[{x:34,name:'Panel rusak',kind:'broken-panel'},{x:56,name:'Kontainer darurat',kind:'container'},{x:91,name:'Brankas cadangan',kind:'safe'}],hidden:1,clue:'Kunci transmisi ada di kontainer darurat setelah terminal, di tengah jalur bertingkat.'},
     puzzles:[
       {prompt:'Dekripsi 53, −3, 77, −35, 33, 1, 53, −19, 57, −11, −3, 73, −35. Apa status pencarian Raka?', formula:'f(x)=2x−1 · g(x)=2x+3 · h(x)=g(f(x))=4x+1 · h⁻¹(y)=(y−1)÷4', rule:'Positif = huruf besar, negatif = huruf kecil, 0 = spasi.', example:'53 → 13 → M; −3 → −1 → a.', answers:['MASIH MENCARI'], hint:'Pesan dimulai dengan “MaSiH”.', explain:'MaSiH MeNcARi. Laporan Raka berhasil dikirim.'},
       {prompt:'Dekripsi 17, −35, −51, −3, −55, −3. Apa pertanyaan balasan Kepala Divisi?', formula:'h⁻¹(y) = (y − 1) ÷ 4', rule:'Gunakan invers komposisi, lalu baca huruf bertanda seperti pada level sebelumnya.', example:'17 → 4 → D; −35 → −9 → i.', answers:['DIMANA'], hint:'Huruf awalnya “Di”.', explain:'Dimana. Balasan itu membuat Raka makin curiga pada Kepala Divisi.'},
@@ -101,5 +101,6 @@ export const finalPlatforms=[
 ];
 export const floorHeightAt=(level,x)=>(level===2?tierPlatforms:level===3?finalPlatforms:[]).find(step=>x>=step.start&&x<step.end)?.height??0;
 export const canEnterAtHeight=(level,x,height)=>floorHeightAt(level,x)<=height+8;
+export const movementLimit=(map,collected)=>collected?map.door:map.door-2.7;
 export const advanceVira=x=>Math.min(92,x+.12);
 export const catchesVira=(rakaX,rakaHeight,viraX)=>Math.abs(rakaX-viraX)<2.4&&Math.abs(rakaHeight-floorHeightAt(3,viraX))<43;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,advanceVira,catchesVira} from './game.js';
+import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira} from './game.js';
 import {MAX_STAMINA,stepStamina,rewardStamina} from './stamina.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
@@ -58,6 +58,11 @@ test('level three stairs require jumping and its coins follow reachable heights'
 });
 test('Vira waits before a separate exit and final chase uses elevated platforms',()=>{
   for(const level of levels){
+    assert.ok(level.map.entrance<level.map.npc);
+    assert.ok(level.map.terminal<level.map.caches[level.map.hidden].x,'kunci berada setelah terminal agar pemain tidak bolak-balik');
+    assert.ok(level.map.caches[level.map.hidden].x<level.map.door);
+    assert.ok(movementLimit(level.map,false)<level.map.door);
+    assert.equal(movementLimit(level.map,true),level.map.door);
     assert.ok(level.map.vira>level.map.npc);
     assert.ok(level.map.door>level.map.vira);
     assert.ok(level.map.door>=95);

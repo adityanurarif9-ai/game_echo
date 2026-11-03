@@ -1,0 +1,25 @@
+/* Dua gerbang yang berbeda membuat arah perjalanan terbaca tanpa menu tambahan. */
+.scene-world .entrance-gate{z-index:2;opacity:.78;pointer-events:none}
+.entrance-gate .object-icon{position:relative;width:96px;height:176px;border:7px solid #597d84;border-radius:42px 42px 5px 5px;background:repeating-linear-gradient(90deg,#16313d 0 21px,#1c3b47 21px 25px);box-shadow:inset 0 0 0 5px #0d2530,0 10px 20px #06131db0}
+.entrance-gate .object-icon:before{content:'';position:absolute;inset:14px 11px 8px;border:2px solid #8fb8b777;border-radius:28px 28px 2px 2px}
+.entrance-arrow{position:relative;z-index:1;display:grid;place-items:center;width:43px;height:43px;border:2px solid #9fcbbd;border-radius:50%;background:#153640;color:#cce9d8;font-size:27px;box-shadow:0 0 18px #8bcaba60}
+.entrance-gate>span:last-child,.exit-gate>span:last-of-type{padding:5px 8px;border:1px solid #719b9990;border-radius:5px;background:#0b2632e6;color:#edf3e5;font-size:9px;white-space:nowrap}
+
+.scene-world .exit-gate{filter:drop-shadow(0 0 15px #5a9e9a45)}
+.exit-gate .object-icon{overflow:hidden;isolation:isolate;display:grid;place-items:center}
+.exit-gate .object-icon:before{z-index:2;pointer-events:none}
+.exit-gate .object-icon:after{z-index:3}
+.exit-gate .gate-leaf{position:absolute;z-index:1;top:4px;bottom:4px;width:50%;background:repeating-linear-gradient(0deg,#31505b 0 22px,#4a6b71 22px 25px);border:2px solid #91b7ae;transition:transform .65s cubic-bezier(.2,.7,.15,1),opacity .65s}
+.exit-gate .gate-leaf.left{left:4px;border-radius:30px 0 0 0}
+.exit-gate .gate-leaf.right{right:4px;border-radius:0 30px 0 0}
+.exit-gate.sealed .object-icon{border-color:#a79b83;box-shadow:inset 0 0 0 5px #102d35,0 0 22px #d0a87555,0 12px 18px #031722bb}
+.exit-gate .gate-lock{position:absolute;z-index:4;top:41%;left:50%;transform:translateX(-50%);font-size:20px;transition:top .35s,opacity .35s}
+.exit-gate .gate-status{position:absolute;z-index:4;bottom:12px;left:50%;transform:translateX(-50%);padding:4px 5px;border-radius:3px;background:#102e37e6;color:#efcf91;font-size:8px;font-weight:900;letter-spacing:.08em;white-space:nowrap}
+.exit-gate.ready .gate-leaf.left{transform:translateX(-85%);opacity:.65}
+.exit-gate.ready .gate-leaf.right{transform:translateX(85%);opacity:.65}
+.exit-gate.ready .gate-lock{top:24%;color:#dff7d5}
+.exit-gate.ready .gate-status{color:#c8f5d3}
+.exit-gate.ready .object-icon{animation:gate-open-light 2.4s ease-in-out infinite alternate}
+@keyframes gate-open-light{from{box-shadow:inset 0 0 20px #96ecbd55,0 0 12px #9ff2bf55}to{box-shadow:inset 0 0 45px #96ecbd99,0 0 28px #9ff2bf8c}}
+@media(max-width:720px){.entrance-gate .object-icon{width:65px;height:130px;border-width:5px}.entrance-arrow{width:31px;height:31px;font-size:19px}.entrance-gate>span:last-child,.exit-gate>span:last-of-type{font-size:7px}.exit-gate .gate-status{font-size:6px}.exit-gate .gate-lock{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.exit-gate .gate-leaf,.exit-gate .gate-lock{transition:none}.exit-gate.ready .object-icon{animation:none}}
