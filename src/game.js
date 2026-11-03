@@ -86,6 +86,14 @@ export const coinTrails = [
   [{x:16,height:29},{x:33,height:73},{x:48,height:117},{x:62,height:157},{x:76,height:117},{x:87,height:73},{x:94,height:29}]
 ];
 
+// Sel energi berada di jalur yang bisa dijangkau, seperti koin.
+export const energyTrails = [
+  [{x:44,height:29},{x:79,height:29}],
+  [{x:49,height:29},{x:80,height:29}],
+  [{x:43,height:73},{x:67,height:157},{x:81,height:117}],
+  [{x:36,height:73},{x:63,height:157},{x:88,height:73}]
+];
+
 export const tierPlatforms=[
   {start:37,end:49,height:44},
   {start:49,end:61,height:88},

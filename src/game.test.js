@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {levels,isCorrect,getEnding,coinTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira} from './game.js';
-import {MAX_STAMINA,stepStamina,rewardStamina} from './stamina.js';
+import {levels,isCorrect,getEnding,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira} from './game.js';
+import {MAX_STAMINA,stepStamina,rewardStamina,pickupStamina} from './stamina.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
   assert.deepEqual(levels.map(level=>level.puzzles.length),[3,3,3,3]);
@@ -80,4 +80,14 @@ test('Vira waits before a separate exit and final chase uses elevated platforms'
     if(catchesVira(rakaX,floorHeightAt(3,rakaX),viraX)){caught=true;break}
   }
   assert.equal(caught,true,'Raka yang mengejar harus bisa menyusul Vira sebelum ujung peta');
+});
+
+test('energy cells refill stamina and sit on reachable paths',()=>{
+  assert.equal(pickupStamina(10),40);
+  assert.equal(pickupStamina(85),MAX_STAMINA);
+  assert.deepEqual(energyTrails.map(trail=>trail.length),[2,2,3,3]);
+  energyTrails.forEach((trail,level)=>trail.forEach(cell=>{
+    assert.ok(cell.x>levels[level].map.entrance&&cell.x<levels[level].map.door);
+    assert.ok(cell.height-floorHeightAt(level,cell.x)<=30);
+  }));
 });

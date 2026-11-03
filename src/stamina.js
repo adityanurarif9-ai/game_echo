@@ -3,6 +3,7 @@ export const SPRINT_COST=.72;
 export const REST_RECOVERY=.24;
 export const EXHAUSTION_RECOVERY=22;
 export const CORRECT_ANSWER_ENERGY=35;
+export const ENERGY_PICKUP_VALUE=30;
 
 export function stepStamina(energy,exhausted,wantsRun,moving){
   const available=Math.max(0,Math.min(MAX_STAMINA,energy));
@@ -14,4 +15,8 @@ export function stepStamina(energy,exhausted,wantsRun,moving){
 
 export function rewardStamina(energy){
   return Math.min(MAX_STAMINA,Math.max(0,energy)+CORRECT_ANSWER_ENERGY);
+}
+
+export function pickupStamina(energy){
+  return Math.min(MAX_STAMINA,Math.max(0,energy)+ENERGY_PICKUP_VALUE);
 }
