@@ -1,0 +1,11 @@
+/* Physics updates every 40 ms. Interpolate only positions between those updates. */
+.app.playing .scene-world .scene-ground{height:30%}
+.app.playing .scene-world .scene-npc{bottom:calc(30% - 5px)}
+.app.playing .scene-world .object{bottom:calc(30% - 2px)}
+.app.playing .scene-world{transition:left 48ms linear}
+.app.playing .scene-world .player{transition:left 48ms linear,bottom 48ms linear}
+.app.playing .scene-world .peer-player{transition:left 100ms linear,bottom 100ms linear}
+.scene-3 .vira-runner{transition:left 48ms linear,bottom 48ms linear}
+.scene-2 .security-drone{transition:left 48ms linear}
+.app.playing .scene-world .player .hd-sprite,.app.playing .scene-world .vira-runner .hd-sprite{backface-visibility:hidden}
+@media(prefers-reduced-motion:reduce){.app.playing .scene-world,.app.playing .scene-world .player,.app.playing .scene-world .peer-player,.scene-3 .vira-runner,.scene-2 .security-drone{transition:none}}

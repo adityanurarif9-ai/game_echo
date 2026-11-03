@@ -19,6 +19,7 @@ import './adventure-upgrade.css';
 import './mission-results.css';
 import './chase-story.css';
 import './gates.css';
+import './motion-smoothing.css';
 
 const HERO_NAME = 'Raka';
 const PROGRESS_KEY = 'project-echo-progress-v1';
@@ -38,7 +39,7 @@ function Sprite({id='r',walking=false,running=false,jumping=false,jumpFrame=2,di
   },[id]);
   useEffect(()=>{
     if(!walking||jumping){setFrame(0);return}
-    const clock=setInterval(()=>setFrame(v=>(v+1)%5),running?78:125);
+    const clock=setInterval(()=>setFrame(v=>(v+1)%5),running?70:100);
     return()=>clearInterval(clock);
   },[walking,running,jumping]);
   const row=id==='r'?(jumping?3:running?2:walking?1:0):(walking?1:0);
