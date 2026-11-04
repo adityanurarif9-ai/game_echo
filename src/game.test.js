@@ -48,11 +48,14 @@ test('lari cepat menghabiskan energi, berhenti untuk pulih, jawaban benar menamb
 });
 test('level three stairs require jumping and its coins follow reachable heights',()=>{
   assert.equal(tierPlatforms.length,4);
-  assert.equal(floorHeightAt(2,42),44);
-  assert.equal(floorHeightAt(2,67),128);
+  assert.equal(floorHeightAt(2,42),32);
+  assert.equal(floorHeightAt(2,67),96);
   assert.equal(floorHeightAt(1,67),0);
   assert.equal(canEnterAtHeight(2,42,0),false);
   assert.equal(canEnterAtHeight(2,42,40),true);
+  assert.ok(tierPlatforms.every((step,index)=>index===0||step.height-tierPlatforms[index-1].height<=32));
+  assert.equal(levels[2].map.scanners.length,2,'dua laser tetap ada');
+  assert.ok(levels[2].map.scanners[1]-levels[2].map.scanners[0]>=30,'laser cukup berjauhan');
   assert.deepEqual(coinTrails.map(trail=>trail.length),[7,7,7,7]);
   for(const coin of coinTrails[2])assert.ok(coin.height-floorHeightAt(2,coin.x)<=30);
 });

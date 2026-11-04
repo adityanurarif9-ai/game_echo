@@ -36,9 +36,12 @@
 .stair-platform{position:absolute;z-index:2;bottom:calc(30% - 5px);height:var(--rise);border:2px solid #7ea9a4;border-top:8px solid #d7c993;border-radius:7px 7px 0 0;background:repeating-linear-gradient(0deg,#193842 0 14px,#244b53 14px 17px);box-shadow:inset 0 0 0 4px #061e2966,0 -6px 20px #a5d0aa38}
 .stair-platform:before{content:'';position:absolute;inset:9px 8px auto;height:2px;background:#b4d1b87a}
 .stair-platform span{position:absolute;right:8px;top:7px;color:#b9d0bd91;font-size:10px;font-weight:900}
-.scene-2 .terminal-object{bottom:calc(30% - 2px + 88px)!important}
-.scene-2 .cache-1{bottom:calc(30% - 2px + 88px)!important}
-.scene-2 .security-drone{position:absolute;z-index:6;bottom:calc(30% - 5px + 112px);width:50px;height:27px;transform:translateX(-50%);border:3px solid #8caeb0;border-radius:15px 15px 6px 6px;background:linear-gradient(#304e58,#0c2534);box-shadow:0 0 18px #ff8b7caa;display:flex;justify-content:space-around;align-items:center;pointer-events:none;transition:left .04s linear}
+.scene-2 .stair-platform{border-color:#6b9b9b;border-top-color:#d9c994;background:repeating-linear-gradient(0deg,#102f3c 0 12px,#1d4550 12px 15px);box-shadow:inset 0 0 0 4px #061e2966,inset 0 0 22px #67a9a62c,0 -5px 16px #ebd99a44}
+.scene-2 .stair-platform:before{left:4px;right:4px;top:-8px;height:5px;background:repeating-linear-gradient(90deg,#e7dcac 0 17px,#8fc9ba 17px 20px);box-shadow:0 0 12px #dccb9291}
+.scene-2 .stair-platform span{top:6px;right:7px;color:#e2e7c8;font-size:9px;letter-spacing:1px}
+.server-route-hint{position:absolute;z-index:5;bottom:calc(30% + 47px);transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid #b8d8ac9c;border-radius:5px;background:#12353bcf;color:#e9eac9;box-shadow:0 0 14px #9ed2a56b;white-space:nowrap;pointer-events:none}
+.server-route-hint b{font-size:19px;line-height:1;color:#a5e7bf}.server-route-hint span{font-size:8px;font-weight:900;letter-spacing:.06em}
+.scene-2 .security-drone{position:absolute;z-index:6;bottom:calc(30% - 5px + 136px);width:44px;height:25px;transform:translateX(-50%);border:3px solid #8caeb0;border-radius:15px 15px 6px 6px;background:linear-gradient(#304e58,#0c2534);box-shadow:0 0 14px #ff8b7c88;display:flex;justify-content:space-around;align-items:center;pointer-events:none;transition:left .04s linear}
 .security-drone:before,.security-drone:after{content:'';position:absolute;top:-9px;width:21px;height:5px;border-radius:50%;background:#c1d9d4;box-shadow:0 0 8px #99d7cc}
 .security-drone:before{left:-13px}.security-drone:after{right:-13px}
 .security-drone i{width:5px;height:5px;border-radius:50%;background:#d1e0cf}

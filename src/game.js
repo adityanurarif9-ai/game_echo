@@ -46,9 +46,9 @@ export const levels = [
       {who:'r',text:'Aku akan memeriksa pesanmu dengan fungsi invers.'},
       {who:'npc',text:'Bagus. Angka positif berarti huruf besar, negatif huruf kecil, dan nol adalah spasi.'}
     ],
-    story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, naik tangga server bertingkat, lewati drone patroli, lalu balikkan enkripsi pada terminal di atas.',
-    goal:'Lompati tangga server, ambil kunci, lalu kejar Vira ke pintu paling kanan.',
-    map:{entrance:3,npc:32,terminal:37,vira:88,door:97,scanners:[42,71],caches:[{x:53,name:'Rak server A',kind:'server'},{x:64,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Kunci ada di rak server pertama setelah terminal, di atas tangga kedua.'},
+    story:'Nara mengaku membawa pesan Vira. Untuk menguji klaimnya, naik tangga server satu per satu, amati dua pemindai, lalu balikkan enkripsi pada terminal.',
+    goal:'Naik tangga pendek, hindari dua pemindai, ambil kunci, lalu kejar Vira ke pintu kanan.',
+    map:{entrance:3,npc:32,terminal:37,vira:88,door:97,scanners:[45,82],caches:[{x:53,name:'Rak server A',kind:'server'},{x:64,name:'Inti data',kind:'core'},{x:91,name:'Rak server D',kind:'server'}],hidden:0,clue:'Kunci ada di rak server pertama setelah terminal, di atas tangga kedua.'},
     puzzles:[
       {prompt:'Dekripsi 11, −1, −52, −25, 2, −31, −61, −40, −7, −25. Pesan lokasi kunci apa yang muncul?', formula:'f(x) = 3x + 2 · f⁻¹(y) = (y − 2) ÷ 3', rule:'Positif: huruf besar A=1–Z=26. Negatif: huruf kecil a=−1–z=−26. Nol: spasi.', example:'11 → (11 − 2) ÷ 3 = 3 → C; −1 → −1 → a.', answers:['CARI KUNCI'], hint:'Hasil awalnya 3, −1, −18, −9, 0.', explain:'Cari kunci. Pesan Vira ternyata tersembunyi dalam angka bertanda.'},
       {prompt:'Dekripsi 14, −25, 2, −10, −13, −46, −1, −40. Ke mana arah pelarian Vira?', formula:'f⁻¹(y) = (y − 2) ÷ 3', rule:'Balikkan tiap angka. Positif = huruf besar, negatif = huruf kecil, 0 = spasi.', example:'14 → 4 → D; −25 → −9 → i.', answers:['DI DEPAN'], hint:'Dua huruf pertama membentuk “Di”.', explain:'Di depan. Raka harus mencari jalan melalui bagian depan fasilitas.'},
@@ -82,7 +82,7 @@ export const getEnding = ({dossiers,mistakes,escaped}) => !escaped ? 'bad' : dos
 export const coinTrails = [
   [{x:22,height:29},{x:35,height:29},{x:47,height:29},{x:59,height:29},{x:69,height:29},{x:81,height:29},{x:92,height:29}],
   [{x:23,height:29},{x:34,height:29},{x:51,height:29},{x:61,height:29},{x:74,height:29},{x:87,height:29},{x:94,height:29}],
-  [{x:21,height:29},{x:33,height:29},{x:42,height:73},{x:54,height:117},{x:67,height:157},{x:79,height:117},{x:91,height:29}],
+  [{x:21,height:29},{x:33,height:29},{x:42,height:61},{x:54,height:93},{x:67,height:125},{x:79,height:93},{x:91,height:29}],
   [{x:16,height:29},{x:33,height:73},{x:48,height:117},{x:62,height:157},{x:76,height:117},{x:87,height:73},{x:94,height:29}]
 ];
 
@@ -90,15 +90,15 @@ export const coinTrails = [
 export const energyTrails = [
   [{x:44,height:29},{x:79,height:29}],
   [{x:49,height:29},{x:80,height:29}],
-  [{x:43,height:73},{x:67,height:157},{x:81,height:117}],
+  [{x:43,height:61},{x:67,height:125},{x:81,height:93}],
   [{x:36,height:73},{x:63,height:157},{x:88,height:73}]
 ];
 
 export const tierPlatforms=[
-  {start:37,end:49,height:44},
-  {start:49,end:61,height:88},
-  {start:61,end:73,height:128},
-  {start:73,end:86,height:88}
+  {start:37,end:49,height:32},
+  {start:49,end:61,height:64},
+  {start:61,end:73,height:96},
+  {start:73,end:86,height:64}
 ];
 export const finalPlatforms=[
   {start:29,end:43,height:44},
