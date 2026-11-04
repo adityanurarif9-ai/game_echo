@@ -109,6 +109,7 @@ function App(){
   const [hint,setHint]=useState(false);
   const [showAnswer,setShowAnswer]=useState(false);
   const [health,setHealth]=useState(3);
+  const [menuNotice,setMenuNotice]=useState('');
   const [mistakes,setMistakes]=useState(0);
   const [collected,setCollected]=useState(false);
   const [pickupOpen,setPickupOpen]=useState(false);
@@ -143,6 +144,7 @@ function App(){
   const firstScreen=useRef(true);
   const restartSeen=useRef(0);
   const timerFailureRef=useRef(false);
+  const lifeFailureRef=useRef(false);
   const puzzleStartedAt=useRef(null);
   const hostedGame=location.protocol==='https:';
   const paused=mode==='multi'?Boolean(room?.paused):pauseOpen;
@@ -278,7 +280,7 @@ function App(){
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);setJumpFrame(2);coinIdsRef.current=new Set();setCoinIds([]);energyIdsRef.current=new Set();setEnergyIds([]);
     viraXRef.current=levels[index].map.vira;viraStageRef.current='waiting';setViraX(levels[index].map.vira);setViraStage('waiting');
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
-    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);
+    setFeedback(null);setHint(false);setShowAnswer(false);setHealth(3);setMenuNotice('');lifeFailureRef.current=false;
     pickupSeen.current=false;setPickupOpen(false);setCollected(false);setLevelClear(false);setEnding(null);
     timerFailureRef.current=false;setSeconds(levelTimeLimits[index]);setToast('');setHurt(false);setRecovering(false);keys.current={left:false,right:false,run:false,jump:false};puzzleStartedAt.current=null;
   }
@@ -290,10 +292,10 @@ function App(){
     viraXRef.current=levels[level].map.vira;viraStageRef.current='waiting';setViraX(levels[level].map.vira);setViraStage('waiting');
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
     setAnswer('');setFeedback(null);setHint(false);setShowAnswer(false);
-    setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);setHealth(3);
+    setCollected(false);setPickupOpen(false);pickupSeen.current=false;setLevelClear(false);
     timerFailureRef.current=false;setSeconds(levelTimeLimits[level]);setScannerOn(false);setHurt(false);setRecovering(false);puzzleStartedAt.current=null;
     invincibleUntil.current=Date.now()+1200;
-    setToast('Percobaan dimulai lagi dari awal.');
+    setToast('Terkena pemindai. Sisa nyawa berkurang satu. Coba lagi!');
   }
   useEffect(()=>{
     if(mode!=='multi'||!room||room.phase!=='game')return;
@@ -468,7 +470,13 @@ function App(){
     },40);
     return()=>clearInterval(loop);
   },[screen,level,dialog,talking,levelClear,pickupOpen,ending,audioOn,mode,direction,paused,loading,recovering,health,collected]);
-  useEffect(()=>{if(screen==='game'&&health===0&&!ending&&!recovering){if(mode==='multi')sendRoom({type:'fail'});else{setEnding('bad');setScreen('ending')}}},[screen,health,ending,mode,recovering]);
+  useEffect(()=>{
+    if(screen!=='game'||health!==0||ending||recovering||lifeFailureRef.current)return;
+    lifeFailureRef.current=true;
+    setMenuNotice('Nyawa habis. Pilih level untuk mencoba lagi dengan 3 nyawa.');
+    if(mode==='multi')sendRoom({type:'menu'});
+    else showLevelSelect();
+  },[screen,health,ending,mode,recovering]);
   useEffect(()=>{
     if(screen!=='game'||talking||levelClear||pickupOpen||ending||paused||loading||recovering)return;
     const timer=setInterval(()=>setSeconds(v=>Math.max(0,v-1)),1000);
@@ -575,7 +583,7 @@ function App(){
           {roomError&&<p className="room-error" role="alert">{roomError}</p>}
         </div>
       </section> : screen==='select' ? <section className="level-select" aria-label="Pilih level">
-        <div className="level-select-heading"><button className="menu-back" onClick={()=>mode==='multi'?setScreen('lobby'):setScreen('mode')}>← {mode==='multi'?'Ruang':'Pilih mode'}</button><p>JEJAK YANG HILANG · {mode==='multi'?`RUANG ${roomCode}`:'SINGLE PLAYER'}</p><h1>Pilih level</h1><span>{mode==='multi'&&roomRole==='guest'?'Raka 1 memilih level. Siapkan diri untuk balapan!':'Level berikutnya terbuka setelah kunci ditemukan dan pintu ujung area dilewati.'}</span><div className="select-coins"><Icon name="coin"/> {mode==='multi'?room?.coins??0:progress.coins} koin {mode==='multi'&&`· Lawan ${room?.scores?.[roomRole==='host'?'guest':'host']??0}`}</div>{mode==='multi'&&room?.lastResult&&<div className="race-result"><strong>{room.lastResult.winner===roomRole?'Kamu menang!':'Raka lain menang!'}</strong><span aria-label={`${room.lastResult.stars} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=room.lastResult.stars?'earned':''}>★</i>)}</span><small>Sisa waktu pemenang {formatClock(room.lastResult.remaining)}</small></div>}</div>
+        <div className="level-select-heading"><button className="menu-back" onClick={()=>mode==='multi'?setScreen('lobby'):setScreen('mode')}>← {mode==='multi'?'Ruang':'Pilih mode'}</button><p>JEJAK YANG HILANG · {mode==='multi'?`RUANG ${roomCode}`:'SINGLE PLAYER'}</p><h1>Pilih level</h1>{menuNotice&&<div className="life-menu-notice" role="status">{menuNotice}</div>}<span>{mode==='multi'&&roomRole==='guest'?'Raka 1 memilih level. Siapkan diri untuk balapan!':'Level berikutnya terbuka setelah kunci ditemukan dan pintu ujung area dilewati.'}</span><div className="select-coins"><Icon name="coin"/> {mode==='multi'?room?.coins??0:progress.coins} koin {mode==='multi'&&`· Lawan ${room?.scores?.[roomRole==='host'?'guest':'host']??0}`}</div>{mode==='multi'&&room?.lastResult&&<div className="race-result"><strong>{room.lastResult.winner===roomRole?'Kamu menang!':'Raka lain menang!'}</strong><span aria-label={`${room.lastResult.stars} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=room.lastResult.stars?'earned':''}>★</i>)}</span><small>Sisa waktu pemenang {formatClock(room.lastResult.remaining)}</small></div>}</div>
         <div className="level-cards">{levels.map((item,index)=>{const locked=index>unlocked;const done=(mode==='multi'?room?.completed:progress.completed)?.includes(index);const best=mode==='multi'?room?.stars?.[index]??0:progress.stars[index];return <button key={item.name} className={`level-card ${locked?'locked':''} ${done?'complete':''}`} onClick={()=>startLevel(index)} disabled={locked||(mode==='multi'&&roomRole!=='host')}><div className="level-card-art" style={{backgroundImage:`url('/scenes/room-${index}.svg')`}}/><div className="level-card-content"><span className="level-number">{String(index+1).padStart(2,'0')}</span><div><small>{item.chapter} · {formatClock(levelTimeLimits[index])}</small><strong>{item.name}</strong><em>{item.location}</em><span className="level-stars" aria-label={`Rekor ${best} dari 3 bintang`}>{[1,2,3].map(star=><i key={star} className={star<=best?'earned':''}>★</i>)}</span></div><b>{locked?'TERKUNCI':done?'✓ SELESAI':mode==='multi'&&roomRole==='guest'?'MENUNGGU':'MAIN'}</b></div></button>})}</div>
         <p className="level-select-foot">KUNCI TERKUMPUL {dossiers}/4 · LEVEL TERBUKA {unlocked+1}/4</p>
       </section> : ending==='bad' ? <section className="game-over-screen" aria-label="Misi gagal" style={{'--failure-scene':`url('/scenes/room-${level}.svg')`}}>
@@ -607,7 +615,7 @@ function App(){
             <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
           <div className={`energy-hud ${energyFlash?'energy-gained':''} ${energy<EXHAUSTION_RECOVERY?'energy-low':''}`} role="meter" aria-label="Energi lari cepat" aria-valuemin={0} aria-valuemax={MAX_STAMINA} aria-valuenow={Math.round(energy)}><div className="energy-heading"><span><Icon name="bolt"/> ENERGI LARI</span><strong>{Math.round(energy)}%</strong></div><div className="energy-track"><i style={{width:`${energy}%`}}/></div><small>{energyFlash==='pickup'?'SEL ENERGI DIAMBIL · ENERGI BERTAMBAH':energyFlash==='full'?'ENERGI SUDAH PENUH':energyFlash==='answer'?'JAWABAN BENAR · ENERGI BERTAMBAH':energy<EXHAUSTION_RECOVERY?'LARI TERKUNCI · AMBIL SEL ENERGI':'SHIFT UNTUK LARI · AMBIL SEL +30'}</small></div>
-          {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?'Mengulang level dari awal...':'Nyawa habis...'}</span></div>}
+          {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?`Nyawa tersisa ${health} dari 3 · kembali ke awal level`:'Nyawa habis · kembali ke menu level'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>

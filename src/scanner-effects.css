@@ -26,3 +26,5 @@
 @keyframes impact-appear{0%{opacity:0}10%{opacity:1}78%{opacity:1}100%{opacity:.75}}
 @media(max-width:600px){.scanner-head{width:42px;height:24px}.scanner-head b{width:14px;height:7px}.scanner-base{width:36px}.scanner-impact span{font-size:11px}.scanner-impact strong{letter-spacing:2px}}
 @media(prefers-reduced-motion:reduce){.scanner.on .scanner-head i,.scanner.on .scanner-beam,.scanner.on .scanner-base,.player.player-hit,.scanner-impact,.impact-ring{animation:none}}
+
+.life-menu-notice{display:inline-flex;align-items:center;min-height:42px;margin:12px 0 15px;padding:9px 15px;border:1px solid #d8ac90;border-radius:8px;background:#6b3b3899;color:#ffe9d8;font-size:13px;font-weight:800;line-height:1.4}
