@@ -3,13 +3,14 @@ import {networkInterfaces} from 'node:os';
 import {WebSocket,WebSocketServer} from 'ws';
 import {levels,isCorrect,coinTrails,floorHeightAt} from '../src/game.js';
 import {levelTimeLimits,calculateStars} from '../src/progression.js';
+import {isCharacterId} from '../src/characters.js';
 
 const rooms=new Map();
 const letters='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const clamp=value=>Math.max(3,Math.min(97,Number(value)||9));
 const send=(socket,data)=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data))};
 const racer=()=>({puzzleIndex:0,correct:false,collected:false,restartCount:0,mistakes:0,coins:0,coinIds:[],puzzleStartedAt:null});
-const position=x=>({x,height:0,direction:'right',walking:false,running:false,jumping:false});
+const position=x=>({x,height:0,direction:'right',walking:false,running:false,jumping:false,character:'classic'});
 
 function code(){
   let value;
@@ -102,7 +103,7 @@ export function attachRooms(httpServer){
         self.mistakes++;broadcast(room);return;
       }
       if(message.type==='move'){
-        room.positions[role]={x:clamp(message.x),height:Math.max(0,Math.min(240,Number(message.height)||0)),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking),running:Boolean(message.running),jumping:Boolean(message.jumping)};
+        room.positions[role]={x:clamp(message.x),height:Math.max(0,Math.min(240,Number(message.height)||0)),direction:message.direction==='left'?'left':'right',walking:Boolean(message.walking),running:Boolean(message.running),jumping:Boolean(message.jumping),character:isCharacterId(message.character)?message.character:'classic'};
         if(self.puzzleIndex===0&&self.puzzleStartedAt===null&&Math.abs(room.positions[role].x-levels[room.level].map.terminal)<3.2)self.puzzleStartedAt=Date.now();
         broadcast(room);return;
       }

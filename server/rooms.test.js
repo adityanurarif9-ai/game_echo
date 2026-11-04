@@ -47,8 +47,10 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
   host.send(JSON.stringify({type:'resume'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused===false)).positions.host.x,9);
-  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true}));
-  assert.equal((await guestNext(message=>message.type==='state'&&message.positions.host.x===73)).positions.host.running,true);
+  host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true,character:'neon'}));
+  const firstMove=await guestNext(message=>message.type==='state'&&message.positions.host.x===73);
+  assert.equal(firstMove.positions.host.running,true);
+  assert.equal(firstMove.positions.host.character,'neon');
   host.send(JSON.stringify({type:'move',x:22,height:0,direction:'left',walking:true}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===22);
   host.send(JSON.stringify({type:'coin',index:0}));
