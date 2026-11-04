@@ -473,9 +473,9 @@ function App(){
   useEffect(()=>{
     if(screen!=='game'||health!==0||ending||recovering||lifeFailureRef.current)return;
     lifeFailureRef.current=true;
-    setMenuNotice('Nyawa habis. Pilih level untuk mencoba lagi dengan 3 nyawa.');
+    setMenuNotice('Nyawa habis. Mulai lagi untuk mencoba dengan 3 nyawa.');
     if(mode==='multi')sendRoom({type:'menu'});
-    else showLevelSelect();
+    else exitGame();
   },[screen,health,ending,mode,recovering]);
   useEffect(()=>{
     if(screen!=='game'||talking||levelClear||pickupOpen||ending||paused||loading||recovering)return;
@@ -551,8 +551,9 @@ function App(){
           <h1 className="title-accessible-name">Jejak yang Hilang</h1>
           <img className="title-logo" src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang dengan kaca pembesar dan papan investigasi" fetchPriority="high" />
           <p className="title-story">Vira melihat kebocoran data lalu menghilang. Kejar jejaknya dari satu pintu ke pintu berikutnya, pecahkan kode, dan temukan empat kunci sebelum ia lenyap lagi.</p>
+          {menuNotice&&<div className="life-menu-notice" role="status">{menuNotice}</div>}
           <div className="title-route"><span>01 RUANG VIRA</span><i>→</i><span>02 KORIDOR</span><i>→</i><span>03 SERVER</span><i>→</i><span>04 MARKAS</span></div>
-          <div className="title-actions"><button className="title-play" onClick={()=>{if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}setScreen('mode')}}><Icon name="play"/> MULAI KEJAR</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
+          <div className="title-actions"><button className="title-play" onClick={()=>{setMenuNotice('');if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}setScreen('mode')}}><Icon name="play"/> MULAI KEJAR</button><button className="title-guide" onClick={()=>setHelp(true)}>CARA BERMAIN</button></div>
           <p className="title-subline">SINGLE ATAU MULTIPLAYER · GUNAKAN KUNCI · SUSUL VIRA</p>
         </div>
         <button className="title-sound" onClick={toggleAudio} aria-label={audioOn?'Matikan suara':'Nyalakan suara'}>{audioOn?'Suara nyala':'Suara mati'}</button>
@@ -615,7 +616,7 @@ function App(){
             <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing}/><i className="foot-shadow"/></div>
           </div>
           <div className={`energy-hud ${energyFlash?'energy-gained':''} ${energy<EXHAUSTION_RECOVERY?'energy-low':''}`} role="meter" aria-label="Energi lari cepat" aria-valuemin={0} aria-valuemax={MAX_STAMINA} aria-valuenow={Math.round(energy)}><div className="energy-heading"><span><Icon name="bolt"/> ENERGI LARI</span><strong>{Math.round(energy)}%</strong></div><div className="energy-track"><i style={{width:`${energy}%`}}/></div><small>{energyFlash==='pickup'?'SEL ENERGI DIAMBIL · ENERGI BERTAMBAH':energyFlash==='full'?'ENERGI SUDAH PENUH':energyFlash==='answer'?'JAWABAN BENAR · ENERGI BERTAMBAH':energy<EXHAUSTION_RECOVERY?'LARI TERKUNCI · AMBIL SEL ENERGI':'SHIFT UNTUK LARI · AMBIL SEL +30'}</small></div>
-          {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?`Nyawa tersisa ${health} dari 3 · kembali ke awal level`:'Nyawa habis · kembali ke menu level'}</span></div>}
+          {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?`Nyawa tersisa ${health} dari 3 · kembali ke awal level`:'Nyawa habis · kembali ke menu'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}
         </section>
