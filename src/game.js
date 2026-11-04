@@ -112,4 +112,4 @@ export const canEnterAtHeight=(level,x,height)=>floorHeightAt(level,x)<=height+8
 export const movementLimit=(map,collected)=>collected?map.door:map.door-2.7;
 export const advanceVira=x=>Math.min(92,x+.12);
 export const catchesVira=(rakaX,rakaHeight,viraX)=>Math.abs(rakaX-viraX)<2.4&&Math.abs(rakaHeight-floorHeightAt(3,viraX))<43;
-export const beeHitsPlayer=(active,rakaX,rakaHeight,beeX)=>active&&Math.abs(rakaX-beeX)<.8&&Math.abs(rakaHeight-136)<22;
+export const beeHitsPlayer=(active,rakaX,rakaHeight,beeX)=>active&&Math.abs(rakaX-beeX)<.65&&Math.abs(rakaHeight-136)<19;

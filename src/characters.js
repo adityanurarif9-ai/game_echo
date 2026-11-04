@@ -1,7 +1,7 @@
 export const characters = [
-  {id:'classic',name:'Raka Klasik',price:0,tag:'KARAKTER AWAL',description:'Tampilan asli Raka untuk memulai pencarian Vira.'},
-  {id:'neon',name:'Raka Neon',price:35,tag:'EDISI KOTA',description:'Aura neon kebiruan untuk menyusuri kota.'},
-  {id:'sunset',name:'Raka Senja',price:80,tag:'EDISI LANGKA',description:'Aura senja hangat untuk menembus markas terakhir.'}
+  {id:'classic',sprite:'r',name:'Raka Klasik',price:0,tag:'KARAKTER AWAL',description:'Raka dengan jaket biru andalannya.'},
+  {id:'neon',sprite:'anonim',name:'Raka Bayangan',price:35,tag:'PENYAMARAN',description:'Jubah dan tudung gelap untuk menyusup diam-diam.'},
+  {id:'sunset',sprite:'pelaku',name:'Raka Taktis',price:80,tag:'EDISI TAKTIS',description:'Seragam lapangan untuk operasi terakhir.'}
 ];
 
 export const getCharacter=id=>characters.find(character=>character.id===id)||characters[0];

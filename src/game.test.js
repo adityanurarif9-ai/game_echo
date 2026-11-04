@@ -64,6 +64,7 @@ test('lebah level tiga hanya mengenai lompatan dekat saat aktif',()=>{
   assert.equal(beeHitsPlayer(false,58,136,58),false);
   assert.equal(beeHitsPlayer(true,58,96,58),false);
   assert.equal(beeHitsPlayer(true,56,136,58),false);
+  assert.equal(beeHitsPlayer(true,57.3,136,58),false);
   assert.equal(beeHitsPlayer(true,58,136,58),true);
 });
 test('Vira waits before a separate exit and final chase uses elevated platforms',()=>{

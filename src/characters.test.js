@@ -18,6 +18,7 @@ test('pembelian karakter memotong koin satu kali dan tersimpan sebagai pilihan',
   assert.equal(purchaseCharacter(bought,'neon'),bought);
   assert.equal(purchaseCharacter(progress,'sunset'),progress);
   assert.equal(characters.length,3);
+  assert.equal(new Set(characters.map(character=>character.sprite)).size,3);
 });
 
 test('hanya karakter yang sudah dibeli yang bisa dipakai',()=>{
