@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {levels,isCorrect,getEnding,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira} from './game.js';
+import {levels,isCorrect,getEnding,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira,beeHitsPlayer} from './game.js';
 import {MAX_STAMINA,stepStamina,rewardStamina,pickupStamina} from './stamina.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
@@ -58,6 +58,13 @@ test('level three stairs require jumping and its coins follow reachable heights'
   assert.ok(levels[2].map.scanners[1]-levels[2].map.scanners[0]>=30,'laser cukup berjauhan');
   assert.deepEqual(coinTrails.map(trail=>trail.length),[7,7,7,7]);
   for(const coin of coinTrails[2])assert.ok(coin.height-floorHeightAt(2,coin.x)<=30);
+});
+
+test('lebah level tiga hanya mengenai lompatan dekat saat aktif',()=>{
+  assert.equal(beeHitsPlayer(false,58,136,58),false);
+  assert.equal(beeHitsPlayer(true,58,96,58),false);
+  assert.equal(beeHitsPlayer(true,56,136,58),false);
+  assert.equal(beeHitsPlayer(true,58,136,58),true);
 });
 test('Vira waits before a separate exit and final chase uses elevated platforms',()=>{
   for(const level of levels){

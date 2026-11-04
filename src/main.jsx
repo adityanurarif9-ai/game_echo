@@ -1,6 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {levels,isCorrect,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira} from './game';
+import {levels,isCorrect,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira,beeHitsPlayer} from './game';
 import {createAudio} from './audio';
 import {MAX_STAMINA,EXHAUSTION_RECOVERY,stepStamina,rewardStamina,pickupStamina} from './stamina';
 import {levelTimeLimits,formatClock,calculateStars} from './progression';
@@ -96,7 +96,7 @@ function App(){
   const [coinBurst,setCoinBurst]=useState(null);
   const [energyIds,setEnergyIds]=useState([]);
   const [energyBurst,setEnergyBurst]=useState(null);
-  const [droneX,setDroneX]=useState(57);
+  const [droneX,setDroneX]=useState(58);
   const [viraX,setViraX]=useState(levels[0].map.vira);
   const [viraStage,setViraStage]=useState('waiting');
   const [direction,setDirection]=useState('right');
@@ -421,11 +421,11 @@ function App(){
       setJumpFrame(velocityRef.current>8?0:velocityRef.current>1?1:velocityRef.current>-4?2:velocityRef.current>-9?3:4);
       if(Math.abs(nextHeight-elevationRef.current)>.05){elevationRef.current=nextHeight;setElevation(nextHeight)}
       if(delta){setDirection(delta<0?'left':'right');if(!airborne&&Date.now()-lastStep.current>360){sound('step');lastStep.current=Date.now()}}
-      const patroller=57+Math.sin(Date.now()/950)*4;
+      const patroller=58+Math.sin(Date.now()/1800)*3;
       if(level===2)setDroneX(patroller);
       const beams=map.scanners;
       const beamHit=active&&beams.some(point=>Math.abs(next-point)<1.4&&(level!==2||nextHeight<floorHeightAt(level,point)+51));
-      const droneHit=level===2&&Math.abs(next-patroller)<1.05&&Math.abs(nextHeight-136)<28;
+      const droneHit=level===2&&beeHitsPlayer(active,next,nextHeight,patroller);
       const hit=(beamHit||droneHit)&&Date.now()>invincibleUntil.current;
       if(hit){
         sound('hit');setHurt(true);setRecovering(true);keys.current={left:false,right:false,run:false,jump:false};setWalking(false);setRunning(false);
@@ -605,7 +605,7 @@ function App(){
             {coinBurst&&<div key={`${coinBurst.index}-${coinBurst.x}`} className="coin-burst" style={{left:`${coinBurst.x}%`,bottom:`calc(30% - 5px + ${coinBurst.height}px)`}} aria-hidden="true"><span><Icon name="coin"/></span><b>+5</b></div>}
             {energyTrail.map((cell,index)=>!energyIds.includes(index)&&<div key={index} className="energy-cell" style={{left:`${cell.x}%`,bottom:`calc(30% - 5px + ${cell.height}px)`}} aria-label={`Isi ulang energi ${index+1}`}><Icon name="bolt"/></div>)}
             {energyBurst&&<div key={`${energyBurst.index}-${energyBurst.x}`} className="energy-burst" style={{left:`${energyBurst.x}%`,bottom:`calc(30% - 5px + ${energyBurst.height}px)`}} aria-hidden="true"><Icon name="bolt"/><b>{energyBurst.gained?`+${energyBurst.gained}`:'PENUH'}</b></div>}
-            {level===2&&<div className="security-drone" style={{left:`${droneX}%`}} aria-label="Drone patroli bergerak"><i/><b>●</b><i/></div>}
+            {level===2&&<div className={`security-drone ${scannerOn?'alert':'idle'}`} style={{left:`${droneX}%`}} aria-label={`Lebah penjaga ${scannerOn?'aktif':'siaga'}`}><span>{scannerOn?'AWAS':'AMAN'}</span><i/><b>●</b><i/></div>}
             <div className={`scene-npc ${level===1?'hologram':''} ${talking?'in-conversation':''}`} style={{left:`${map.npc}%`}}><span>{current.speaker}</span><Sprite id={current.npc} direction={npcFacing}/><i className="foot-shadow"/>{nearby('npc')&&!talking&&<b>TEKAN E</b>}</div>
             {viraStage!=='gone'&&<div className={`vira-runner ${viraStage}`} style={{left:`${level<3&&viraStage==='escaping'?101:viraPosition}%`,bottom:`calc(30% - 5px + ${floorHeightAt(level,viraPosition)}px)`}} aria-label={level===3?'Vira sedang berlari di jalur atas':'Vira menunggu di depan pintu'}><span>{viraStage==='caught'?'VIRA DITEMUKAN':'VIRA'}</span><Sprite id="v" walking={viraStage==='escaping'} running={viraStage==='escaping'} direction="right"/><i className="foot-shadow"/></div>}
             <div className={`object terminal-object ${solved?'terminal-solved':''} ${nearby('terminal')&&!solved?'terminal-near':''}`} style={{left:`${map.terminal}%`,bottom:`calc(30% - 2px + ${floorHeightAt(level,map.terminal)}px)`}}><div className="terminal-device" aria-hidden="true"><div className="terminal-screen"><small>VIRA / {String(level+1).padStart(2,'0')}</small><b>{solved?'ACCESS OK':'CODE LOCKED'}</b><span className="terminal-code">{solved?'▰▰▰▰▰':'▰▰▱▱▱'}</span><span className="terminal-scanline"/></div><div className="terminal-keyboard"><i/><i/><i/><span>●</span></div></div><span className="object-name">TERMINAL KODE</span>{!solved&&nearby('terminal')&&<i>TEKAN E</i>}</div>
