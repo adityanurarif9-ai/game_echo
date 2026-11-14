@@ -11,8 +11,8 @@ export const levels = [
       {who:'npc',text:'Mulai dari terminal itu. Balikkan fungsi enkripsinya, lalu cocokkan angka dengan huruf.'}
     ],
     story:'Vira kabur setelah menemukan kebocoran data. Di ruang kerjanya ada fungsi enkripsi dan transmisi yang terputus. Balikkan kode itu dan cari kunci sebelum ia jauh.',
-    goal:'Pecahkan kode, temukan kunci di rak, lalu susul Vira ke pintu di ujung ruangan.',
-    map:{entrance:3,npc:14,terminal:73,vira:86,door:97,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Kunci pintu tersembunyi di antara buku-buku, jauh dari meja kerja Vira.'},
+    goal:'Pecahkan kode, periksa tempat penyimpanan, lalu susul Vira ke pintu di ujung ruangan.',
+    map:{entrance:3,npc:14,terminal:23,vira:86,door:97,scanners:[],caches:[{x:31,name:'Loker arsip',kind:'locker'},{x:51,name:'Meja bukti',kind:'desk'},{x:89,name:'Rak buku',kind:'bookshelf'}],hidden:2,clue:'Kunci pintu tersembunyi di antara buku-buku, jauh dari meja kerja Vira.'},
     puzzles:[
       {prompt:'Fungsi enkripsi f(x) = 2x + 3 menghasilkan cipherteks 5. Berapa nilai plainteks x?', formula:'f(x) = 2x + 3 · f⁻¹(y) = (y − 3) ÷ 2', rule:'Kurangi cipherteks dengan 3, lalu bagi 2.', example:'Contoh: jika cipherteks 9, plainteksnya (9 − 3) ÷ 2 = 3.', answers:['1'], hint:'(5 − 3) ÷ 2 = ?', explain:'Plainteksnya 1. Jejak pertama Vira berhasil dibaca.'},
       {prompt:'Dengan f(x) = 2x + 1, dekripsi 31–37–3–29–15 menjadi satu kata.', formula:'f⁻¹(y) = (y − 1) ÷ 2 · A = 1 sampai Z = 26', rule:'Balikkan tiap angka, lalu ubah hasilnya menjadi huruf kapital.', example:'Contoh: 7 → (7 − 1) ÷ 2 = 3 → C.', answers:['ORANG'], hint:'31 → 15 = O. Lanjutkan setiap angka dari kiri ke kanan.', explain:'ORANG. Vira memberi tanda bahwa ada seseorang di balik kebocoran.'},

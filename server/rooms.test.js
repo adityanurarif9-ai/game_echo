@@ -5,6 +5,7 @@ import {once} from 'node:events';
 import WebSocket from 'ws';
 import {attachRooms} from './rooms.js';
 import {levels} from '../src/game.js';
+import {attemptMap,attemptPuzzles,keyOptions} from '../src/attempts.js';
 
 function inbox(socket){
   const pending=[];
@@ -41,7 +42,10 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   assert.equal((await guestNext(message=>message.type==='welcome')).role,'guest');
   await hostNext(message=>message.type==='state'&&message.players.guest);
   host.send(JSON.stringify({type:'start',level:0}));
-  assert.equal((await guestNext(message=>message.type==='state'&&message.phase==='game')).level,0);
+  const firstStart=await guestNext(message=>message.type==='state'&&message.phase==='game');
+  assert.equal(firstStart.level,0);
+  assert.ok(keyOptions(0).includes(firstStart.attempt.hidden));
+  assert.equal(attemptPuzzles(0,firstStart.attempt.variant).length,3);
   guest.send(JSON.stringify({type:'pause'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused)).paused,true);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
@@ -74,7 +78,8 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   const guestScored=await guestNext(message=>message.type==='state'&&message.correct&&message.coins>0);
   assert.equal(guestScored.puzzleIndex,0);
   assert.equal((await hostNext(message=>message.type==='state'&&message.scores.guest===guestScored.coins)).puzzleIndex,3);
-  const hidden=levels[0].map.caches[levels[0].map.hidden].x;
+  const selectedMap=attemptMap(0,firstStart.attempt.hidden);
+  const hidden=selectedMap.caches[selectedMap.hidden].x;
   host.send(JSON.stringify({type:'move',x:hidden,direction:'right',walking:false}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===hidden);
   host.send(JSON.stringify({type:'collect'}));
@@ -91,7 +96,8 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   assert.equal(cleared.stars[0],3);
   assert.ok(cleared.scores.host>cleared.scores.guest);
   host.send(JSON.stringify({type:'start',level:1}));
-  await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);
+  const secondStart=await guestNext(message=>message.type==='state'&&message.phase==='game'&&message.level===1);
+  assert.ok(keyOptions(1).includes(secondStart.attempt.hidden));
   const nextTerminal=levels[1].map.terminal;
   host.send(JSON.stringify({type:'move',x:nextTerminal,direction:'right',walking:true}));
   await guestNext(message=>message.type==='state'&&message.positions.host.x===nextTerminal);

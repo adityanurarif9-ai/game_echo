@@ -42,7 +42,7 @@ Di komputer lain, untuk mengembangkan kodenya sendiri, pasang Node.js dari https
 - Dalam Single Player, level 1 terbuka sejak awal; level berikutnya terbuka setelah kunci level sebelumnya ditemukan dan pintu ujung area dilewati. Kemajuan level dan kunci tersimpan di browser yang sama. Dalam Multiplayer, progres berlaku selama ruang masih aktif; pembuat ruang memilih level dan kedua pemain menjadi Raka.
 - Pilih kartu level untuk masuk ke arena. Nyawa, kunci, waktu, dan tombol pengaturan berada di bingkai game.
 - Gerakkan Raka (Agen R) dengan tombol **← →** atau **A D**. Pada layar sentuh, tahan tombol panah di bawah arena.
-- Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, dan contoh sebelum kamu **mengetik** jawabannya. Tombol **Lihat jawaban** tersedia jika kamu ingin memeriksa hasilnya.
+- Temui Arman, Vira, Nara, atau Damar di ruangan untuk membaca percakapan, lalu dekati terminal dan tekan **E** atau tombol interaksi. Tiap soal menampilkan rumus, cara pakai, contoh, dan petunjuk sebelum kamu **mengetik** jawabannya. Kode soal dan tempat kunci berganti saat level dimulai lagi.
 - Setiap area lebih panjang dan kamera mengikuti Raka. Terminal berada di sepanjang jalur, sementara pintu keluar ada di ujung kanan. Vira muncul sebelum pintu dan kabur saat Raka mendekat pada tiga level pertama.
 - Setelah menyelesaikan tiga soal terminal, baca petunjuk di atas peta. Kunci tersembunyi di salah satu dari tiga tempat pemeriksaan. Dekati tempat itu dan tekan **E** untuk memeriksanya. Buka pintu dengan kunci.
 - Di level selanjutnya, pemindai bergantian menyala merah dan padam. Lewati saat padam.
