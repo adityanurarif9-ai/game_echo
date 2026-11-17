@@ -2,7 +2,7 @@ import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {levels,isCorrect,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira,beeHitsPlayer} from './game';
 import {createAudio} from './audio';
-import {MAX_STAMINA,EXHAUSTION_RECOVERY,stepStamina,rewardStamina,pickupStamina} from './stamina';
+import {MAX_STAMINA,INITIAL_STAMINA,EXHAUSTION_RECOVERY,stepStamina,rewardStamina,pickupStamina} from './stamina';
 import {levelTimeLimits,formatClock,calculateStars} from './progression';
 import {characters,getCharacter,restoreCharacters,purchaseCharacter,equipCharacter,roomCoinGain} from './characters';
 import {chooseAttempt,attemptMap,attemptPuzzles} from './attempts';
@@ -93,7 +93,7 @@ function App(){
   const [x,setX]=useState(9);
   const [walking,setWalking]=useState(false);
   const [running,setRunning]=useState(false);
-  const [energy,setEnergy]=useState(MAX_STAMINA);
+  const [energy,setEnergy]=useState(INITIAL_STAMINA);
   const [energyFlash,setEnergyFlash]=useState(false);
   const [elevation,setElevation]=useState(0);
   const [jumping,setJumping]=useState(false);
@@ -135,7 +135,7 @@ function App(){
   const velocityRef=useRef(0);
   const viraXRef=useRef(levels[0].map.vira);
   const viraStageRef=useRef('waiting');
-  const energyRef=useRef(MAX_STAMINA);
+  const energyRef=useRef(INITIAL_STAMINA);
   const exhaustedRef=useRef(false);
   const awardedEnergyRef=useRef(new Set());
   const coinIdsRef=useRef(new Set());
@@ -315,7 +315,7 @@ function App(){
     if(mode==='multi')restartSeen.current=room?.restartCount??0;
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
     setStarted(true);setPauseOpen(false);setScreen('game');setLevel(index);xRef.current=roomRole==='guest'?7:9;setX(xRef.current);setWalking(false);
-    energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);setEnergyBurst(null);
+    energyRef.current=INITIAL_STAMINA;exhaustedRef.current=true;awardedEnergyRef.current=new Set();setEnergy(INITIAL_STAMINA);setEnergyFlash(false);setCoinBurst(null);setEnergyBurst(null);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);setJumpFrame(2);coinIdsRef.current=new Set();setCoinIds([]);energyIdsRef.current=new Set();setEnergyIds([]);
     viraXRef.current=levels[index].map.vira;viraStageRef.current='waiting';setViraX(levels[index].map.vira);setViraStage('waiting');
     setDirection('right');setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);setAnswer('');
@@ -326,7 +326,7 @@ function App(){
   function restartAttempt(){
     const start=roomRole==='guest'&&mode==='multi'?7:9;
     keys.current={left:false,right:false,run:false,jump:false};xRef.current=start;setX(start);setWalking(false);setRunning(false);setDirection('right');
-    energyRef.current=MAX_STAMINA;exhaustedRef.current=false;awardedEnergyRef.current=new Set();setEnergy(MAX_STAMINA);setEnergyFlash(false);setCoinBurst(null);setEnergyBurst(null);energyIdsRef.current=new Set();setEnergyIds([]);
+    energyRef.current=INITIAL_STAMINA;exhaustedRef.current=true;awardedEnergyRef.current=new Set();setEnergy(INITIAL_STAMINA);setEnergyFlash(false);setCoinBurst(null);setEnergyBurst(null);energyIdsRef.current=new Set();setEnergyIds([]);
     elevationRef.current=0;velocityRef.current=0;setElevation(0);setJumping(false);
     viraXRef.current=levels[level].map.vira;viraStageRef.current='waiting';setViraX(levels[level].map.vira);setViraStage('waiting');
     setDialog(false);setConversationStep(null);setConversationSeen(false);setPuzzleIndex(0);
@@ -656,7 +656,7 @@ function App(){
             {mode==='multi'&&room?.players?.[roomRole==='host'?'guest':'host']&&peer&&<div className="player peer-player rival-raka" style={{left:`${peer.x}%`,bottom:`calc(30% - 5px + ${peer.height||0}px)`}}><span>{peerName}</span><Sprite id={peerSprite} walking={peer.walking} running={peer.running} jumping={peer.jumping} direction={peer.direction} className={`skin-${peer.character||'classic'}`}/><i className="foot-shadow"/></div>}
             <div className={`player ${hurt?'player-hit':''} ${jumping?'airborne':''}`} style={{left:`${x}%`,bottom:`calc(30% - 5px + ${elevation}px)`}}><span>{heroName.toUpperCase()}</span><Sprite id={heroSprite} walking={walking} running={running} jumping={jumping} jumpFrame={jumpFrame} direction={heroFacing} className={`skin-${selectedCharacter.id}`}/><i className="foot-shadow"/></div>
           </div>
-          <div className={`energy-hud ${energyFlash?'energy-gained':''} ${energy<EXHAUSTION_RECOVERY?'energy-low':''}`} role="meter" aria-label="Energi lari cepat" aria-valuemin={0} aria-valuemax={MAX_STAMINA} aria-valuenow={Math.round(energy)}><div className="energy-heading"><span><Icon name="bolt"/> ENERGI LARI</span><strong>{Math.round(energy)}%</strong></div><div className="energy-track"><i style={{width:`${energy}%`}}/></div><small>{energyFlash==='pickup'?'SEL ENERGI DIAMBIL · ENERGI BERTAMBAH':energyFlash==='full'?'ENERGI SUDAH PENUH':energyFlash==='answer'?'JAWABAN BENAR · ENERGI BERTAMBAH':energy<EXHAUSTION_RECOVERY?'LARI TERKUNCI · AMBIL SEL ENERGI':'SHIFT UNTUK LARI · AMBIL SEL +30'}</small></div>
+          <div className={`energy-hud ${energyFlash?'energy-gained':''} ${energy<EXHAUSTION_RECOVERY?'energy-low':''}`} role="meter" aria-label="Energi lari cepat" aria-valuemin={0} aria-valuemax={MAX_STAMINA} aria-valuenow={Math.round(energy)}><div className="energy-heading"><span><Icon name="bolt"/> ENERGI LARI</span><strong>{Math.round(energy)}%</strong></div><div className="energy-track"><i style={{width:`${energy}%`}}/></div><small>{energyFlash==='pickup'?'SEL ENERGI DIAMBIL · ENERGI BERTAMBAH':energyFlash==='full'?'ENERGI SUDAH PENUH':energyFlash==='answer'?'JAWABAN BENAR · ENERGI BERTAMBAH':energy<EXHAUSTION_RECOVERY?'LARI TERKUNCI · AMBIL SEL ATAU JAWAB SOAL':'SHIFT UNTUK LARI · AMBIL SEL +30'}</small></div>
           {recovering&&<div className="scanner-impact" role="status"><div className="impact-ring"/><strong>TERDETEKSI</strong><span>{health>0?`Nyawa tersisa ${health} dari 3 · kembali ke awal level`:'Nyawa habis · kembali ke menu'}</span></div>}
           {talking&&<div className={`encounter-bubble ${current.dialogue[conversationStep].who==='r'?'from-r':'from-npc'}`} style={{'--bubble-x':`${speakerOnScreen}%`}} role="dialog" aria-label="Percakapan tokoh"><div className="encounter-heading"><span>PERTEMUAN · {conversationStep+1}/{current.dialogue.length}</span><strong>{current.dialogue[conversationStep].who==='r'?HERO_NAME:current.speaker}</strong></div><p>{current.dialogue[conversationStep].text}</p><button onClick={advanceConversation}>{conversationStep===current.dialogue.length-1?'Mulai misi':'Lanjut'} →</button></div>}
           {toast&&<div className="game-toast" role="status">{toast}</div>}

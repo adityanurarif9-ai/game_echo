@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {levels,isCorrect,getEnding,coinTrails,energyTrails,tierPlatforms,finalPlatforms,floorHeightAt,canEnterAtHeight,movementLimit,advanceVira,catchesVira,beeHitsPlayer} from './game.js';
-import {MAX_STAMINA,stepStamina,rewardStamina,pickupStamina} from './stamina.js';
+import {MAX_STAMINA,INITIAL_STAMINA,stepStamina,rewardStamina,pickupStamina} from './stamina.js';
 test('four levels contain three document-based decryption puzzles each',()=>{
   assert.equal(levels.length,4);
   assert.deepEqual(levels.map(level=>level.puzzles.length),[3,3,3,3]);
@@ -32,17 +32,24 @@ test('true, neutral and bad endings depend on evidence, accuracy and escape',()=
   assert.equal(getEnding({dossiers:3,mistakes:0,escaped:true}),'neutral');
   assert.equal(getEnding({dossiers:4,mistakes:0,escaped:false}),'bad');
 });
-test('lari cepat menghabiskan energi, berhenti untuk pulih, jawaban benar menambah energi',()=>{
-  let state={energy:MAX_STAMINA,exhausted:false};
+test('energi mulai nol, hanya bertambah dari sel atau jawaban benar, lalu habis saat lari',()=>{
+  let state={energy:INITIAL_STAMINA,exhausted:true};
+  assert.equal(state.energy,0);
+  for(let tick=0;tick<100;tick++)state=stepStamina(state.energy,state.exhausted,false,false);
+  assert.equal(state.energy,0);
+  assert.equal(state.running,false);
+  state={energy:pickupStamina(state.energy),exhausted:false};
+  assert.equal(state.energy,30);
+  assert.equal(stepStamina(state.energy,state.exhausted,true,true).running,true);
   for(let tick=0;tick<150&&!state.exhausted;tick++)state=stepStamina(state.energy,state.exhausted,true,true);
   assert.equal(state.energy,0);
   assert.equal(state.exhausted,true);
   assert.equal(stepStamina(state.energy,state.exhausted,true,true).running,false);
   for(let tick=0;tick<80;tick++)state=stepStamina(state.energy,state.exhausted,false,false);
-  assert.ok(state.energy>=19&&state.energy<22);
+  assert.equal(state.energy,0);
   assert.equal(stepStamina(state.energy,state.exhausted,true,true).running,false);
   const restored=rewardStamina(state.energy);
-  assert.ok(restored>state.energy);
+  assert.equal(restored,35);
   assert.equal(stepStamina(restored,false,true,true).running,true);
   assert.equal(rewardStamina(95),MAX_STAMINA);
 });
