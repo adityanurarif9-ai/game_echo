@@ -1,7 +1,7 @@
 export const characters = [
-  {id:'classic',sprite:'r',name:'Raka Klasik',price:0,tag:'KARAKTER AWAL',description:'Raka dengan jaket biru andalannya.'},
-  {id:'neon',sprite:'anonim',name:'Raka Bayangan',price:35,tag:'PENYAMARAN',description:'Jubah dan tudung gelap untuk menyusup diam-diam.'},
-  {id:'sunset',sprite:'pelaku',name:'Raka Taktis',price:80,tag:'EDISI TAKTIS',description:'Seragam lapangan untuk operasi terakhir.'}
+  {id:'classic',sprite:'r',name:'Raka Klasik',price:0,tag:'AHLI KODE',description:'Jawaban benar memberi 45 energi, bukan 35.',ability:'+10 energi tiap jawaban benar',answerBonus:10,scannerRadius:1.4,sprintCost:.72},
+  {id:'neon',sprite:'anonim',name:'Raka Bayangan',price:35,tag:'PENYAMARAN',description:'Sulit tertangkap laser: area deteksi lebih sempit.',ability:'Jangkauan laser berkurang 35%',answerBonus:0,scannerRadius:.91,sprintCost:.72},
+  {id:'sunset',sprite:'pelaku',name:'Raka Taktis',price:80,tag:'PELARI',description:'Energi lari lebih awet saat mengejar Vira.',ability:'Energi lari 25% lebih hemat',answerBonus:0,scannerRadius:1.4,sprintCost:.54}
 ];
 
 export const getCharacter=id=>characters.find(character=>character.id===id)||characters[0];

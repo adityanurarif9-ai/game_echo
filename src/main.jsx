@@ -153,7 +153,7 @@ function App(){
   const timerFailureRef=useRef(false);
   const lifeFailureRef=useRef(false);
   const puzzleStartedAt=useRef(null);
-  const previousAttempt=useRef(null);
+  const previousAttempt=useRef([]);
   const hostedGame=location.protocol==='https:';
   const paused=mode==='multi'?Boolean(room?.paused):pauseOpen;
   const dossiers=mode==='multi'&&room?room.completed.length+(room.collected&&!room.completed.includes(level)?1:0):progress.completed.length+(collected&&!progress.completed.includes(level)?1:0);
@@ -165,7 +165,7 @@ function App(){
   const peerName=roomRole==='host'?'RAKA 2':'RAKA 1';
   const peerSprite=getCharacter(peer?.character).sprite;
   const current=levels[level];
-  const puzzles=attemptPuzzles(level,attempt.variant);
+  const puzzles=attemptPuzzles(level,attempt);
   const timeLimit=levelTimeLimits[level];
   const starsEarned=calculateStars(seconds,timeLimit,health);
   const map=attemptMap(level,attempt.hidden);
@@ -310,8 +310,8 @@ function App(){
     keys.current={left:false,right:false};setPauseOpen(false);setScreen(typeof destination==='string'?destination:'mode');
   }
   function beginLevel(index){
-    const nextAttempt=mode==='multi'&&room?.attempt?room.attempt:chooseAttempt(index,previousAttempt.current?.level===index?previousAttempt.current:null);
-    previousAttempt.current={level:index,...nextAttempt};setAttempt(nextAttempt);
+    const nextAttempt=mode==='multi'&&room?.attempt?room.attempt:chooseAttempt(index,previousAttempt.current[index]||null);
+    previousAttempt.current[index]=nextAttempt;setAttempt(nextAttempt);
     if(mode==='multi')restartSeen.current=room?.restartCount??0;
     if(audioOn){if(!audioRef.current)audioRef.current=createAudio();audioRef.current.start()}
     setStarted(true);setPauseOpen(false);setScreen('game');setLevel(index);xRef.current=roomRole==='guest'?7:9;setX(xRef.current);setWalking(false);
@@ -355,7 +355,7 @@ function App(){
       if(room.coinIds){room.coinIds.forEach(id=>coinIdsRef.current.add(id));setCoinIds([...coinIdsRef.current])}
       if(room.puzzleIndex!==puzzleIndex){setPuzzleIndex(room.puzzleIndex);setAnswer('');setFeedback(null);setHint(false);puzzleStartedAt.current=Date.now();if(room.puzzleIndex===3)setDialog(false)}
       setCollected(room.collected);
-      if(room.correct&&room.puzzleIndex<3)setFeedback({correct:true,text:`Energi lari siap! ${attemptPuzzles(room.level,room.attempt?.variant??0)[room.puzzleIndex].explain}`});
+      if(room.correct&&room.puzzleIndex<3)setFeedback({correct:true,text:`Energi lari siap! ${attemptPuzzles(room.level,room.attempt)[room.puzzleIndex].explain}`});
     }
   },[mode,room?.phase,room?.level,room?.puzzleIndex,room?.correct,room?.collected,room?.coinIds,room?.ending,screen,level,puzzleIndex]);
 
@@ -437,7 +437,7 @@ function App(){
       setScannerOn(active);
       const delta=(keys.current.right?1:0)-(keys.current.left?1:0);
       const wasExhausted=exhaustedRef.current;
-      const sprint=stepStamina(energyRef.current,wasExhausted,keys.current.run,delta!==0);
+      const sprint=stepStamina(energyRef.current,wasExhausted,keys.current.run,delta!==0,selectedCharacter.sprintCost);
       energyRef.current=sprint.energy;exhaustedRef.current=sprint.exhausted;
       setEnergy(sprint.energy);
       if(!wasExhausted&&sprint.exhausted)setToast('Energi habis. Jalan dulu atau pecahkan soal untuk mengisinya.');
@@ -463,7 +463,7 @@ function App(){
       const patroller=58+Math.sin(Date.now()/2500)*2;
       if(level===2)setDroneX(patroller);
       const beams=map.scanners;
-      const beamHit=active&&beams.some(point=>Math.abs(next-point)<1.4&&(level!==2||nextHeight<floorHeightAt(level,point)+51));
+      const beamHit=active&&beams.some(point=>Math.abs(next-point)<selectedCharacter.scannerRadius&&(level!==2||nextHeight<floorHeightAt(level,point)+51));
       const droneHit=level===2&&beeHitsPlayer(active,next,nextHeight,patroller);
       const hit=(beamHit||droneHit)&&Date.now()>invincibleUntil.current;
       if(hit){
@@ -533,7 +533,7 @@ function App(){
       let energyGain=0;
       if(!awardedEnergyRef.current.has(puzzleIndex)){
         awardedEnergyRef.current.add(puzzleIndex);
-        const restored=rewardStamina(energyRef.current);
+        const restored=rewardStamina(energyRef.current,selectedCharacter.answerBonus);
         energyGain=Math.round(restored-energyRef.current);
         energyRef.current=restored;exhaustedRef.current=restored<EXHAUSTION_RECOVERY;
         setEnergy(restored);setEnergyFlash('answer');
@@ -668,7 +668,7 @@ function App(){
         {paused&&<div className="pause-backdrop"><section className="pause-card" role="dialog" aria-modal="true" aria-label="Menu jeda"><span className="pause-symbol">Ⅱ</span><p className="pause-kicker">JEJAK YANG HILANG · LEVEL {String(level+1).padStart(2,'0')}</p><h2>Permainan dijeda</h2><p className="pause-caption">{mode==='multi'?'Kedua pemain sedang berhenti sejenak.':'Lanjutkan petualangan kapan saja.'}</p><div className="pause-actions"><button className="pause-resume" onClick={resumeGame}><Icon name="play"/> <span>Resume</span></button><button onClick={showLevelSelect}>▦ <span>Pilih Level</span></button><button onClick={exitGame}>↩ <span>Keluar Game</span></button></div><small>Tekan Esc untuk lanjut bermain</small></section></div>}
         {dialog&&puzzleIndex<3&&<div className="modal-backdrop terminal-backdrop"><section className="puzzle-card terminal-panel" role="dialog" aria-modal="true" aria-label="Teka-teki terminal"><div className="puzzle-head"><span className="terminal-live"><i/> TERMINAL VIRA <small>· TERHUBUNG</small></span><span className="terminal-steps">{[0,1,2].map(index=><b key={index} className={index<=puzzleIndex?'active':''}>{index+1}</b>)}</span><button onClick={()=>{setDialog(false);setFeedback(null);setAnswer('')}} aria-label="Tutup terminal">×</button></div><div className="puzzle-content"><p className="kicker">KODE {puzzleIndex+1} / 3 · {current.chapter} · {current.location}</p><h2>{puzzles[puzzleIndex].prompt}</h2><div className="formula-guide"><span>RUMUS YANG DIPAKAI</span><strong>{puzzles[puzzleIndex].formula}</strong><p>{puzzles[puzzleIndex].rule}</p><small>{puzzles[puzzleIndex].example}</small></div><form onSubmit={submit}><label htmlFor="code-answer">Ketik jawabanmu</label><div className="answer-line"><input id="code-answer" autoFocus autoComplete="off" value={answer} onChange={e=>{setAnswer(e.target.value);if(feedback&&!feedback.correct)setFeedback(null)}} disabled={feedback?.correct} placeholder="Tulis kode di sini"/><button className="main-button" type="submit" disabled={feedback?.correct}>Periksa →</button></div></form>{feedback&&<p role="status" className={`feedback ${feedback.correct?'correct':'incorrect'}`}>{feedback.text}</p>}{hint&&<p className="hint">Petunjuk: {puzzles[puzzleIndex].hint}</p>}<div className="puzzle-actions"><div className="puzzle-help-actions"><button className="text-button" onClick={()=>setHint(v=>!v)}>{hint?'Sembunyikan':'Lihat'} petunjuk</button></div>{feedback?.correct&&<button className="main-button" onClick={nextPuzzle}>{puzzleIndex===2?'Cari kunci dari petunjuk':'Soal berikutnya'} →</button>}</div></div></section></div>}
       </>}
-      {shopOpen&&<div className="character-shop-backdrop"><section className="character-shop" role="dialog" aria-modal="true" aria-label="Toko karakter"><div className="character-shop-head"><div><small>MARKAS RAKA · KOLEKSI KARAKTER</small><h2>Pilih Raka untuk petualanganmu</h2><p>Beli sekali dengan koin permainan, lalu pakai kapan saja.</p></div><button className="character-shop-close" onClick={()=>setShopOpen(false)} aria-label="Tutup toko karakter">×</button></div><div className="shop-balance"><Icon name="coin"/><strong>{progress.coins}</strong><span>KOIN TERSEDIA</span></div><div className="character-shop-grid">{characters.map(character=>{const owned=progress.ownedCharacters.includes(character.id);const selected=progress.selectedCharacter===character.id;return <article key={character.id} className={`character-card character-${character.id} ${selected?'selected':''}`}><div className="character-card-art"><span>{character.tag}</span><Sprite id={character.sprite} walking className={`skin-${character.id}`}/><i/></div><div className="character-card-copy"><h3>{character.name}</h3><p>{character.description}</p><div className="character-card-bottom"><strong>{character.price===0?'GRATIS':owned?'SUDAH DIMILIKI':<><Icon name="coin"/> {character.price}</>}</strong><button onClick={()=>chooseCharacter(character)} disabled={selected}>{selected?'DIPAKAI':owned?'PAKAI':'BELI'}</button></div></div></article>})}</div><p className="shop-feedback" role="status">{shopFeedback||'Kumpulkan koin di level untuk membuka karakter baru.'}</p><small className="shop-footnote">Pilihan karakter mengubah tampilan Raka. Cerita dan kemampuan tetap sama.</small></section></div>}
+      {shopOpen&&<div className="character-shop-backdrop"><section className="character-shop" role="dialog" aria-modal="true" aria-label="Toko karakter"><div className="character-shop-head"><div><small>MARKAS RAKA · KOLEKSI KARAKTER</small><h2>Pilih Raka untuk petualanganmu</h2><p>Beli sekali dengan koin permainan, lalu pakai kapan saja.</p></div><button className="character-shop-close" onClick={()=>setShopOpen(false)} aria-label="Tutup toko karakter">×</button></div><div className="shop-balance"><Icon name="coin"/><strong>{progress.coins}</strong><span>KOIN TERSEDIA</span></div><div className="character-shop-grid">{characters.map(character=>{const owned=progress.ownedCharacters.includes(character.id);const selected=progress.selectedCharacter===character.id;return <article key={character.id} className={`character-card character-${character.id} ${selected?'selected':''}`}><div className="character-card-art"><span>{character.tag}</span><Sprite id={character.sprite} walking className={`skin-${character.id}`}/><i/></div><div className="character-card-copy"><h3>{character.name}</h3><p>{character.description}</p><p className="character-skill">SKILL · {character.ability}</p><div className="character-card-bottom"><strong>{character.price===0?'GRATIS':owned?'SUDAH DIMILIKI':<><Icon name="coin"/> {character.price}</>}</strong><button onClick={()=>chooseCharacter(character)} disabled={selected}>{selected?'DIPAKAI':owned?'PAKAI':'BELI'}</button></div></div></article>})}</div><p className="shop-feedback" role="status">{shopFeedback||'Kumpulkan koin di level untuk membuka karakter baru.'}</p><small className="shop-footnote">Setiap karakter memiliki satu skill pasif yang aktif saat dipakai.</small></section></div>}
       {help&&<GameGuide onClose={()=>setHelp(false)}/>}
     </main>
     {loading&&<div className="loading-screen" role="status" aria-live="polite"><div className="loading-art"><img src="/branding/jejak-yang-hilang.jpg" alt="Logo Jejak yang Hilang"/><i aria-hidden="true"/></div><p className="loading-kicker">MISI SEDANG DISIAPKAN</p><strong>Menyiapkan petualangan...</strong><div className="loading-track"><i/></div><small>MEMUAT</small></div>}

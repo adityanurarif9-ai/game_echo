@@ -52,7 +52,7 @@ export function attachRooms(httpServer){
       try{message=JSON.parse(raw.toString())}catch{return}
       if(!message||typeof message.type!=='string')return;
       if(message.type==='create'&&!room){
-        room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],ending:null,winner:null,stars:levels.map(()=>0),lastResult:null,attempt:null,
+        room={code:code(),host:socket,guest:null,phase:'select',paused:false,level:0,unlocked:0,completed:[],ending:null,winner:null,stars:levels.map(()=>0),lastResult:null,attempt:null,previousAttempts:[],
           racers:{host:racer(),guest:racer()},positions:{host:position(9),guest:position(7)}};
         rooms.set(room.code,room);role='host';
         const port=Number(request.headers.host?.split(':').at(-1))||5175;
@@ -73,7 +73,8 @@ export function attachRooms(httpServer){
         const index=Number(message.level);
         if(!room.guest){send(socket,{type:'error',message:'Tunggu pemain kedua bergabung dulu.'});return}
         if(!Number.isInteger(index)||index<0||index>room.unlocked)return;
-        room.attempt=chooseAttempt(index,room.level===index?room.attempt:null);
+        room.attempt=chooseAttempt(index,room.previousAttempts[index]||null);
+        room.previousAttempts[index]=room.attempt;
         room.phase='game';room.paused=false;room.level=index;room.ending=null;room.winner=null;room.lastResult=null;
         for(const player of Object.values(room.racers))Object.assign(player,{puzzleIndex:0,correct:false,collected:false,coinIds:[],puzzleStartedAt:null});
         room.positions={host:position(9),guest:position(7)};
@@ -118,7 +119,7 @@ export function attachRooms(httpServer){
         self.coinIds.push(index);self.coins+=5;broadcast(room);return;
       }
       if(message.type==='solve'&&!self.correct){
-        const puzzle=attemptPuzzles(room.level,room.attempt.variant)[self.puzzleIndex];
+        const puzzle=attemptPuzzles(room.level,room.attempt)[self.puzzleIndex];
         if(puzzle&&isCorrect(puzzle,String(message.answer||'').slice(0,80))){
           self.correct=true;
           self.coins+=10+Math.max(0,20-Math.floor((Date.now()-(self.puzzleStartedAt??Date.now()))/3000));

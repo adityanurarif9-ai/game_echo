@@ -3,42 +3,47 @@ import assert from 'node:assert/strict';
 import {levels,isCorrect} from './game.js';
 import {keyOptions,chooseAttempt,attemptMap,attemptPuzzles} from './attempts.js';
 
-test('setiap percobaan mengganti variasi soal dan tempat kunci yang bisa dijangkau',()=>{
+test('setiap masuk level membuat angka dan tempat kunci baru',()=>{
   for(let level=0;level<levels.length;level++){
     const first=chooseAttempt(level,null,()=>0);
     const second=chooseAttempt(level,first,()=>0);
-    assert.notEqual(first.variant,second.variant);
+    assert.notEqual(first.seed,second.seed);
     assert.notEqual(first.hidden,second.hidden);
     assert.ok(keyOptions(level).includes(first.hidden));
     assert.ok(attemptMap(level,first.hidden).caches[first.hidden].x>levels[level].map.terminal);
-    assert.notEqual(attemptPuzzles(level,first.variant)[0].prompt,attemptPuzzles(level,second.variant)[0].prompt);
+    const oldPuzzles=attemptPuzzles(level,first);
+    const newPuzzles=attemptPuzzles(level,second);
+    assert.ok(oldPuzzles.some((puzzle,index)=>puzzle.prompt!==newPuzzles[index].prompt));
+    assert.ok(oldPuzzles.some((puzzle,index)=>puzzle.answers[0]!==newPuzzles[index].answers[0]));
+    assert.deepEqual(attemptPuzzles(level,first),oldPuzzles,'soal tetap sama selama satu percobaan');
   }
 });
 
-test('semua kode alternatif memakai rumus yang sesuai dengan jawabannya',()=>{
-  for(let level=0;level<levels.length;level++)for(const variant of [0,1,2]){
-    const puzzles=attemptPuzzles(level,variant);
+test('semua cipherteks dinamis sesuai rumus dan jawaban termasuk verifikasi angka',()=>{
+  for(let level=0;level<levels.length;level++)for(const seed of [0,1,426134,0xffffffff]){
+    const puzzles=attemptPuzzles(level,{seed,variant:seed%3});
     assert.equal(puzzles.length,3);
-    puzzles.forEach((puzzle,index)=>{
-      assert.ok(isCorrect(puzzle,levels[level].puzzles[index].answers[0]));
+    puzzles.forEach(puzzle=>{
+      assert.ok(isCorrect(puzzle,puzzle.answers[0]));
       assert.ok(puzzle.formula&&puzzle.hint&&puzzle.example);
-      if(variant>0){
-        assert.notEqual(puzzle.prompt,levels[level].puzzles[index].prompt);
-        const [,factor,sign,offset]=puzzle.prompt.match(/= (\d+)x ([+−]) (\d+)/);
-        const a=Number(factor),b=(sign==='−'?-1:1)*Number(offset);
-        const decode=value=>{
-          const x=(Number(value.replaceAll('−','-'))-b)/a;
-          assert.ok(Number.isInteger(x));
-          if(x===0)return ' ';
-          return String.fromCharCode(64+Math.abs(x));
-        };
-        if(/cipherteks/.test(puzzle.prompt)){
-          const cipher=puzzle.prompt.match(/cipherteks ([0-9−]+)/)[1];
-          assert.equal((Number(cipher.replaceAll('−','-'))-b)/a,Number(puzzle.answers[0]));
-        }else{
-          const values=puzzle.prompt.match(/dekripsi ([0-9−–]+)/)[1].split('–');
-          assert.equal(values.map(decode).join(''),puzzle.answers[0].toUpperCase());
-        }
+      const [,factor,sign,offset]=puzzle.prompt.match(/= (\d+)x ([+−]) (\d+)/);
+      const a=Number(factor),b=(sign==='−'?-1:1)*Number(offset);
+      const decodeNumber=value=>{
+        const x=(Number(value.replaceAll('−','-'))-b)/a;
+        assert.ok(Number.isInteger(x));
+        return x;
+      };
+      if(/cipherteks/.test(puzzle.prompt)){
+        const cipher=puzzle.prompt.match(/cipherteks ([0-9−]+)/)[1];
+        assert.equal(decodeNumber(cipher),Number(puzzle.answers[0]));
+      }else{
+        const values=puzzle.prompt.match(/dekripsi ([0-9−–]+)/)[1].split('–');
+        const word=values.map(value=>{
+          const x=decodeNumber(value);
+          return x===0?' ':String.fromCharCode(64+Math.abs(x));
+        }).join('');
+        const verification=puzzle.prompt.match(/Kode verifikasi ([0-9−]+)/)[1];
+        assert.equal(puzzle.answers[0],`${word} ${decodeNumber(verification)}`);
       }
     });
   }

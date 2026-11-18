@@ -33,3 +33,10 @@ test('koin multiplayer masuk saldo lokal satu kali per kenaikan skor',()=>{
   assert.equal(roomCoinGain({code:'ABC123',coins:5},'ABC123',15),10);
   assert.equal(roomCoinGain({code:'ABC123',coins:15},'XYZ789',0),0);
 });
+
+test('setiap karakter punya kemampuan nyata yang berbeda',()=>{
+  assert.equal(getCharacter('classic').answerBonus,10);
+  assert.equal(getCharacter('neon').scannerRadius,.91);
+  assert.equal(getCharacter('sunset').sprintCost,.54);
+  assert.equal(new Set(characters.map(character=>character.ability)).size,characters.length);
+});

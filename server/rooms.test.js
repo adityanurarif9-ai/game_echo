@@ -45,7 +45,7 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   const firstStart=await guestNext(message=>message.type==='state'&&message.phase==='game');
   assert.equal(firstStart.level,0);
   assert.ok(keyOptions(0).includes(firstStart.attempt.hidden));
-  assert.equal(attemptPuzzles(0,firstStart.attempt.variant).length,3);
+  assert.equal(attemptPuzzles(0,firstStart.attempt).length,3);
   guest.send(JSON.stringify({type:'pause'}));
   assert.equal((await hostNext(message=>message.type==='state'&&message.paused)).paused,true);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true}));
@@ -63,7 +63,8 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   assert.equal((await guestNext(message=>message.type==='state'&&message.scores.host===5)).coinIds.length,0);
   host.send(JSON.stringify({type:'move',x:73,direction:'right',walking:true,running:true}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===73);
-  for(const [index,answer] of ['1','ORANG','HILANG'].entries()){
+  for(const [index,puzzle] of attemptPuzzles(0,firstStart.attempt).entries()){
+    const answer=puzzle.answers[0];
     host.send(JSON.stringify({type:'solve',answer}));
     const scored=await hostNext(message=>message.type==='state'&&message.puzzleIndex===index&&message.correct);
     assert.ok(scored.coins>=10);
@@ -74,7 +75,7 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
     host.send(JSON.stringify({type:'advance'}));
     assert.equal((await hostNext(message=>message.type==='state'&&message.puzzleIndex===index+1)).puzzleIndex,index+1);
   }
-  guest.send(JSON.stringify({type:'solve',answer:'1'}));
+  guest.send(JSON.stringify({type:'solve',answer:attemptPuzzles(0,firstStart.attempt)[0].answers[0]}));
   const guestScored=await guestNext(message=>message.type==='state'&&message.correct&&message.coins>0);
   assert.equal(guestScored.puzzleIndex,0);
   assert.equal((await hostNext(message=>message.type==='state'&&message.scores.guest===guestScored.coins)).puzzleIndex,3);
@@ -88,7 +89,7 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   const exit=levels[0].map.door;
   host.send(JSON.stringify({type:'move',x:exit,direction:'right',walking:false}));
   await hostNext(message=>message.type==='state'&&message.positions.host.x===exit);
-  host.send(JSON.stringify({type:'clear',remaining:120,health:3}));
+  host.send(JSON.stringify({type:'clear',remaining:75,health:3}));
   const cleared=await guestNext(message=>message.type==='state'&&message.phase==='select'&&message.unlocked===1);
   assert.deepEqual(cleared.completed,[0]);
   assert.equal(cleared.winner,'host');
@@ -101,7 +102,7 @@ test('two Rakas race with separate puzzles, coins, movement and restart',async t
   const nextTerminal=levels[1].map.terminal;
   host.send(JSON.stringify({type:'move',x:nextTerminal,direction:'right',walking:true}));
   await guestNext(message=>message.type==='state'&&message.positions.host.x===nextTerminal);
-  host.send(JSON.stringify({type:'solve',answer:'TEMUKAN'}));
+  host.send(JSON.stringify({type:'solve',answer:attemptPuzzles(1,secondStart.attempt)[0].answers[0]}));
   await hostNext(message=>message.type==='state'&&message.correct);
   host.send(JSON.stringify({type:'advance'}));
   await hostNext(message=>message.type==='state'&&message.puzzleIndex===1);
