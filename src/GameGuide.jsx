@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {levels} from './game';
-
-const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+import CipherTable from './CipherTable';
 
 export default function GameGuide({onClose}){
   const [tab,setTab]=useState('play');
@@ -30,10 +29,7 @@ export default function GameGuide({onClose}){
           <div className="guide-equation"><span>ATURAN DASAR</span><strong>Jika y = ax + b, maka x = (y − b) ÷ a</strong><small>Contoh: y = 2x + 1 dan y = 7 → x = (7 − 1) ÷ 2 = 3 → C.</small></div>
           <h3 className="guide-section-title">Tabel konversi huruf</h3>
           <p className="guide-caption">Huruf besar A–Z = 1 sampai 26. Huruf kecil a–z = −1 sampai −26. Angka hasil dekripsi 0 berarti spasi.</p>
-          <div className="cipher-grid" aria-label="Tabel huruf besar dan kecil beserta angka konversinya">
-            {letters.map((letter,index)=><div className="cipher-cell" key={letter}><span>{letter}<b>{index+1}</b></span><span>{letter.toLowerCase()}<b>−{index+1}</b></span></div>)}
-            <div className="cipher-cell cipher-space"><span>SPASI<b>0</b></span></div>
-          </div>
+          <CipherTable/>
           <div className="guide-equation guide-example"><span>CONTOH PESAN BERTANDA</span><strong>11, −1, 2 dengan f(x) = 3x + 2</strong><small>Invers: x = (y − 2) ÷ 3. Hasilnya 3, −1, 0 → C a [spasi]. Nol muncul setelah dekripsi, bukan harus tertulis sebagai cipherteks.</small></div>
           <h3 className="guide-section-title">Rumus dalam setiap level</h3>
           <p className="guide-caption">Ini contoh latihan untuk memahami tiap level. Angka, rumus, dan jawaban pada terminal permainan berubah setiap kali kamu masuk level.</p>

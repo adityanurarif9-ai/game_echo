@@ -40,6 +40,10 @@
 .cipher-cell b { color: #f1ddb0; font-size: 11px; }
 .cipher-space { grid-column: 1 / -1; }
 .cipher-space>span { display: flex; justify-content: center; gap: 12px; }
+.terminal-cipher-reference { margin-top: 14px; padding: 13px; border: 1px solid #6d9f9b; border-radius: 10px; background: #183943; color: #edf2e8; }
+.terminal-cipher-reference h3 { margin: 0 0 5px; font-size: 15px; }
+.terminal-cipher-reference p { margin: 0 0 11px; color: #c4dcd4; font-size: 12px; line-height: 1.4; }
+.terminal-panel .puzzle-help-actions button[aria-expanded="true"] { text-decoration: underline; text-underline-offset: 4px; }
 .guide-formula-list { display: grid; gap: 8px; }
 .guide-formula-list details { border: 1px solid #537e7e; border-radius: 9px; background: #193943; }
 .guide-formula-list summary { display: flex; align-items: center; gap: 10px; padding: 13px; cursor: pointer; list-style: none; }
