@@ -71,9 +71,9 @@ export function attemptPuzzles(level,attempt){
     const values=[...message].map(letter=>a*encodeLetter(letter,signed)+b);
     const first=message[0],firstValue=values[0],decoded=encodeLetter(first,signed);
     const checkCipher=a*verification+b;
-    return {...puzzle,prompt:`Sinyal baru: dengan ${inner?'komposisi h':'fungsi f'}(x) = ${a}x ${coefficient(b)}, dekripsi ${values.map(numberText).join('–')}. Kode verifikasi ${numberText(checkCipher)} juga harus didekripsi. Ketik PESAN lalu angka verifikasi, dipisah spasi.`,formula,
-      rule:`Gunakan invers untuk setiap angka. ${signed?'Hasil positif = huruf besar, negatif = huruf kecil, dan 0 = spasi.':'Cocokkan hasil dengan A = 1 sampai Z = 26.'} Ketik contoh format: PESAN 7.`,
+    return {...puzzle,prompt:`Sinyal baru: dengan ${inner?'komposisi h':'fungsi f'}(x) = ${a}x ${coefficient(b)}, dekripsi ${values.map(numberText).join('–')}. Kode verifikasi ${numberText(checkCipher)} juga harus didekripsi. Tulis pesan sesuai huruf besar/kecil hasil dekripsi, lalu angka verifikasi.`,formula,
+      rule:`Gunakan invers untuk setiap angka. ${signed?'Hasil positif = huruf besar, negatif = huruf kecil, dan 0 = spasi.':'Cocokkan hasil dengan A = 1 sampai Z = 26.'} Contoh format jawaban: Pesan 7.`,
       example:`Contoh: ${numberText(sampleCipher)} → ${sample} → C.`,hint:`Angka pertama ${numberText(firstValue)} → ${numberText(decoded)} → ${first}. Angka verifikasi dihitung dengan invers yang sama.`,
-      answers:[`${message.toUpperCase()} ${verification}`],explain:`${puzzle.explain} Verifikasi ${verification} diterima.`};
+      answers:[`${message} ${verification}`],explain:`${puzzle.explain} Verifikasi ${verification} diterima.`};
   });
 }

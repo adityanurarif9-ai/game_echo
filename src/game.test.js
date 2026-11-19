@@ -14,6 +14,11 @@ test('typed answers accept intended formats without accepting wrong calculations
     assert.equal(isCorrect(levels[level].puzzles[index],'jawaban salah'),false);
   }));
 });
+test('jawaban acuan mempertahankan huruf kecil hasil dekripsi negatif',()=>{
+  assert.deepEqual(levels[2].puzzles.map(puzzle=>puzzle.answers[0]),['Cari kunci','Di depan','mEngHilanG']);
+  assert.deepEqual(levels[3].puzzles.map(puzzle=>puzzle.answers[0]),['MaSiH MeNcARi','Dimana','Kunci Ada Di Sini']);
+  assert.equal(isCorrect(levels[2].puzzles[0],'CARI KUNCI'),true);
+});
 test('jawaban menerima caps lock, huruf kecil, spasi dan tanda baca tanpa mengubah hasil hitung',()=>{
   const puzzle={answers:['KUNCI ADA DI SINI 12']};
   assert.equal(isCorrect(puzzle,'  kUnCi, ada-di SINI: 0012! '),true);

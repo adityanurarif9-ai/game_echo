@@ -40,10 +40,11 @@ test('semua cipherteks dinamis sesuai rumus dan jawaban termasuk verifikasi angk
         const values=puzzle.prompt.match(/dekripsi ([0-9−–]+)/)[1].split('–');
         const word=values.map(value=>{
           const x=decodeNumber(value);
-          return x===0?' ':String.fromCharCode(64+Math.abs(x));
+          return x===0?' ':String.fromCharCode((x>0?64:96)+Math.abs(x));
         }).join('');
         const verification=puzzle.prompt.match(/Kode verifikasi ([0-9−]+)/)[1];
         assert.equal(puzzle.answers[0],`${word} ${decodeNumber(verification)}`);
+        assert.equal(isCorrect(puzzle,puzzle.answers[0].toUpperCase()),true,'Caps Lock tetap diterima saat mengetik');
       }
     });
   }
