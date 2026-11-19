@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {calculateStars,formatClock,levelTimeLimits} from './progression.js';
 
 test('each level has a countdown and stars reward speed plus remaining lives',()=>{
-  assert.deepEqual(levelTimeLimits,[510,540,570,600]);
-  assert.deepEqual(levelTimeLimits.map(formatClock),['08:30','09:00','09:30','10:00']);
+  assert.deepEqual(levelTimeLimits,[600,630,660,690]);
+  assert.deepEqual(levelTimeLimits.map(formatClock),['10:00','10:30','11:00','11:30']);
   assert.equal(formatClock(150),'02:30');
   assert.equal(formatClock(-5),'00:00');
   assert.equal(calculateStars(120,240,3),3);
