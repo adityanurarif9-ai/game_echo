@@ -14,6 +14,14 @@ test('typed answers accept intended formats without accepting wrong calculations
     assert.equal(isCorrect(levels[level].puzzles[index],'jawaban salah'),false);
   }));
 });
+test('jawaban menerima caps lock, huruf kecil, spasi dan tanda baca tanpa mengubah hasil hitung',()=>{
+  const puzzle={answers:['KUNCI ADA DI SINI 12']};
+  assert.equal(isCorrect(puzzle,'  kUnCi, ada-di SINI: 0012! '),true);
+  assert.equal(isCorrect(puzzle,'KUNCIADADISINI12'),true);
+  assert.equal(isCorrect(puzzle,'KUNCI ADA DI SINI 13'),false);
+  assert.equal(isCorrect({answers:['12']},'-12'),false);
+  assert.equal(isCorrect({answers:['12']},'1.2'),false);
+});
 test('corrected ciphertext and signed letter codes decode to the documented answers',()=>{
   const decode=(numbers,inverse)=>numbers.map(number=>{
     const value=inverse(number);

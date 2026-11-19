@@ -74,7 +74,15 @@ export const levels = [
     ]
   }
 ];
-export const normalizeAnswer = value => value.trim().toUpperCase().replace(/\s*[-–—]\s*/g,'-').replace(/\s*,\s*/g,',').replace(/\s+/g,' ');
+export const normalizeAnswer = value => {
+  const raw=String(value??'').normalize('NFKC').trim();
+  if(/\d\s*[.,+×*/÷−-]\s*\d/.test(raw))return `INVALID:${raw}`;
+  const negativeNumber=/^[\[(]?\s*[-−]\s*\d+\s*[\])]?$/.test(raw);
+  const compact=raw.toUpperCase().replace(/[^\p{L}\p{N}]/gu,'');
+  const match=compact.match(/^(.*?)(\d+)$/);
+  const normalized=match?match[1]+match[2].replace(/^0+(?=\d)/,''):compact;
+  return negativeNumber?`-${normalized}`:normalized;
+};
 export const isCorrect = (puzzle,value) => puzzle.answers.some(answer => normalizeAnswer(answer)===normalizeAnswer(value));
 export const getEnding = ({dossiers,mistakes,escaped}) => !escaped ? 'bad' : dossiers===4 && mistakes<=3 ? 'true' : 'neutral';
 
